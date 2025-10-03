@@ -1,0 +1,21 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+<div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Delete Fee Penalty</h4>
+            <p>Fee Penalty: <i>{{fee_penalty|upper }}</i></p>
+
+            <p>The Fee Penalty will be permanently deleted.</p>
+
+            <form style="display:inline" method="post">
+                {% csrf_token %}
+
+                <button class="btn btn-success">Proceed</button>
+            </form>
+            <a class="btn btn-danger" href="{% url 'fee_penalty_detail' fee_penalty.id %}"> Cancel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

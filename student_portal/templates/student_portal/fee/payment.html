@@ -1,0 +1,142 @@
+{% extends 'student_portal/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% load fee_custom_filters %}
+{% block 'main' %}
+{% if form.errors %}
+        <h5 class="text-danger">{{form.errors}}</h5>
+        {% endif %}
+<div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Select Fee Record</h4>
+            <form>
+                <div class="row">
+                    <div class="col-4">
+                        <select name="session" required class="form-control">
+                            <option value="">----- session -----</option>
+                            {% for session in session_list %}
+                            <option value="{{session.id}}">{{ session }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-4">
+                        <select name="term" required class="form-control">
+                            <option value="">----- term -----</option>
+                            <option value="1st term">1st Term</option>
+                            <option value="2nd term">2nd Term</option>
+                            <option value="3rd term">3rd Term</option>
+
+                        </select>
+                    </div>
+
+                    <div class="col-4">
+                        <input style="width:50%;margin-left:25%" type="submit" value="Proceed" class="btn btn-success">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3" style="overflow-x:auto">
+                <h5 class="card-title">Fee Payments for {{ session }} Session - {{ term }}</h5>
+                <table class="table table-bordered" style="font-size:14px">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="min-width:150px">Fee</th>
+                            <th scope="col">Amount Paid</th>
+                            <th scope="col" style="min-width:130px">Date</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in fee_payment_list %}
+                            <tr>
+                                <td scope="row">{{ payment.fee_list|title }}</td>
+                                <td scope="row">{{ payment.amount|intcomma }}</td>
+                                <td scope="row">{{ payment.date|date }}</td>
+                                <td scope="row" {% if payment.status == 'pending' %} class='text-warning' {% else %} class='text-success' {% endif %}>{{ payment.status|title }}</td>
+                                <td scope="row" >
+                                    {% if payment.status == 'confirmed' %} <a href="{% url 'student_fee_detail' payment.id %}" class="btn btn-primary"><i class="bi bi-eye" title="View Details"></i> </a> {% endif %}
+                                </td>
+
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for payment in fee_payment_list %}
+<form method="POST" action="{% url 'fee_bulk_payment_confirm' payment.id %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="modal fade" id="confirm-fee{{ forloop.counter }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Fee Payment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <h4 class="card-title" style="padding-left:15px">Fee Payment Confirmation</h4>
+                        <p class="card-description>">
+                           Confirm Payment of {{ payment.amount|intcomma }} by {{ payment.student|title }}
+                           for {{ payment.fee_list|title }} paid on {{ payment.date|date }}
+                        </p>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Confirm Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endfor %}
+
+
+{% for payment in fee_payment_list %}
+<form method="POST" action="{% url 'fee_bulk_payment_revert' payment.id %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="modal fade" id="revert-fee{{ forloop.counter }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Fee Revert</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <h4 class="card-title" style="padding-left:15px">Fee Payment Reversal</h4>
+                        <p class="card-description>">
+                           Confirm Reversal of {{ payment.amount|intcomma }} by {{ payment.student|title }}
+                           for {{ payment.fee_list|title }} paid on {{ payment.date|date }}
+                        </p>
+                        <p class="card-description>">
+                           This action is permanent
+                        </p>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Revert Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endfor %}
+{%endblock %}

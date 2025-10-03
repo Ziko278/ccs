@@ -1,0 +1,148 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% block 'main' %}
+<form action="" class="row g-3 needs-validation" novalidate method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3">
+                <input type="hidden" name="updated_by" value="{{ user.id }}" />
+                <input type="hidden" name="group" value="{{ parent.group.id }}" />
+                <div class="tab-content pt-2">
+                    <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                        <h5 class="card-title">Edit Parent Detail - {{ parent }}</h5>
+                        <div class="row">
+
+                                <div class="form-floating mb-3 col-md-3">
+                                    {{form.title}}
+                                    <label for="floatingInput"> Title <span style="color:red;font-size:20px">*</span></label>
+                                </div>
+                                <div class="form-floating mb-3 col-md-3">
+                                    {{form.surname}}
+                                    <label for="floatingPassword"> Surname <span style="color:red;font-size:20px">*</span></label>
+                                </div>
+                                <div class="form-floating mb-3 col-md-3">
+                                    {{form.middle_name}}
+                                    <label for="floatingPassword">Middle Name</label>
+                                </div>
+                                <div class="form-floating mb-3 col-md-3">
+                                    {{form.last_name}}
+                                    <label for="floatingPassword">Last Name <span style="color:red;font-size:20px">*</span></label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-md-3">
+                                    {{form.gender}}
+                                    <label for="floatingInput"> Gender  <span style="color:red;font-size:20px">*</span></label>
+                                </div>
+
+
+
+                                <div class="form-floating mb-3 col-md-3">
+                                    {{form.mobile}}
+                                    <label for="floatingInput"> Phone Number</label>
+                                </div>
+                                <div class="form-floating mb-3 col-md-3">
+                                    {{form.email}}
+                                    <label for="floatingPassword"> Email </label>
+                                </div>
+                                <div class="form-floating mb-3 col-md-3">
+                                    {{form.residential_address}}
+                                    <label for="floatingPassword">Residential Address</label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-md-3">
+                                    {{form.image}}
+                                    <label for="floatingPassword">Photograph</label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-md-3">
+                                    <select class="form-control" id="state" name="state">
+                                      <option value="">-----------------</option>
+                                      {% for state, lga_list in state_list.items %}
+                                      <option value="{{state|lower}}" {% if state|lower == parent.state|lower %} selected {% endif %} lga="<option value=''>----------</option>
+                                      {% for lga in lga_list %}
+                                      <option value='{{lga|lower}}'>{{lga|upper}}</option>
+                                      {% endfor %}
+                                      ">
+
+                                      {{state|upper}}</option>
+                                      {% endfor %}
+                                    </select>
+                                    <label for="floatingInput">State </label>
+                                    <div class="invalid-tooltip">Select State</div>
+                                </div>
+
+                                <div class="form-floating mb-3 col-md-3">
+                                    <select name="lga" class="form-control" id="lga">
+                                        {% if parent.state %}
+                                            <option value="">----- select lga -----</option>
+                                            {% for state, lga_list in state_list.items %}
+                                                {% if state|lower == parent.state|lower %}
+                                                    {% for lga in lga_list %}
+                                                    <option value="{{lga|lower}}" {% if lga|lower == parent.lga|lower %} selected {% endif %}>{{ lga|upper }}</option>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                        <option value="">----------</option>
+                                        {% endif %}
+                                    </select>
+                                    <label for="floatingInput">LGA </label>
+                                    <div class="invalid-tooltip">Select LGA</div>
+                                </div>
+
+                                <div class="form-floating mb-3 col-md-3">
+                                    {{form.religion}}
+                                    <label for="floatingPassword">Religion</label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-md-3">
+                                    {{form.date_of_birth}}
+                                    <label for="floatingPassword">Date of Birth</label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-md-3">
+                                    {{form.marital_status}}
+                                    <label for="floatingPassword">Marital Status</label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-md-3">
+                                    {{form.occupation}}
+                                    <label for="floatingInput"> Occupation</label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-md-3">
+                                    {{form.office_mobile}}
+                                    <label for="floatingPassword"> Office Mobile </label>
+                                </div>
+                                <div class="form-floating mb-3 col-md-6">
+                                    {{form.office_address}}
+                                    <label for="floatingPassword">Office Address</label>
+                                </div>
+                                <div class="form-floating mb-3 col-md-6">
+                                    <a href="{% url 'parent_detail' parent.id %}" style="padding:10px;width:120px" class="btn btn-danger">Cancel</a>
+                                    <button class="btn btn-primary" style="padding:10px;width:120px">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+
+<script src="{% static 'admin_dashboard/scripts/jquery.js' %}"></script>
+<script>
+$(document).ready(function(){
+
+  $('#state').change(function(){
+    lga = $('option:selected', this).attr('lga')
+    $('#lga').html(lga)
+  })
+})
+
+</script>
+{%endblock %}

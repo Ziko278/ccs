@@ -1,0 +1,111 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="row">
+    <div class="col-12 grid-margin">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">CURRENT TERM RESULT FOR {{ student|upper }} - {{ student.registration_number|upper }}  ( {{ academic_setting.session }} SESSION, {{ academic_setting.term|upper }} )</h4>
+                {% if student.student_class.result_type != 'text' %}
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                          <thead>
+                              <tr>
+                                <td><b>SUBJECT</b> {% for key, value in result_list.result.items %} <td class="text-center"> {{ value.subject|upper }}</td> {% endfor %}</td>
+                              </tr>
+                              <tr>
+                                <td><b>SCORE</b> {% for key, value in result_list.result.items %} <td class="text-center"><b> {{ value.total }} </b></td> {% endfor %} </td>
+                              </tr>
+                              <tr>
+                                  <td><b>GRADE</b> {% for key, value in result_list.result.items %} <td class="text-center"><b> {{ value.grade|upper }} </b></td> {% endfor %} </td>
+                              </tr>
+                        </thead>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+  <div class="col-12 grid-margin">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title text-center"> STUDENT BEHAVIOUR COMPUTING  </h4>
+        <form method="POST" action="" class="form-sample" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <input type="hidden" name="student" value="{{ student.id }}" />
+             {% for category in behaviour_category_list %}
+            <h4 class="card-title"> {{ category|upper }}  </h4>
+                  <div class="row" style="margin-bottom:50px">
+                      {% for behaviour in behaviour_list %}
+                        {% if behaviour.category == category %}
+                        <div class="col-md-4">
+                            <input type="number" {% for key, value in behaviour_result.result_remark.items %} {% if key|lower == behaviour|lower %} value="{{ value }}" {% endif %} {% endfor %} class="form-control" placeholder="{{behaviour.name|title}}" max="{{behaviour.max_mark|floatformat}}" min="1" name="{{behaviour.name}}">
+                            <br />
+                        </div>
+                      {% endif %}
+                      {% endfor %}
+                  </div>
+            {% endfor %}
+          <br />
+
+          <br />
+
+	<div class="row">
+	<div class="col-md-12">
+		<div class="form-group row">
+			<div class="col-md-6" style="float:right">
+				<p class="card-title">Present Attendance</p>
+				<input type="number" class="form-control" placeholder="present attendance" name="present_attendance" value="{% if behaviour_result.result_remark.present_attendance %}{{ behaviour_result.result_remark.present_attendance }}{% endif %}" />
+				<br />
+			</div>
+			
+			<div class="col-md-6" style="float:right">
+				<p class="card-title">Total Attendance </p>
+				<input type="number" class="form-control" placeholder="total attendance" name="total_attendance" value="{% if behaviour_result.result_remark.total_attendance %}{{ behaviour_result.result_remark.total_attendance }}{% endif %}" />
+				<br />
+			</div>
+		</div>
+	</div>
+	</div>
+
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group row">
+                <div class="col-md-6" style="float:right">
+                    <p class="card-title">Form teacher comment</p>
+                  <textarea class="form-control" placeholder="Form Teacher Comment" name="form_teacher_comment">{% if behaviour_result.result_remark.form_teacher_comment %} {{ behaviour_result.result_remark.form_teacher_comment }} {% endif %}</textarea>
+                    <br />
+                </div>
+
+                  <div class="col-md-6" style="float:right">
+                    <p class="card-title">Area of Focus</p>
+                  <textarea class="form-control" placeholder="Area of Focus" name="area_of_focus">{% if behaviour_result.result_remark.area_of_focus %} {{ behaviour_result.result_remark.area_of_focus }} {% endif %}</textarea>
+                    <br />
+                </div>
+
+                  <div class="col-md-12" style="float:right">
+                      <p class="card-title">Head teacher comment</p>
+                  <textarea class="form-control" {% if not user.profile.staff.is_head_teacher %}  {% endif %} placeholder="Head Teacher Comment" name="head_teacher_comment">{% if behaviour_result.result_remark.head_teacher_comment %} {{ behaviour_result.result_remark.head_teacher_comment }} {% endif %}</textarea>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <div class="col-sm-12 text-center" style="float:right">
+                  <button style="width:150px;margin:10px" class="btn btn-primary btn-rounded">SAVE</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{%endblock %}

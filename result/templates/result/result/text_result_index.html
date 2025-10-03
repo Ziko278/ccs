@@ -1,0 +1,89 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<style>
+    body {
+    background-color: #f0f0f0; /* Optional: Background color */
+}
+
+.styled-header {
+    font-weight: bold;                     /* Bold text */
+    color: black;                          /* Text color */
+    text-shadow: 2px 2px 2px rgba(128, 128, 128, 0.5); /* Grey shadow */
+    position: relative;                    /* For the pseudo-element */
+    font-size: 3rem;                       /* Adjust size as needed */
+    margin: 20px 0;                        /* Space around headers */
+}
+
+.styled-header::before {
+    content: '';                            /* Empty content for the border effect */
+    position: absolute;                     /* Positioning */
+    top: 0;                                 /* Align with text */
+    left: 0;                                /* Align with text */
+    right: 0;                               /* Align with text */
+    bottom: 0;                              /* Align with text */
+    z-index: -1;                            /* Behind the text */
+    color: white;                           /* Border color */
+    font-weight: bold;                      /* Bold border effect */
+    -webkit-background-clip: text;         /* Clip background to text */
+    background: black;                      /* Background color for the border */
+    filter: blur(2px);                      /* Optional: Blur effect for softer edges */
+}
+
+</style>
+
+<div class="row">
+    <div class="col-12 grid-margin">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title"> RESULT FOR {{ student|upper }} - {{ student.registration_number|upper }}  ( {{ academic_setting.session }} SESSION, {{ academic_setting.term|upper }} )</h4>
+                <h4 class="card-title" style="margin-top:-30px">{{ student.student_class|upper }} {{ student.class_section|upper }}</h4>
+                 <img class="rounded-circle" style="display:inline;float:right;width:100px;height:100px;border-radius:5px;margin-top:-70px" {% if student.image %} src="/media/{{ student.image }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} /></h4>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 grid-margin">
+        <div class="card">
+            <div class="card-body">
+
+                {% for category in result_category_list %}
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title text-center"> <b>{{ category.name|upper }}</b></h4>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th style="min-width:300px">Field</th>
+                                    <th>Rating</th>
+
+                                </tr>
+                            </thead>
+                            {% for field in result_field_list %}
+                            {% if field.category == category %}
+                            <tr>
+                                <td class="pt-3">{{field.name|title }}</td>
+                                <td class="pt-3">
+
+                                        {% for key, value in result_list.result.items %} {% if key|lower == field|lower %} {{ value.rating }} {% endif %} {% endfor %}
+                                </td>
+
+                            </tr>
+
+                            {% endif %}
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{%endblock %}

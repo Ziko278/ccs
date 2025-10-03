@@ -1,0 +1,109 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block 'main' %}
+<div class="card">
+    <div class="card-body ">
+        <h5 class="card-title">Actions</h5>
+        <button title="Edit Payment Method"  type="button" class="btn btn-warning" data-bs-toggle="modal" style="" data-bs-target="#verticalycentered"><i class="bi bi-pencil-square"></i></button>
+        <a title="Delete Payment Method" href="{% url 'online_payment_delete' method.id %}" class="btn btn-outline-danger"><i class="bi bi-trash"></i></a>
+        <a title="View All Payment Methods" href="{% url 'online_payment_index' %}" class="btn btn-outline-primary"><i class="bi bi-menu-down"></i></a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card info-card sales-card">
+            <div class="card-body">
+                <h5 class="card-title"></h5>
+                <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                        {% if method.name == 'paystack' %}
+                            <img style="width:70px;height:70px;border-radius:35px;border:1px solid skyblue;" src="{% static 'admin_dashboard/images/online_payment/paystack.png' %}">
+                        {% elif method.name == 'flutterwave' %}
+                            <img style="width:70px;height:70px;border-radius:35px;border:1px solid skyblue;" src="{% static 'admin_dashboard/images/online_payment/flutterwave.png' %}">
+                        {% elif method.name == 'quickteller' %}
+                            <img style="width:70px;height:70px;border-radius:35px;border:1px solid skyblue;" src="{% static 'admin_dashboard/images/online_payment/quickteller.png' %}">
+                        {% elif method.name == 'interswitch' %}
+                            <img style="width:70px;height:70px;border-radius:35px;border:1px solid skyblue;" src="{% static 'admin_dashboard/images/online_payment/interswitch.png' %}">
+
+                        {% endif %}
+                    </div>
+                    <div class="ps-3">
+                        <h6>{{ method }}</h6>
+                        <span class="text-muted small pt-2 ps-1">pub_key: {{ public_key }}</span> <br />
+                        <span class="text-muted small pt-2 ps-1">pri_key: {{ private_key }}</span><br />
+                        <span class="text-muted small pt-2 ps-1">email: {{ method.email }}</span><br />
+                        <span class="small pt-2 ps-1 {% if method.status == 'active' %} text-success {% else %} text-danger {% endif %}">status: <b>{{ method.status|upper }}</b></span><br />
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="POST" action="{% url 'online_payment_edit' method.id %}">
+    {% csrf_token %}
+    <div class="modal fade" id="verticalycentered" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Online Payment Method - {{ method|upper }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <input type="hidden" name="type" value="{{ user.profile.type }}" />
+                <input type="hidden" name="user" value="{{ user.id }}" />
+                <div class="modal-body row">
+                    <div class="form-floating col-md-6">
+                        <select name="name" class="form-control" required>
+                            <option value="paystack" {% if method.name == 'paystack' %} selected {% endif %}>PAYSTACK</option>
+                            <option value="flutterwave" {% if method.name == 'flutterwave' %} selected {% endif %}>FLUTTERWAVE</option>
+                        </select>
+                        <label for="floatingName">Payment Method <span style="color:red"><b>*</b></span></label>
+                    </div><br />
+
+                    <div class="form-floating col-md-6">
+                        <input type="email" name="email" class="form-control" required value="{{method.email}}">
+                        <label for="floatingName">Email <span style="color:red"><b>*</b></span></label>
+                        <br />
+                    </div><br />
+
+                    <div class="form-floating col-md-6">
+                        <input type="text" name="public_key" class="form-control" required value="{{public_key}}">
+                        <label for="floatingName">Public Key <span style="color:red"><b>*</b></span></label>
+                        <br />
+                    </div><br />
+
+                    <div class="form-floating col-md-6">
+                        <input type="text" name="private_key" class="form-control" required value="{{private_key}}">
+                        <label for="floatingName">Private Key <span style="color:red"><b>*</b></span></label>
+                        <br />
+                    </div><br />
+
+                    <div class="form-floating col-md-6">
+                        <input type="number" step="any" name="vat" class="form-control" required value="{{method.vat}}">
+                        <label for="floatingName">Value Added Tax % (VAT) <span style="color:red"><b>*</b></span></label>
+                        <br />
+                    </div><br />
+
+                    <div class="form-floating col-md-6">
+                        <select name="status" class="form-control" required>
+                            <option value="active" {% if method.status == 'active' %} selected {% endif %}>ACTIVE</option>
+                            <option value="inactive" {% if method.status == 'inactive' %} selected {% endif %}>INACTIVE</option>
+                        </select>
+                        <label for="floatingName">Status <span style="color:red"><b>*</b></span></label>
+                        <br />
+                    </div><br />
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{%endblock %}

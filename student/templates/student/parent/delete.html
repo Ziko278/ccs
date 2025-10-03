@@ -1,0 +1,29 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Are you sure you want to delete <i>"{{ parent.surname|title }} {% if parent.middle_name %} {{ parent.middle_name|title }} {% endif %} {{ parent.last_name|title }} "</i> as a parent?
+                <img style="display:inline;width:100px;height:100px;border-radius:5px;" {% if parent.image %} src="{{ parent.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} /></h4>
+            <p>If you delete a parent, data regarding that parent, such as his/her wards may be lost</p>
+            {% if parent.students %}
+                <p>{{ parent|title }} is the parent of following students. their data will be lost if you proceed</p>
+                    {% for student in parent.students.all %}
+                <li>{{ student|title }} ( <i>class</i>: {{ student.student_class|upper }} {{ student.class_section|upper }}, <i>status</i>: <span {% if student.status|lower == "active" %} class="text-success" {% else %} class="text-danger" {% endif %}> {{ student.status|upper }}</span> )</li>
+                    {% endfor %}
+            {% else %}
+                <p>This parent currently has no ward in the school</p>
+            {% endif %}
+            <br />
+            <form style="display:inline" method="post">
+                {% csrf_token %}
+                <button class="btn btn-success">Proceed</button>
+            </form>
+            <a class="btn btn-danger" href="{% url 'parent_detail' parent.id %}"> Cancel</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

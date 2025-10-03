@@ -1,0 +1,109 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% block 'main' %}
+<div class="card">
+    <div class="card-body ">
+        <h5 class="card-title">Actions</h5>
+        {% if request.user == lesson_note.user %}
+            <a title="Edit Note Detail" href="{% url 'lesson_note_edit' lesson_note.id %}" class="btn btn-warning"><i class="bi bi-pencil-square"></i></a>
+            <a title="Delete Note" href="{% url 'lesson_note_delete' lesson_note.id %}" class="btn btn-danger"><i class="bi bi-trash"></i></a>
+            {% if lesson_note.status == 'declined' %}<a title="Reapply for Approval" href="{% url 'lesson_note_reapply' lesson_note.id %}" class="btn btn-secondary"><i class="bi bi-arrow-repeat"></i></a>{% endif %}
+        {% endif %}
+
+        {% if lesson_note.status == 'pending' and request.user.profile.staff in approvers %}
+            <button title="Approve Note" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approvenote"><i class="bi bi-check"></i></button>
+            <button title="Decline Note" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#declinenote"><i class="bi bi-x"></i></button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3">
+                <ul class="nav nav-tabs nav-tabs-bordered">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Lesson Note Detail</button>
+                    </li>
+
+                </ul>
+
+                <div class="tab-content pt-2">
+                    <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                        <h5 class="card-title">{{ lesson_note.subject|title }}: {{ lesson_note.title }}</h5>
+                        <p class="card-description">{% for class in lesson_note.student_class.all %} <span style="margin-right:15px"> {{ class }} </span> {% endfor %}</p>
+                        <p class="card-description">Date: {{ lesson_note.scheduled_date|date }} {{ lesson_note.scheduled_time|time }}</p>
+                        <p class="card-description">Student Access: {% if lesson_note.grant_access %} YES {% else %} NO {% endif %}</p>
+                        <p class="card-description">Current Status: <span class="{% if lesson_note.status|lower == 'pending' %} text-warning {% elif lesson_note.status|lower == 'approved' %} text-success {% elif lesson_note.status|lower == 'declined' %} text-danger {% else %} NO {% endif %}"><b>{{ lesson_note.status|upper }}</b></span></p>
+                        {% if lesson_note.status|lower == 'declined' %}
+                        <p class="card-description">Decline Reason: {{ lesson_note.decline_reason }}</p>
+                        {% else %}
+                            {% if lesson_note.decline_reason %}
+                            <p class="card-description">Previous Decline Reason: {{ lesson_note.decline_reason }}</p>
+                            {% endif %}
+                        {% endif %}
+                        <p class="card-description">Attachment File: {% if lesson_note.attachment %} <a target="_blank" href="{{lesson_note.attachment.url}}">View File</a> {% endif %}</p>
+                        <div class="row">
+                            {{ lesson_note.content|safe }}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="POST" action="{% url 'lesson_note_approve' lesson_note.id %}">
+    {% csrf_token %}
+    <div class="modal fade" id="approvenote" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-primary">Approve Lesson Note</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <h5 class="text-primary">YOU ARE ABOUT TO APPROVE THIS LESSON NOTE. THIS ACTION IS PERMANENT</h5>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Approve</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+<form method="POST" action="{% url 'lesson_note_decline' lesson_note.id %}">
+    {% csrf_token %}
+    <div class="modal fade" id="declinenote" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Decline Lesson Note</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <h5 class="text-primary">YOU ARE ABOUT TO DECLINE THIS LESSON NOTE. THIS ACTION IS PERMANENT</h5>
+                    </div>
+
+                    <label>Reason For Decline <span class="text-danger">*</span></label>
+                    <textarea required name="decline_reason" class="form-control"></textarea>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Decline</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{%endblock %}

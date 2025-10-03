@@ -1,0 +1,22 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+<div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Delete Fee Grouping</h4>
+            <p>Fee Grouping: <i>{{fee_master|upper }}</i></p>
+
+            <p>The fee grouping will be permanently deleted.</p>
+            <p>Fees assigned to student under this group will be reversed.</p>
+
+            <form style="display:inline" method="post">
+                {% csrf_token %}
+
+                <button class="btn btn-success">Proceed</button>
+            </form>
+            <a class="btn btn-danger" href="{% url 'fee_master_detail' fee_master.id %}"> Cancel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

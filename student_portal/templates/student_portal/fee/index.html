@@ -1,0 +1,117 @@
+{% extends 'student_portal/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% load fee_custom_filters %}
+{% block 'main' %}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3">
+                <ul class="nav nav-tabs nav-tabs-bordered">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Current Fees</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Outstanding Fees </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content pt-2">
+                    <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                        <h5 class="card-title">Fees For {{student|title}}, {{ student.student_class }} {{ student.class_section }} - {{ academic_setting.term|title }} {{ academic_setting.session }} <span style="float:right">{% now "D d M Y" %}</span> </h5>
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Fee</th>
+                                <th scope="col">Amount</th>
+                                <th scope="col">Paid</th>
+                                <th scope="col">Balance</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% if termly_fee_list %}
+                            {% for fee in termly_fee_list %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ fee.fee|upper }}</td>
+                                {% if fee.same_termly_price %}
+                                <td>{{ fee.amount|intcomma }}</td>
+                                {% else %}
+                                <td>
+                                {% if academic_setting.term|lower == '1st term' %}
+                                    {{ fee.first_term_amount|intcomma }}
+                                {% elif academic_setting.term|lower == '2nd term' %}
+                                    {{ fee.second_term_amount|intcomma }}
+                                {% elif academic_setting.term|lower == '3rd term' %}
+                                    {{ fee.third_term_amount|intcomma }}
+                                {% endif %}
+                                </td>
+                                {% endif %}
+                                <td>{{ fee|get_amount_paid:student.id|intcomma }}</td>
+                                <td>{{ fee|get_fee_balance:student.id }}</td>
+                                <td>
+                                    {% if fee|get_fee_balance:student.id == 0 %}
+                                        <span class="text-success">Paid</span>
+                                    {% elif fee|get_amount_paid:student.id > 0 and fee|get_fee_balance:student.id > 0 %}
+                                        <span class="text-warning">Part Paid</span>
+                                    {% else %}
+                                        <span class="text-danger">No Payment</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if fee|get_fee_balance:student.id > 0 %}<a title="pay fee" href="{% url 'student_fee_create' %}" class="btn btn-sm btn-primary">Pay </a>{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+
+                            {% if one_time_fee_list %}
+                            {% for fee in one_time_fee_list %}
+                            <tr>
+                                <th scope="row">{{ termly_fee_list|length|add:forloop.counter }}</th>
+                                <td>{{ fee.fee|upper }}</td>
+                                <td>{{ fee.amount|intcomma}}</td>
+
+                                <td>{{ fee|get_amount_paid:student.id|intcomma }}</td>
+                                <td>{{ fee|get_fee_balance:student.id }}</td>
+                                <td>
+                                    {% if fee|get_fee_balance:student.id == 0 %}
+                                        <span class="text-success">Paid</span>
+                                    {% elif fee|get_amount_paid:student.id > 0 and fee|get_fee_balance:student.id > 0 %}
+                                        <span class="text-warning">Part Paid</span>
+                                    {% else %}
+                                        <span class="text-danger">No Payment</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" title="pay fee" data-bs-toggle="modal" data-bs-target="#payfee{{ termly_fee_list|length|add:forloop.counter }}" {% if fee|get_fee_balance:student.id == 0 %} disabled {% endif %} class="btn btn-primary"><i class="bi bi-cash-coin"></i> </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+                            </tbody>
+                        </table>
+                        {% if not termly_fee_list and not one_time_fee_list %}
+                            <h4 class="card-title">No Available Fee for student class</h4>
+                        {% endif %}
+                    </div>
+
+                    <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
+                        <div class="row">
+                            <div class="card-body">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

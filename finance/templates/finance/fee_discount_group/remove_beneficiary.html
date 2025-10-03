@@ -1,0 +1,61 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+{% load humanize %}
+<div class="col-12 grid-margin">
+    <div class="card">
+        <div class="card-body" style="padding:20px">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="card-title"> STUDENT INFORMATION </p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <image {% if student.image %} src="/media/{{ student.image }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} style="width:100px;height:100px;border-radius:5px;" />
+                            <p style="margin-top:5px;"><span class="text-center {% if student.status|lower == 'active' %} text-success {% else %} text-danger {% endif %} "> {{student.status|upper}} </span> </p>
+                        </div>
+                        <div class="col-md-8">
+                            <p>{{ student.surname|title }} {% if student.middle_name %} {{ student.middle_name|title }} {% endif %} {{ student.last_name|title }}</p>
+                            <p>{% if student.registration_number %} {{student.registration_number|upper}} {% else %} NO REGISTRATION NUMBER {% endif %}</p>
+                            <p>{{student.student_class|upper}} {{student.class_section|upper}} </p>
+                            <p>{{student.gender|title}} </p>
+                         </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <p class="card-title"> DISCOUNT INFORMATION </p>
+                    <div class="row">
+                        <p class="card-description"><b>{{ discount_group|upper }}</b></p>
+                        {% if discount_group.discounts.all %}
+                        <ul class="list-group">
+                            {% for discount in discount_group.discounts.all %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                      {{ discount|upper }} - {% if discount.method == 'amount' %} N{{ discount.amount|intcomma }} {% else %} {{ discount.percentage }}% {% endif %}
+
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                            <h5 class="card-title text-center">No Discount in Group</h5>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <p class="card-title"> CONFIRM ACTION </p>
+                    <div class="row">
+                        <p class="card-description">Student will be removed from scholarship group</p>
+                        <form action="" method="POST">
+                            {% csrf_token %}
+                            <input type="submit" value="Proceed" class="btn btn-success">
+                            <a href="{% url 'fee_discount_group_detail' discount_group.pk %}"  class="btn btn-danger">Cancel</a>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,393 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load humanize %}
+{% load static %}
+
+<style>
+	td, th{
+		border:1px solid black;
+		padding-left:5px;
+		text-align:center;
+		font-family:courier;
+		font-size:12px;
+		font-weight: bolder
+	}
+	.student-summary span{
+		margin-right:20px
+	}
+	.student-info span {
+		margin-right:30px
+	}
+
+	.student-info {
+		font-size: 14px;
+		font-family: sans serif
+	}
+
+	th {
+		height: 20px;
+		font-size: 12px;
+		padding:0px
+	}
+
+	.graph-p{
+		height:20px;
+		margin: 0px;
+		padding:0px;
+		margin-bottom:0px;
+		border-top: 1px dashed lightgrey
+	}
+	.vertical-header {
+  /* Lay text out vertically, and flip so it reads bottom→top */
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  vertical-align: bottom;
+  padding: 5px;
+  white-space: nowrap;
+}
+
+
+
+	 @media only screen and (max-width: 767px) {
+  /* CSS rules for smaller screens */
+
+  /* Adjust the width of the result sheet to fit the screen */
+  #result-body {
+    width: 1300px;
+    overflow: auto;
+  }
+
+  /* Apply scaling transformation to the result sheet */
+  #download-result {
+    transform-origin: top left;
+    transform: scale(0.3);
+    width: 1100px;
+
+  }
+}
+</style>
+<div class="card non-printable">
+	<div class="card-body">
+		<h4 class="card-title">Download Result</h4>
+		<button id="download-button" title="Download Result" onclick="window.print()" class="btn btn-primary"><i class="bi bi-download"></i></button>
+		<a onclick="window.history.back()" style="float:right" title="Go Back" class="btn btn-danger"><i class="bi bi-arrow-left"></i> </a>
+	</div>
+</div>
+<div id="download-result">
+	<div style="background-color:white;border:2px solid black;">
+		<div class="" style="background-color:#2b9356;color:white;font-family:cursive;border:1px solid black;border-bottom:1px solid black;height:135px">
+			<div class="row">
+				<div class="col-2">
+					 <img {% if student.image %} src="{{ student.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} style="width:100%;height:133px;border-radius:0px;" />
+				</div>
+
+				<div class="col-8" style="padding:15px;color:white">
+					<h4 class="text-center" style="font-family:serif"><b>{{ general_setting.name|upper }}</b></h4>
+					<h6 class="text-center" style="">{{ general_setting.address|title }}</h6>
+					<p class="text-center" style="margin-bottom:10px;font-size:15px">{{ general_setting.mobile_1 }} | {{ general_setting.email|lower }} | https://greatheightsacademyng.com </p>
+				</div>
+
+				<div class="col-2">
+					 <img src="{{ general_setting.logo.url }}" style="width:100%;height:133px;border-radius:0px;" />
+				</div>
+			</div>
+		</div>
+
+		<div style="background-color:#2b9356;color:white;height:22px;border-bottom:2px solid black;border-top:0px solid black;">
+			<p class="text-center" style="font-weight:bold">Student Report Card For {% if result_type == 'midterm' %} Mid {% endif %} {{ result.term|title }} {{ result.session|title }} Session </p>
+		</div>
+
+		<div style="color:black;border-bottom:2px solid black;border-top:0px solid black;padding:1px">
+			<div style="padding:0px;padding-bottom:0px" class="">
+				<table class="table table-bordered" style="color:black;font-size:15px">
+					<tr>
+						<th>PUPIL’S NAME: {{ student|title }}</th>
+						<th>ADM NO.:{{ student.registration_number|upper }}</th>
+						<th>NO. OF TIMES <br>SCHOOL OPENED: {% if behaviour_result.result_remark.total_attendance %} {{ behaviour_result.result_remark.total_attendance }} {% else %}{{ student.attendance.total }} {% endif %}</th>
+						{% if result_list.student_class.result_type != 'text' %}
+						<th>CUM. TOTAL: {{ total_score|intcomma }}</th>
+						{% endif %}
+					</tr>
+
+					<tr>
+						<th>DATE OF BIRTH: {% if student.date_of_birth %} {{ student.date_of_birth }} {% endif %}</th>
+						{% if result %}
+						<th>CLASS: {{ result.student_class|title }} {{ result.class_section|upper }}</th>
+						{% else %}
+						<th>CLASS: {{ result_list.student_class|title }} {{ result_list.class_section|upper }}</th>
+						{% endif %}
+						<th>NO. OF TIMES PRESENT:{% if behaviour_result.result_remark.present_attendance %} {{ behaviour_result.result_remark.present_attendance }} {% else %} {{ student.attendance.present }} {% endif %}</th>
+						{% if result_list.student_class.result_type != 'text' %}
+						<th>CUM. AVERAGE: {{ result.student_average }}</th>
+						{% endif %}
+					</tr>
+
+					<tr>
+						<th>SEX: {{student.gender|title}}</th>
+						<th colspan="3">RESUMPTION DATE: {{ academic_info.next_term_open|date }}</th>
+					</tr>
+				</table>
+
+			</div>
+		</div>
+
+		{% if result.student_class.result_type == 'text' or result.student_class.result_type == 'mix' or result_list.student_class.result_type == 'text' or result_list.student_class.result_type == 'mix'  %}
+
+		<div class="p-1">
+			<table class="table table-bordered">
+				<thead style="background:#2b9356">
+					<tr >
+						<th rowspan="2" style="width:150px">AREAS OF LEARNING</th>
+						<th rowspan="2" style="width:200px">ASPECT</th>
+						<th colspan="3">PUPIL'S ACHIEVEMENT</th>
+					</tr>
+
+					<tr>
+						<th style="width:150px">Rating</th>
+					</tr>
+				</thead>
+
+				<tbody>
+				{% for category in result_category_list %}
+					{% if category.text_result_fields.all|length > 0 %}
+						<tr style="border:1px solid black">
+							<th style="background-color:#2b9356;color:black;font-weight:bold;font-size:20px">{{ category.name|title }}</th>
+							<th colspan="3" style="padding:0px" class="">
+								<table style="height:100%;margin:0px;text-align:left" class="table">
+									{% for field in result_field_list %}
+										{% if field.category == category %}
+											<tr>
+												<td style="width:200px">{{field.name|title }}</td>
+												<td style="width:150px;text-align:left">{% for key, value in result_list.result.items %} {% if key|lower == field|lower %} {% if value %} {{ value.rating|upper }} {% else %} <span style="color:white">.</span> {% endif %} {% endif %} {% endfor %}</td>
+											</tr>
+										{% endif %}
+									{% endfor %}
+								</table>
+
+							</th>
+
+						</tr>
+					{% endif %}
+				{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
+		<div class="p-2">
+			<h3 class="text-primary">KEY</h3>
+			<table class="table table-bordered">
+				<tbody>
+				<tr>
+					<td style="width:150px;background-color:#2b9356;color:black;font-weight:bold">ACHIEVED</td>
+					<td>Pupil can consistently perform task with confidence.</td>
+				</tr>
+				<tr>
+					<td style="width:150px;background-color:#2b9356;color:black;font-weight:bold">CONSOLIDATING</td>
+					<td>Pupil can perform task if given some support.</td>
+				</tr>
+				<tr>
+					<td style="width:150px;background-color:#2b9356;color:black;font-weight:bold">DEVELOPING</td>
+					<td>Pupil is beginning to perform task.</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+		{% endif %}
+
+
+
+	<div class="row">
+  <!-- Subjects & Scores (8 columns) -->
+  <div class="col-md-8">
+
+		{% if result.student_class.result_type == 'score' or result.student_class.result_type == 'mix' or result_list.student_class.result_type == 'score' or result_list.student_class.result_type == 'mix' %}
+<table style="width:100%; border-collapse: collapse; font-size: 14px;">
+    <thead>
+        <tr style="background-color: #d9d9d9; text-align: center;">
+            <th rowspan="2" style="padding: 5px;height:150px; width: 200px;" class="vertical-header">SUBJECTS</th>
+            {% for field in field_list %}
+                <th class="vertical-header">{{ field|title }} {{ field.max_mark|floatformat }}</th>
+            {% endfor %}
+            <th class="vertical-header">TOTAL 100</th>
+            <th class="vertical-header">SUBJECT <br> POSITION</th>
+            <th class="vertical-header">SUBJECT<br> AVERAGE</th>
+            <th class="vertical-header">GRADE</th>
+        </tr>
+
+    </thead>
+    <tbody>
+        {% for subject in subject_list.all %}
+            <tr>
+                <td style="text-align:left; padding-left:10px;"><b>{{ subject|title }}</b></td>
+                {% for field in field_list %}
+                    <td style="text-align: center;">
+                        {% for key, value in result.result.items %}
+                            {% if subject.id|stringformat:"i" == key %}
+                                {% for inner_key, score in value.items %}
+                                    {% if inner_key|lower == field|lower %}
+                                        {{ score|default:"-" }}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                {% endfor %}
+                {% for key, value in result.result.items %}
+                    {% if subject.id|stringformat:"i" == key %}
+                        <td>{{ value.total|default:"-" }}</td>
+                        <td>{{ value.position|default:"-" }}</td>
+                        <td>{{ value.average_score|floatformat|default:"-" }}</td>
+                        <td>{{ value.grade|upper|default:"-" }}</td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+  </div>
+	</div>
+
+
+		{% if behaviour_category_list %}
+		<div style="background-color:#2b9356;color:white;height:20px;border:1px solid black;">
+			<p class="text-center" style="font-size:14px;font-family:Arial;font-weight:bold">
+				Affective and Psychomotor Observation (Behavioural & Physical Abilities)
+			</p>
+		</div>
+		<div class="row">
+			{% for category in behaviour_category_list %}
+			<div {% if behaviour_category_list|length == 1 %} class="col-12" {% elif behaviour_category_list|length == 2 %} class="col-6" {% elif behaviour_category_list|length == 3 %} class="col-4" {% endif %}>
+				<table class="" style="width:100%">
+					<thead>
+					<tr style="background-color:#2b9356;color:white;height:20px"><th style="text-align:left;padding-left:5px">{{category.name|upper}}</th><th>Score</th></tr>
+					</thead>
+					<tbody>
+					{% for behaviour in category.student_behaviour.all %}
+						<tr>
+							<td style="text-align:left;font-weight:bold;font-size:12px;padding:0px">{{ behaviour|title }}</td>
+							<td>{% for key, value in behaviour_result.result_remark.items %} {% if key|lower == behaviour|lower %} {{ value }} {% endif %} {% endfor %} </td>
+						</tr>
+
+					{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			{% endfor %}
+
+		</div>
+		{% endif %}
+
+		{% if behaviour_category_list or result %}
+		<div style="color:grey;border:1px solid black;padding:0px;height:45px">
+			{% if behaviour_category_list %}
+			<p class="text-center" style="font-weight:bold;font-size:14px">
+				Rating: 5 - Excellent Trait, 4 Good Trait, 3 Fair Trait, 1 - No Trait
+			</p>
+			<hr style="margin-top:-10px;margin-bottom:0px" />
+			{% endif %}
+			{% if result %}
+			{% if result_type != 'midterm' %}
+			<p class="text-center" style="padding:0px;height:20px;font-size:12px;font-family:Arial">
+				Grading: {% for grade in grade_list %} <span>{{ grade.min_mark|floatformat }} - {{ grade.max_mark|floatformat }} = {{ grade.remark|title }} {% if forloop.counter < grade_list|length %} | {% endif %}</span> {% endfor %}
+			</p>
+			{% else %}
+
+			<p class="text-center" style="padding:0px;height:20px;font-size:12px;font-family:Arial">
+			 Grading: {% for grade in mid_grade_list %} <span>{{ grade.min_mark|floatformat }} - {{ grade.max_mark|floatformat }} = {{ grade.remark|title }}  {% if forloop.counter  < grade_list|length %} | {% endif %}</span> {% endfor %}
+
+                        </p>
+
+			{% endif %}
+			{% endif %}
+		</div>
+		{% endif %}
+
+		<div style="color:black;border-bottom:2px solid black;border-top:0px solid black;padding:1px;font-family:lato, courier, cursive">
+			<div style="border:1px solid black;border-radius:3px;padding-left:5px;padding-bottom:0px" >
+				<p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Next Term's Target: {{ behaviour_result.result_remark.area_of_focus }}</b></p>
+
+				{% if result %}
+				<p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Name: {{ result.form_teacher|title }}</b></p>
+				<p style="background-color:#2b9356;color:white;height:16px;padding:0px;margin:0px;padding-left:3px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Comment:</b> {{ result.form_teacher_comment }}</p>
+				<p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>{% if result.head_teacher_title != '' %} {{result.head_teacher_title|title}} {% else %} Head Teacher {% endif %}: {{ result.head_teacher|title }}</b></p>
+				<p style="background-color:#2b9356;color:white;height:16px;padding:0px;padding-left:3px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Comment:</b> {{ result.head_teacher_comment }}</p>
+				{% else %}
+				<p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Name: {{ result_list.form_teacher|title }}</b></p>
+				<p style="background-color:#2b9356;color:white;height:16px;padding:0px;margin:0px;padding-left:3px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Comment:</b> {{ result_list.form_teacher_comment }}</p>
+				<p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>{% if result.head_teacher_title != '' %} {{result.head_teacher_title|title}} {% else %} Head Teacher {% endif %}: {{ result.head_teacher|title }}</b></p>
+				<p style="background-color:#2b9356;color:white;height:16px;padding:0px;padding-left:3px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Comment:</b> {{ result_list.head_teacher_comment }}</p>
+				{% endif %}
+			</div>
+		</div>
+		<div>
+<!--			<div id="columnChart" style="border:1px solid black"></div>-->
+			<p style="margin:0px;padding:0px;height:15px;font-size:10px;text-align:center;position:relative;margin-top:0px">
+				Managed by TEKERA IT CONSULTS LIMITED <a href="tel:2348060050437">2348060050437</a> <a href="mailto:tekeraitconsults@gmail.com">tekeraitconsults@gmail.com</a>
+			</p>
+		</div>
+
+	</div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  new ApexCharts(document.querySelector("#columnChart"), {
+	series: [{
+	  name: 'Total Score',
+	  {% if result_type == 'midterm' %}
+	  data: [{% for key, value in result.result.items %} {{ value.midterm_total|floatformat }} {% if forloop.counter < result.result.items|length %},{% endif %} {% endfor %}]
+	  {% else %}
+	  data: [{% for key, value in result.result.items %} {{ value.total|floatformat }} {% if forloop.counter < result.result.items|length %},{% endif %} {% endfor %}]
+	{% endif %}
+	}],
+	chart: {
+	  type: 'bar',
+	  height: 200,
+	  toolbar: {
+	  	'show': false
+	  	}
+	},
+	title: {
+		text: '{{student|title}} {{result.student_class}} {{result.class_section}} {% if result_type == 'midterm' %} Mid {% endif %} {{ result.term|title }} Result',
+		align: 'center',
+		offsetX: 0,
+		offsetY: 0
+	},
+	plotOptions: {
+	  bar: {
+		horizontal: false,
+		columnWidth: '30%',
+		endingShape: 'rounded'
+	  },
+	},
+	dataLabels: {
+	  enabled: true
+	},
+	stroke: {
+	  show: true,
+	  width: 2,
+	  colors: ['transparent']
+	},
+	xaxis: {
+	  categories: [{% for key, value in result.result.items %} '{{ value.subject_code|upper}}' {% if forloop.counter < result.result.items|length %},{% endif %} {% endfor %}],
+	},
+	yaxis: {
+
+	},
+	fill: {
+	  opacity: 1
+	},
+	tooltip: {
+	  y: {
+		formatter: function(val) {
+		  return val
+		}
+	  }
+	}
+  }).render();
+});
+</script>
+
+
+{% endblock %}

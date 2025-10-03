@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+{% load humanize %}
+<html>
+<head>
+    <title>Fee Payment Summary</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; }
+        h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 style="color:blue">White Cloud Academy Fee Payment Summary</h2>
+        <p><strong>Period:</strong> {{ last_monday }} to {{ today }}</p>
+        <p><strong>Academic Session:</strong> {{ session }}</p>
+        <p><strong>Term:</strong> {{ term }}</p>
+
+        <h3 style="color:blue">Fee Payments:</h3>
+        <table>
+            <tr>
+                <th>Fee Name</th>
+                <th>Amount Paid (₦)</th>
+                <th>Payments Made</th>
+            </tr>
+            {% for fee in fee_summaries %}
+            <tr>
+                <td>{{ fee.name }}</td>
+                <td>₦{{ fee.total_paid|intcomma }}</td>
+                <td>{{ fee.count }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h3 style="color:blue">Total Summary:</h3>
+        <p><strong>Total Fee Paid in Period:</strong> ₦{{ total_fee_paid|intcomma }} ({{ total_payments_made }} payments made)</p>
+        <p><strong>Total Fee Paid in Term {{ term }} of Session {{ session }}:</strong> ₦{{ total_term_paid|intcomma }} ({{ total_term_payments_made }} payments made)</p>
+    </div>
+</body>
+</html>

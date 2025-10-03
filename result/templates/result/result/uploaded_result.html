@@ -1,0 +1,58 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="col-12">
+    <div class="card recent-sales overflow-auto">
+
+        <div class="card-body">
+            <h5 class="card-title">Uploaded Results For {{ academic_info.term }} {{ academic_info.session }} Session</h5>
+            {% if form.errors %}
+                <h5 class="text-danger">{{form.errors}}</h5>
+            {% endif %}
+            <table class="table table-borderless datatable">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Subject</th>
+                    <th scope="col">Class</th>
+                    <th scope="col">Date Modified</th>
+                    <th scope="col">User</th>
+                    <th scope="col">CA</th>
+                    <th scope="col">Exam</th>
+                    {% if school_info.school_type|lower == 'mix' and not school_info.separate_school_section %} <th scope="col">Category</th> {% endif %}
+                    <th scope="col" class="text-center">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if result_list %}
+                {% for result in result_list %}
+                <tr>
+                    <th scope="row"><a href="#">{{ forloop.counter }}</a></th>
+
+                    <td>{{ result.subject|upper }}</td>
+                    <td>{{ result.student_class|upper }} {{ result.class_section|upper }}</td>
+                    <td>{{ result.date|date }}</td>
+                    <td>{% if result.user.profile.staff %} <a href="{% url 'staff_detail' result.user.profile.staff.id %}" style="color:black"><b>{{ result.user.profile.staff|title }}</b> </a> {% else %} <b>SuperAdmin </b> {% endif %}</td>
+                    <td>{% if result.ca_uploaded %} YES {% else %} NO {% endif %}</td>
+                    <td>{% if result.exam_uploaded %} YES {% else %} NO {% endif %}</td>
+
+                    {% if school_info.school_type|lower == 'mix' and not school_info.separate_school_section %}
+                    <td>{% if result.type|lower == 'pri' %} PRIMARY {% elif result.type|lower == 'sec' %} SECONDARY  {% endif %} </td>
+                    {% endif %}
+                    <td class="text-center">
+                        <a title="View Result" href="{% url 'uploaded_result' %}?subject={{result.subject.id}}&student_class={{result.student_class.id}}&class_section={{result.class_section.id}}" class="btn btn-primary"><i class="bi bi-eye"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                    <tr><td colspan="10"><h3 class="text-center">No Result Uploaded Yet for {{ academic_info.term }} {{ academic_info.session }} Session</h3></td></tr>
+                {% endif %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

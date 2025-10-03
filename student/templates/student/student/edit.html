@@ -1,0 +1,362 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+<div class="row">
+    <div class="col-12 grid-margin">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">EDIT STUDENT - {{ student|upper }}</h4>
+                {% if form.errors %}
+                <h5 class="text-danger">{{form.errors}}</h5>
+                {% endif %}
+                <form action="" class="row g-3 needs-validation" novalidate method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="col-12 grid-margin">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="card-title"> PARENT INFORMATION </p>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <image {% if student_parent.image %} src="/media/{{ student_parent.image }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %}  style="width:100px;height:100px;border-radius:5px;" />
+                                            </div>
+
+                                            <div class="col-md-8">
+                                                <p>{{student_parent|title}}</p>
+                                                <p>{% if student_parent.mobile %} {{student_parent.mobile|title}} {% else %} Mobile Not Provided {% endif %}</p>
+                                                <p>{% if student_parent.email %} {{student_parent.email|title}} {% else %} Email Not Provided {% endif %}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="card-title"> OTHER INFORMATION </p>
+                                        <div class="form-group row">
+                                            <label class="col-sm-4 col-form-label">Relationship with student<span style="font-size:20px;color:red">*</span></label>
+                                            <div class="col-sm-8">
+                                                {{form.relationship_with_parent}}
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-sm-4 col-form-label"> Class<span style="font-size:20px;color:red">*</span></label>
+                                            <div class="col-sm-8">
+                                                <select name="student_class" class="form-control" id="id_student_class" required>
+                                                    <option value="">----------</option>
+                                                    {% for class in class_list %}
+                                                    <option value="{{class.id}}" {% if class == student.student_class %} selected {% endif %} section="<option value=''>----------</option>
+                                                    {% for section in class.section.all %}
+                                                    <option value='{{section.id}}'>{{section.name|upper}}</option>
+                                                    {% endfor %}
+                                                    ">
+                                                        {{class.name|upper}}
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <label class="col-sm-4 col-form-label">Class Section<span style="font-size:20px;color:red">*</span></label>
+                                            <div class="col-sm-8">
+                                                <select name="class_section" class="form-control" id="id_class_section" required>
+                                                    {% for class in class_list %}
+                                                        {% if class == student.student_class %}
+                                                            {% for section in class.section.all %}
+                                                                <option value="{{section.id}}" {% if section == student.class_section %} selected {% endif %}>{{ section }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+
+					<div class="form-group row">
+                                            <label class="col-sm-4 col-form-label">Subject Group<span style="font-size:20px;color:red"></span></label>
+                                            <div class="col-sm-8">
+						{{ form.subject_group }}
+                                            </div>
+                                            <label class="col-sm-4 col-form-label">New Student<span style="font-size:20px;color:red"></span></label>
+                                            <div class="col-sm-8 pt-2">
+                                                {{ form.is_new }}
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <input type="hidden" name="updated_by" value="{{ user.id }}" />
+                                <input type="hidden" name="type" value="{{ user.profile.type }}" />
+                                <input type="hidden" name="group" value="{{ student.group.id }}" />
+                                <input type="hidden" name="parent" value="{{ student.parent.id }}" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Surname <span style="font-size:20px;color:red">*</span></label>
+                                <div class="col-sm-8">
+                                    {{form.surname}}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Middle Name</label>
+                                <div class="col-sm-8">
+                                    {{form.middle_name}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Last Name <span style="font-size:20px;color:red">*</span></label>
+                                <div class="col-sm-8">
+                                    {{form.last_name}}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Reg No</label>
+                                <div class="col-sm-8">
+                                    <input type="text" name="registration_number" class="form-control" value="{{student.registration_number}}"
+                                           {% if student_setting.auto_generate_student_id %} readonly {% else %} required {% endif %}>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Class Number <span style="font-size:20px;color:red">*</span></label>
+                                <div class="col-sm-8">
+                                    {{form.class_number}}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Gender <span style="font-size:20px;color:red">*</span></label>
+                                <div class="col-sm-8">
+                                    {{form.gender}}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Date of Birth</label>
+                                <div class="col-sm-8">
+                                    {{form.date_of_birth}}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Photo</label>
+                                <div class="col-sm-8">
+                                    {{form.image}}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 ">
+                            <div class="form-group row">
+                               
+				 <label class="col-sm-4 col-form-label">Age</label>
+                                <div class="col-sm-8">
+                               <br>
+				     {{form.age}}
+                                </div>
+                            </div>
+                        </div>
+
+			<div class="col-md-6 ">
+                            <div class="form-group row">
+				
+                                <label class="col-sm-4 col-form-label">Status</label>
+                                <div class="col-sm-8">
+                                <br>
+				    <select class='form-control' name='status' required>
+					<option value='active' {% if student.status|lower == 'active' %} selected {% endif %}> Active </option>
+					<option value='inactive' {% if student.status|lower == 'inactive' %} selected {% endif %}> Inactive </option>
+
+				    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="accordion" id="accordionExample">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                    <b>MORE INFORMATION</b>
+                                </button>
+                            </h2>
+                        </div>
+
+                        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group row">
+                                            <label class="col-sm-3 col-form-label">State</label>
+                                            <div class="col-sm-8">
+                                                <select class="form-control" id="state" name="state">
+                                                  <option value="">-----------------</option>
+                                                  {% for state, lga_list in state_list.items %}
+                                                  <option value="{{state|lower}}" {% if state|lower == student.state|lower %} selected {% endif %} lga="<option value=''>----------</option>
+                                                  {% for lga in lga_list %}
+                                                  <option value='{{lga|lower}}'>{{lga|upper}}</option>
+                                                  {% endfor %}
+                                                  ">
+
+                                                  {{state|upper}}</option>
+                                                  {% endfor %}
+                                                </select>
+                                                <br />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group row">
+                                            <label class="col-sm-3 col-form-label">Lga</label>
+                                            <div class="col-sm-8">
+                                                <select name="lga" class="form-control" id="lga">
+                                                    {% if student.state %}
+                                                        <option value="">----- select lga -----</option>
+                                                        {% for state, lga_list in state_list.items %}
+                                                            {% if state|lower == student.state|lower %}
+                                                                {% for lga in lga_list %}
+                                                                <option value="{{lga|lower}}" {% if lga|lower == student.lga|lower %} selected {% endif %}>{{ lga|upper }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    {% else %}
+                                                    <option value="">----------</option>
+                                                    {% endif %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group row">
+                                            <label class="col-sm-3 col-form-label">Religion</label>
+                                            <div class="col-sm-8">
+                                                {{form.religion}}
+                                                <br />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group row">
+                                            <label class="col-sm-3 col-form-label">Email</label>
+                                            <div class="col-sm-8">
+                                                {{form.email}}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group row">
+                                            <label class="col-sm-3 col-form-label">Phone No</label>
+                                            <div class="col-sm-8">
+                                                {{form.mobile}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseTwo">
+                                <b>HEALTH INFORMATION</b>
+                            </button>
+                        </h2>
+                    </div>
+
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group row">
+                                        <label class="col-sm-4 col-form-label">Genotype</label>
+                                        <div class="col-sm-8">
+                                            {{form.genotype}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group row">
+                                        <label class="col-sm-4 col-form-label">Blood Group</label>
+                                        <div class="col-sm-8">
+                                            {{form.blood_group}}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <div class="form-group row">
+                                        <label class="col-sm-3 col-form-label">Health Note</label>
+                                        <div class="col-sm-9">
+                                            <textarea name="health_issue" class="form-control" style="margin-top:20px">{% if student.health_issue %} {{ student.health_issue }} {% endif %}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group row"></div>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <br />
+                            <button style="width:150px;margin:10px" class="btn btn-primary btn-rounded">Save Details</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'admin_dashboard/scripts/jquery.js' %}"></script>
+<script>
+$(document).ready(function(){
+    $('#id_student_class').change(function(){
+        section = $('option:selected', this).attr('section')
+        $('#id_class_section').html(section)
+    })
+
+    $('#state').change(function(){
+        lga = $('option:selected', this).attr('lga')
+        $('#lga').html(lga)
+    })
+
+
+
+})
+
+</script>
+
+
+
+{%endblock %}

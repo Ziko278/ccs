@@ -1,0 +1,22 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+{% load humanize %}
+<div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Delete Payment Method</h4>
+            <p>Method: <i>{{ online_payment }}</i></p>
+
+            <p>The payment method will be permanently deleted, and might affect other statistic.</p>
+
+            <form style="display:inline" method="post">
+                {% csrf_token %}
+
+                <button class="btn btn-success">Proceed</button>
+            </form>
+            <a class="btn btn-danger" href="{% url 'online_payment_index' %}"> Cancel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

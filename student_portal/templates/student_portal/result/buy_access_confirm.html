@@ -1,0 +1,90 @@
+{% extends 'student_portal/layout.html' %}
+{% block 'main' %}
+{% load static %}
+{% load humanize %}
+{% load fee_custom_filters %}
+
+<div class="col-12">
+    <div class="card recent-sales overflow-auto">
+
+        <div class="card-body">
+            <h5 class="card-title">Result Access Payment</h5>
+            {% if form.errors %}
+                <h5 class="text-danger">{{form.errors}}</h5>
+            {% endif %}
+
+            <div class="row">
+
+                <div class="col-md-12">
+                    <div class="card info-card sales-card">
+                        <div class="card-body">
+                            <h5 class="card-title"></h5>
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <img style="width:70px;height:70px;border-radius:35px;border:1px solid skyblue;" src="{% static 'admin_dashboard/images/online_payment/paystack.png' %}">
+
+                                </div>
+                                <div class="ps-3">
+                                    <h6>Fee: {{ session }} - {{ term|upper }} Result Code Payment for {{ student|title }}</h6><br />
+
+                                    <h3 class="card-title">Amount: Two Thousand Naira Only (N2,000) </h3>
+
+                                    <button id="paystack" class="btn btn-success">Proceed</button>
+
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'admin_dashboard/scripts/jquery.js' %}"></script>
+
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+
+$(document).ready(function(){
+    $('#paystack').click(function(){
+
+    var handler = PaystackPop.setup({
+        key: '{{secret_key}}',
+        amount: 2000 * 100,
+       // reference: '{{ reference }}',
+        email: '{{email}}',
+        currency: 'NGN',
+
+        metadata: {
+            'student_id': {{ student.id }},
+            'student': '{{ student }}',
+            'fee': 'ict',
+            'amount': 2000 * 100,
+            'session_id': '{{ session.id }}',
+            'term': '{{ term }}',
+            //'reference': '{{ reference }}',
+        },
+
+        callback: function(response){
+            var reference = response.reference;
+            window.location = '{{ callback_url }}' + '?reference=' +reference
+       },
+       onClose: function(response){
+            window.location = ''
+       },
+    });
+
+    handler.openIframe();
+
+
+    })
+})
+
+</script>
+
+
+{% endblock %}

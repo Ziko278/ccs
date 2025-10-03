@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="42e66d4e-dc0b-4f53-ae19-f4ae6640441c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../academic/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../academic/admin.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../academic/apps.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../academic/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../academic/migrations/0002_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../academic/migrations/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../academic/models.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../academic/tests.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../academic/views.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/admin_dashboard/vendor/bootstrap/css/bootstrap.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/admin_dashboard/vendor/bootstrap/css/bootstrap.min.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/admin_dashboard/vendor/bootstrap/js/bootstrap.min.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/admin_dashboard/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_dashboard/layout.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../human_resource/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/../human_resource/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../human_resource/apps.py" beforeDir="false" afterPath="$PROJECT_DIR$/../human_resource/apps.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../human_resource/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../human_resource/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/../human_resource/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../human_resource/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/../human_resource/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../result/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/../result/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../result/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/../result/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../result/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/../result/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../school_setting/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/../school_setting/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../school_setting/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../school_setting/migrations/0002_sessionmodel_remove_schoolacademicinfomodel_email_and_more.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../school_setting/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/../school_setting/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../school_setting/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/../school_setting/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../school_software/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/../school_software/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../school_software/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/../school_software/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../student/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/../student/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../student/apps.py" beforeDir="false" afterPath="$PROJECT_DIR$/../student/apps.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../student/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../student/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/../student/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../student/signals.py" beforeDir="false" afterPath="$PROJECT_DIR$/../student/signals.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../student/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/../student/views.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectId" id="2QbqlgTeNFp9DczMlrjId2xAWp9" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="42e66d4e-dc0b-4f53-ae19-f4ae6640441c" name="Changes" comment="" />
+      <created>1685632785702</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1685632785702</updated>
+    </task>
+    <servers />
+  </component>
+</project>

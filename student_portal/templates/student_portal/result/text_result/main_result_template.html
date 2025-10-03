@@ -1,0 +1,273 @@
+{% extends 'student_portal/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<style>
+        td, th{
+                border:1px solid black;
+                padding-left:5px;
+                text-align:center;
+                font-family:courier
+        }
+        .student-summary span{
+                margin-right:20px
+        }
+        .student-info span {
+                margin-right:30px
+        }
+
+        .student-info {
+                font-size: 14px;
+                font-family: sans serif
+        }
+        {% for subject in subject_list %}
+                #bar{{forloop.counter}} {
+                        {% for key, value in result.result.items %}
+                                {% if subject.id|stringformat:"i" == key %}
+                                         height:{{ value.total|floatformat }}%;
+                                         border: 1px solid red;
+
+                                {% endif %}
+                        {% endfor %}
+                }
+        {% endfor %}
+        th {
+                height: 20px;
+                font-size: 12px;
+                padding:0px
+        }
+
+        .graph-p{
+                height:20px;
+                margin: 0px;
+                padding:0px;
+                margin-bottom:0px;
+                border-top: 1px dashed lightgrey
+        }
+
+                @media only screen and (max-width: 767px) {
+  /* CSS rules for smaller screens */
+
+  /* Adjust the width of the result sheet to fit the screen */
+  #result-body {
+    width: 1300px;
+    overflow: auto;
+  }
+
+  /* Apply scaling transformation to the result sheet */
+  #download-result {
+    transform-origin: top left;
+    transform: scale(0.3);
+    width: 1100px;
+
+  }
+
+</style>
+<div class="card non-printable">
+        <div class="card-body">
+                <h4 class="card-title">Download Result</h4>
+                <button id="download-button" title="Download Result" onclick="window.print()" class="btn btn-primary"><i class="bi bi-download"></i></button>
+                <a  onclick="window.history.back()" style="float:right" title="Go Back" class="btn btn-danger"><i class="bi bi-arrow-left-square"></i> </a>
+        </div>
+</div>
+<div id="download-result">
+        <div style="background-color:white;border:2px solid black;">
+                <div class="" style="background-color:#2b9356;color:white;font-family:cursive;border:1px solid black;border-bottom:1px solid black;height:135px">
+                <div class="row">
+                                <div class="col-2">
+                                                 <image {% if student.image %} src="{{ student.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} style="width:100%;height:133px;border-radius:0px;" />
+
+                                </div>
+
+                                <div class="col-8" style="padding:15px;color:white">
+                                                <h4 class="text-center" style="font-family:serif"><b>{{ general_setting.name|upper }}</b></h4>
+                                                <h6 class="text-center" style="font-size:14px;margin-top:10px"><b>...{{ general_setting.motto|title }}</b></h6>
+                                                <h6 class="text-center" style="">{{ general_setting.address|title }}</h6>
+                                                <p class="text-center" style="margin-bottom:10px;font-size:15px">{{ general_setting.mobile_1 }} | {{ general_setting.email|lower }} | https://daisesacademy.com.ng </p>
+
+                                </div>
+
+                                <div class="col-2">
+                                                 <image src="{{ general_setting.logo.url }}" style="width:100%;height:133px;border-radius:0px;" />
+                                </div>
+                </div>
+</div>
+
+<div style="background-color:#2b9356;color:white;height:22px;border-bottom:2px solid black;border-top:0px solid black;">
+        <p class="text-center" style="font-weight:bold">Student Report Card For {% if result_type == 'midterm' %} Mid {% endif %} {{ result_list.term|title }} {{ result_list.session|title }} Session </p>
+</div>
+
+
+<div style="color:black;border-bottom:2px solid black;border-top:0px solid black;padding:1px">
+                <div style="height:55px;border:1px solid black;border-radius:3px;padding:5px;padding-bottom:0px" class="text-center">
+                                <p><b class="student-info">
+                                                <span>Student Name: {{ student|title }}</span> |
+                                                <span>Admission ID: {{ student.registration_number|upper }}</span> |
+                                                <span>Class: {{ student.student_class|upper }} {{ student.class_section|upper }}</span> |
+                                                <span>Number in Class: {{ student.no_in_class }}</span> |
+                                                <span>Gender: {{ student.gender|title }}</span> |
+                                                <span>Attendance: {% if behaviour_result.result_remark.present_attendance %} {{ behaviour_result.result_remark.present_attendance }} {% else %}  {{ student.attendance.total }} {% endif %}</span>
+                                                <span>Days School Opened: {% if behaviour_result.result_remark.present_attendance %} {{ behaviour_result.result_remark.total_attendance }} {% else %}  {{ student.attendance.total }} {% endif %}</span>
+                                                {% if result_type != 'midterm' %}
+                                                |
+                                                <span>Term closed: {{ academic_info.date_school_closed|date }}</span> |
+                                                <span>Next Term Opens: {{ academic_info.next_term_open|date }}</span>
+                                                {% endif %}
+                                </b></p>
+                </div>
+</div>
+
+<div style="height:20px;color:black;border-bottom:2px solid black;border-top:0px solid black;padding:1px">
+
+</div>
+
+                {% for category in result_category_list %}
+                        {% if category.text_result_fields.all|length > 0 %}
+                        <div>
+                                <div>
+                                        <p class="text-center" style="border:1px solid black;color:white;padding:0px;height:22px;margin:0px;background-color:#2b9356;">
+                                                <span style="display:inline-block;border:1px solid black;height:22px;padding:0px;padding-left:5px;padding-right:5px"><b>{{ category|upper }}</b>
+                                                </span>
+                                        </p>
+                                        {% for field in result_field_list %}
+                                        {% if field.category == category %}
+                                        <p style="margin:0px;padding:0px 5px;border:0.5px solid grey;border-bottom:0px solid grey;height:20px;font-size:14px;font-family:courier;color:black">
+                                                <label style="display:inline-block;width:79%">{{field.name|title }}</label>
+                                                <label style="display:inline-block;width:20%;border-left:1px solid black;text-align:center">{% for key, value in result_list.result.items %} {% if key|lower == field|lower %} {% if value %} {{ value|upper }} {% else %} <span style="color:white">.</span> {% endif %} {% endif %} {% endfor %}</label>
+
+                                        </p>
+
+                                        {% endif %}
+                                        {% endfor %}
+                                </div>
+                        </div>
+                        {% endif %}
+                {% endfor %}
+
+                <div style="color:grey;height:20px;border:1px solid black;">
+                        <p class="text-center student-summary" style="font-size:14px;font-family:sans serif">
+                                <span>{{ result.term|title }} Total: {{ result_list.total_score }}</span>
+                                <span>Student Average: {{ result_list.student_average }}%</span>
+                                <span>Class Average: {{ result_list.class_average }}%</span>
+                        </p>
+                </div>
+
+                <div style="color:grey;height:20px;border:1px solid black;">
+                        <p class="text-center" style="font-size:14px;font-family:Arial;font-weight:bold">
+                                Affective and Psychomotor Observation (Behavioural & Physical Abilities)
+                        </p>
+                </div>
+                <div class="row">
+                        {% for category in behaviour_category_list %}
+                        <div {% if behaviour_category_list|length == 1 %} class="col-12" {% elif behaviour_category_list|length == 2 %} class="col-6" {% elif behaviour_category_list|length == 3 %} class="col-4" {% endif %}>
+                                <table class="" style="width:100%">
+                                        <thead>
+                                        <tr style="height:20px"><th style="text-align:left;padding-left:5px">{{category.name|upper}}</th><th>Score</th></tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for behaviour in category.student_behaviour.all %}
+                                                <tr>
+                                                        <td style="text-align:left;font-weight:bold;font-size:13px">{{ behaviour|title }}</td>
+                                                        <td>{% for key, value in behaviour_result.result_remark.items %} {% if key|lower == behaviour|lower %} {{ value }} {% endif %} {% endfor %} </td>
+                                                </tr>
+
+                                        {% endfor %}
+                                        </tbody>
+                                </table>
+                        </div>
+                        {% endfor %}
+
+                </div>
+
+                <div style="color:grey;border:1px solid black;padding:0px;height:25px">
+                        <p class="text-center" style="font-weight:bold;font-size:14px">
+                                Rating: 5 - Excellent Trait, 4 Good Trait, 3 Fair Trait, 1 - No Trait
+                        </p>
+                </div>
+                <div style="color:black;border-bottom:2px solid black;border-top:0px solid black;padding:1px;font-family:lato, courier, cursive">
+                        <div style="border:1px solid black;border-radius:3px;padding-left:5px;padding-bottom:0px" >
+                                <p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Area of Focus: {{ behaviour_result.result_remark.area_of_focus }}</b></p>
+                                <p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Name: {{ result_list.form_teacher|title }}</b></p>
+                                <p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black">Teacher's Comment: {{ result_list.form_teacher_comment }}</p>
+                                <p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>{% if result_list.head_teacher_title != '' %} {{result_list.head_teacher_title|title}} {% else %} Head Teacher {% endif %} Name: {{ result_list.head_teacher|title }}</b></p>
+                                <p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black">{% if result_list.head_teacher_title != '' %} {{result_list.head_teacher_title|title}}{% else %} Head Teacher{% endif %}'s Comment: {{ result_list.head_teacher_comment }}</p>
+
+                        </div>
+                </div>
+                <div style="height:1px">
+                        <div id="columnChart" style="border:1px solid black;border-top:0px solid black"></div>
+                </div>
+
+
+        </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  new ApexCharts(document.querySelector("#columnChart"), {
+        series: [{
+          name: 'Total Score',
+          data: [{% for key, value in result.result.items %} {{ value.total|floatformat }} {% if forloop.counter < result.result.items|length %},{% endif %} {% endfor %}]
+        }],
+        chart: {
+          type: 'bar',
+          height: 0,
+          toolbar: {
+                'show': false
+                }
+        },
+        title: {
+                text: '{{student|title}} {{result.student_class}} {{result.class_section}} {{ result.term|title }} Result',
+                align: 'center',
+                offsetX: 0,
+                offsetY: 0
+        },
+        plotOptions: {
+          bar: {
+                horizontal: false,
+                columnWidth: '30%',
+                endingShape: 'rounded'
+          },
+        },
+        dataLabels: {
+          enabled: true
+        },
+        stroke: {
+          show: true,
+          width: 2,
+          colors: ['transparent']
+        },
+        xaxis: {
+          categories: [{% for key, value in result.result.items %} '{{ value.subject_code|upper}}' {% if forloop.counter < result.result.items|length %},{% endif %} {% endfor %}],
+        },
+        yaxis: {
+
+        },
+        fill: {
+          opacity: 1
+        },
+        tooltip: {
+          y: {
+                formatter: function(val) {
+                  return val
+                }
+          }
+        }
+  }).render();
+});
+</script>
+
+
+<script src="{% static 'admin_dashboard/scripts/jquery.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+
+<script type="text/javascript">
+        $(document).on('click','#download-button', function(){
+
+    })
+
+</script>
+{% endblock %}

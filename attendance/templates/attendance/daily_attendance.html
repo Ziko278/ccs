@@ -1,0 +1,103 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block 'main' %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card" style="height:700px">
+            <div class="card-body">
+                <h4 class="card-title">TAKE DAILY ATTENDANCE</h4>
+                <input type="text" class="form-control" id="barcode-input" placeholder="Scan Barcode to take Attendance">
+                <div id="interactive" class="viewport" style="text-align:center;padding-top:30px"></div>
+                <br />
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card" style="height:700px">
+            <div class="card-body">
+                <h4 class="card-title">ATTENDANCE DETAILS</h4>
+                <div id="attendance_detail">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<script src="{% static 'admin_dashboard/scripts/jquery.js' %}"></script>
+<script src="{% static 'admin_dashboard/scripts/quagga.min.js' %}"></script>
+<script>
+  // Configuration for QuaggaJS
+  var config = {
+    inputStream: {
+      name: "Live",
+      type: "LiveStream",
+      constraints: {
+
+        width: { max: 450 },
+
+        facingMode: "environment" // Use the back camera (if available)
+      },
+      target: document.querySelector("#interactive")
+    },
+    locator: {
+      patchSize: "medium",
+      halfSample: true
+    },
+    numOfWorkers: 4,
+    decoder: {
+      readers: ["code_39_reader"] // Specify the barcode format to read (e.g., EAN)
+    },
+    locate: true
+  };
+
+  // Start the barcode scanner
+  Quagga.init(config, function(err) {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    Quagga.start();
+  });
+
+  // Add a listener for successful scans
+  Quagga.onDetected(function(result) {
+    var barcodeData = result.codeResult.code;
+    document.getElementById("barcode-input").value = barcodeData;
+    Quagga.stop(); // Stop scanning after a successful scan (you can adjust this behavior as needed)
+
+    var event = $.Event('keyup');
+    event.keyCode = 13;
+    $('#barcode-input').trigger(event)
+
+    document.getElementById("barcode-input").value = '';
+    //
+  });
+
+
+</script>
+
+<script>
+    $(document).ready(function(){
+        $('#barcode-input').keyup(function(){
+            identifier = $(this).val()
+            if(identifier != ''){
+            $.ajax({
+                url: "{% url 'daily_attendance_api' %}",
+                data: {
+                    'identifier': identifier
+                },
+                success: function(data){
+                    $('#attendance_detail').html(data)
+                    Quagga.start()
+                }
+            })
+        }
+        })
+    })
+</script>
+{% endblock %}

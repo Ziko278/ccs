@@ -1,0 +1,285 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<style>
+	td, th{
+		border:1px solid black;
+		padding-left:5px;
+		text-align:center;
+		font-family:courier
+	}
+	.student-summary span{
+		margin-right:20px
+	}
+	.student-info span {
+		margin-right:30px
+	}
+
+	.student-info {
+		font-size: 14px;
+		font-family: sans serif
+	}
+	{% for subject in subject_list.all %}
+		#bar{{forloop.counter}} {
+			{% for key, value in result.result.items %}
+				{% if subject.id|stringformat:"i" == key %}
+					 height:{{ value.total|floatformat }}%;
+					 border: 1px solid red;
+
+				{% endif %}
+			{% endfor %}
+		}
+	{% endfor %}
+	th {
+		height: 20px;
+		font-size: 12px;
+		padding:0px
+	}
+
+	.graph-p{
+		height:20px;
+		margin: 0px;
+		padding:0px;
+		margin-bottom:0px;
+		border-top: 1px dashed lightgrey
+	}
+
+</style>
+<div class="card non-printable">
+	<div class="card-body">
+		<h4 class="card-title">Download Result</h4>
+		<button id="download-button" title="Download Result" onclick="window.print()" class="btn btn-primary"><i class="bi bi-download"></i></button>
+		<a onclick="window.history.back()" style="float:right" title="Go Back" class="btn btn-danger"><i class="bi bi-arrow-left-square"></i> </a>
+	</div>
+</div>
+
+<div id="download-result">
+        <div style="background-color:white;border:2px solid black;">
+                <div class="" style="background-color:#2b9356;color:white;font-family:cursive;border:1px solid black;border-bottom:1px solid black;height:135px">
+                        <div class="row">
+                                <div class="col-2">
+                                         <img style="width:100%;height:133px" {% if student.image %} src="{{ student.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} style>
+                                </div>
+
+                                <div class="col-8" style="padding:15px;color:white">
+                                        <h4 class="text-center" style="font-family:serif"><b>{{ general_setting.name|upper }}</b></h4>
+                                        <h6 class="text-center" style="font-size:14px;margin-top:10px"><b>...{{ general_setting.motto|title }}</b></h6>
+                                        <h6 class="text-center" style="">{{ general_setting.address|title }}</h6>
+                                        <p class="text-center" style="margin-bottom:10px;font-size:15px">{{ general_setting.mobile_1 }} | {{ general_setting.email|lower }} | https://daisesacademy.com.ng
+                                </div>
+
+                                <div class="col-2">
+                                         <image src="{{ general_setting.logo.url }}" style="width:100%;height:133px;border-radius:0px;" />
+                                </div>
+                        </div>
+                </div>
+
+		<div style="color:grey;height:22px;border-bottom:2px solid black;border-top:0px solid black;">
+			<p class="text-center" style="font-weight:bold">Cumulative Student Report Card For {{ session}} Session</p>
+		</div>
+
+
+		<div style="color:black;border-bottom:2px solid black;border-top:0px solid black;padding:1px">
+					<div style="height:55px;border:1px solid black;border-radius:3px;padding:5px;padding-bottom:0px" class="text-center">
+							<p><b class="student-info">
+									<span>Student Name: {{ student|title }}</span> |
+									<span>Admission ID: {{ student.registration_number|upper }}</span> |
+									<span>Class: {{ student.student_class|upper }} {{ student.class_section|upper }}</span> |
+									<span>Number in Class: {{ student.no_in_class }}</span> |
+									<span>Gender: {{ student.gender|title }}</span> |
+									<span>Attendance: </span>
+									<span>Days School Opened: </span>
+									{% if result_type != 'midterm' %}
+									|
+									<span>Term closed: {{ academic_info.date_school_closed|date }}</span> |
+									<span>Next Term Opens: {{ academic_info.next_term_open|date }}</span>
+									{% endif %}
+							</b></p>
+					</div>
+                </div>
+
+		<div style="height:20px;color:black;border-bottom:2px solid black;border-top:0px solid black;padding:1px">
+
+		</div>
+
+		<table class="" style="width:100%">
+			<thead>
+				<tr style="height:20px">
+					<th rowspan="2" style="vertical-align:middle;text-align:left;padding-left:10px;font-size:16px" width="150">Subjects</th>
+
+					<th width="60">1st Term</th>
+					<th width="60">2nd Term</th>
+					<th width="60">3rd Term</th>
+					<th width="60">Total</th>
+
+					<th width="60"  style="">Average</th>
+					<th width="60" rowspan="2" style="vertical-align:middle">Grade</th>
+					<th width="100" rowspan="2" style="vertical-align:middle">Remark</th>
+
+				</tr>
+
+				<tr>
+					<th>100</th>
+					<th>100</th>
+					<th>100</th>
+					<th>300 </th>
+					<th>100 </th>
+				</tr>
+			</thead>
+
+			<tbody>
+				{% for key, subject in subject_list.items %}
+					<tr>
+						<td style="text-align:left;font-family:courier"><b>{{ subject|title }}</b></td>
+						<td>
+						{% for first_key, value in cumulative_first.items %}
+							{% if key == first_key %}
+							{% if value|stringformat:"" == value|floatformat|stringformat:"" %} {{ value|floatformat }} {% else %} {{ value}} {% endif %}
+							{% endif %}
+						{% endfor %}
+						</td>
+						<td>
+						{% for second_key, value in cumulative_second.items %}
+							{% if key == second_key %}
+							{% if value|stringformat:"" == value|floatformat|stringformat:"" %} {{ value|floatformat }} {% else %} {{ value}} {% endif %}
+							{% endif %}
+						{% endfor %}
+						</td>
+						<td>
+						{% for third_key, value in cumulative_third.items %}
+							{% if key == third_key %}
+							{% if value|stringformat:"" == value|floatformat|stringformat:"" %} {{ value|floatformat }} {% else %} {{ value}} {% endif %}
+							{% endif %}
+						{% endfor %}
+						</td>
+
+						<td>
+						{% for total_key, value in cumulative_total.items %}
+							{% if key == total_key %}
+							{% if value|stringformat:"" == value|floatformat|stringformat:"" %} {{ value|floatformat }} {% else %} {{ value}} {% endif %}
+							{% endif %}
+						{% endfor %}
+						</td>
+
+						<td>
+						{% for average_key, value in cumulative_average.items %}
+							{% if key == average_key %}
+							{% if value|stringformat:"" == value|floatformat|stringformat:"" %} {{ value|floatformat }} {% else %} {{ value}} {% endif %}
+							{% endif %}
+						{% endfor %}
+						</td>
+
+						<td>
+						{% for grade_key, value in cumulative_grade.items %}
+							{% if key == grade_key %}
+							 {{ value|upper }}
+							{% endif %}
+						{% endfor %}
+						</td>
+
+						<td>
+						{% for remark_key, value in cumulative_remark.items %}
+							{% if key == remark_key %}
+							 {{ value|upper }}
+							{% endif %}
+						{% endfor %}
+						</td>
+
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		<div style="color:grey;height:20px;border:1px solid black;">
+			<p class="text-center student-summary" style="font-size:14px;font-family:sans serif">
+				<span>Total: <b>{{ total_score }}</b></span>
+				<span>Overall: <b>{{ term_average }}</b>%</span>
+				<span>Overall Grade: <b>{{ grade|upper }}</b></span>
+				<span>Overall Remark: <b>{{ remark|upper }}</b></span>
+			</p>
+		</div>
+
+		<div style="color:grey;border:1px solid black;padding:0px;height:25px">
+			<p class="text-center" style="padding:0px;height:20px;font-size:15px;font-family:Arial">
+				Grading: {% for grade in grade_list %} <span>{{ grade.min_mark|floatformat }} - {{ grade.max_mark|floatformat }} = {{ grade.remark|title }} {% if forloop.counter < grade_list|length %} | {% endif %}</span> {% endfor %}
+			</p>
+		</div>
+
+		<div>
+			<div id="columnChart" style="border:1px solid black;border-top:0px solid black"></div>
+		</div>
+
+
+	</div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  new ApexCharts(document.querySelector("#columnChart"), {
+	series: [{
+	  name: '1st Term',
+	  data: [{% for key, value in cumulative_first.items %} {{ value|floatformat }} {% if forloop.counter < cumulative_first.items|length %},{% endif %} {% endfor %}]
+	}, {
+	  name: '2nd Term',
+	  data: [{% for key, value in cumulative_second.items %} {{ value|floatformat }} {% if forloop.counter < cumulative_second.items|length %},{% endif %} {% endfor %}]
+	}, {
+	  name: '3rd Term',
+	  data: [{% for key, value in cumulative_third.items %} {{ value|floatformat }} {% if forloop.counter < cumulative_third.items|length %},{% endif %} {% endfor %}]
+	}],
+	chart: {
+	  type: 'bar',
+	  height: 220,
+	  toolbar: {
+	  	'show': false
+	  	}
+	},
+	plotOptions: {
+	  bar: {
+		horizontal: false,
+		columnWidth: '40%',
+		endingShape: 'rounded'
+	  },
+	},
+	dataLabels: {
+	  enabled: false
+	},
+	stroke: {
+	  show: true,
+	  width: 2,
+	  colors: ['transparent']
+	},
+	xaxis: {
+	  categories: [{% for key, value in subject_list.items %} '{{ value|title }}' {% if forloop.counter < subject_list.items|length %},{% endif %} {% endfor %}],
+	},
+	yaxis: {
+	  title: {
+
+	  }
+	},
+	fill: {
+	  opacity: 1
+	},
+	tooltip: {
+	  y: {
+		formatter: function(val) {
+		  return val
+		}
+	  }
+	}
+  }).render();
+});
+</script>
+
+<script src="{% static 'admin_dashboard/scripts/jquery.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+
+<script type="text/javascript">
+	$(document).on('click','#download-button', function(){
+
+    })
+
+</script>
+{% endblock %}

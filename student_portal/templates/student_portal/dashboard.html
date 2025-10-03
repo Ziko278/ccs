@@ -1,0 +1,112 @@
+{% extends 'student_portal/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block 'main' %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3">
+                <ul class="nav nav-tabs nav-tabs-bordered">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">BIO DATA</a>
+                    </li>
+                    
+                </ul>
+
+                <div class="tab-content pt-2">
+                    <div class="tab-pane fade show active profile-overview" id="profile-overview">
+
+                        <div class="col-12 grid-margin">
+                            <div class="card">
+                                <div class="card-body" style="padding:20px">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="card-description"> STUDENT INFORMATION </p>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <image {% if student.image %} src="{{ student.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} style="width:100px;height:100px;border-radius:5px;" />
+                                                    <p style="margin-top:5px;"><span class="text-center {% if student.status|lower == 'active' %} text-success {% else %} text-danger {% endif %} "> {{student.status|upper}} </span> </p>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <p>{{ student.surname|title }} {% if student.middle_name %} {{ student.middle_name|title }} {% endif %} {{ student.last_name|title }}</p>
+                                                    <p>{% if student.registration_number %} {{student.registration_number|upper}} {% else %} NO REGISTRATION NUMBER {% endif %}</p>
+                                                    <p>{{student.student_class|upper}} {{student.class_section|upper}} </p>
+                                                    <p>{{student.gender|title}} </p>
+                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="card-description"> PARENT INFORMATION </p>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <image {% if student.parent.image %} src="{{ student.parent.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} style="width:100px;height:100px;border-radius:5px;" />
+                                                    <p style="margin-top:5px;"><span class="text-center">{{student.relationship_with_parent|upper}} </span> </p>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <p>{{ student.parent.title|title }} {{ student.parent.surname|title }} {% if student.parent.middle_name %} {{ student.parent.middle_name|title }} {% endif %} {{ student.parent.last_name|title }}</p>
+                                                    <p>{% if student.parent.mobile %} {{student.parent.mobile|title}} {% else %} Mobile Not Provided {% endif %}</p>
+                                                    <p>{% if student.parent.email %} {{student.parent.email|title}} {% else %} Email Not Provided {% endif %}</p>
+                                                    <p>{% if student.parent.residential_address %} {{student.parent.residential_address|title}} {% else %} Address Not Provided {% endif %}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="accordion-item" style="margin-top:20px">
+                                        <h2 class="accordion-header" id="headingTwo">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                                <b>MORE INFORMATION</b>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                                            <div class="accordion-body">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <p class="card-title"> OTHER INFORMATION </p>
+                                                                <div class="row">
+                                                                    <div class="col-md-12">
+                                                                        <p>State of Origin : <i><b>{% if student.state %} {{ student.state|upper }} {% else %} Not Provided {% endif %}</b></i></p>
+                                                                        <p>L G A : <i><b>{% if student.lga %} {{ student.lga|upper }} {% else %} Not Provided {% endif %}</b></i></p>
+                                                                        <p>DOB : <i><b>{% if student.date_of_birth %} {{ student.date_of_birth }} {% else %} Not Provided {% endif %}</b></i></p>
+                                                                        <p>Email : <i><b>{% if student.email %} {{ student.email }} {% else %} Not Provided {% endif %}</b></i></p>
+                                                                        <p>Mobile : <i><b>{% if student.mobile %} {{ student.mobile }} {% else %} Not Provided {% endif %}</b></i></p>
+                                                                        <p>Religion : <i><b>{% if student.religion %} {{student.religion|upper }} {% else %} Not Provided {% endif %}</b></i></p>
+                                                                        <p>Blood Group : <i><b>{% if student.blood_group %} {{student.blood_group|upper }} {% else %} Not Provided {% endif %}</b></i></p>
+                                                                        <p>Genotype : <i><b>{% if student.genotype %} {{student.genotype|upper }} {% else %} Not Provided {% endif %}</b></i></p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <p class="card-title"> UTILITY </p>
+                                                                <div class="row">
+                                                                    <div class="col-md-12">
+                                                                        <p>Border : <i><b>{% if student.is_boarding %} Yes {% else %} No {% endif %}</b></i></p>
+                                                                        <p>Hostel : <i><b>{% if student.hostel %} {{ student.hostel|upper }} {% else %} ---------- {% endif %}</b></i></p>
+                                                                        <p>Room : <i><b>{% if student.hostel_room %} {{ student.hostel_room|upper }} {% else %} ---------- {% endif %}</b></i></p>
+                                                                        <p>Bed : <i><b>{% if student.hostel_bed %} {{ student.hostel_bed|upper }} {% else %} ---------- {% endif %}</b></i></p>
+                                                                        <p>Transport : <i><b>{% if student.use_transport %} Yes {% else %} No {% endif %}</b></i></p>
+                                                                        <p>Route : <i><b>{% if student.transport_route %} {{ student.transport_route|upper }} {% else %} ---------- {% endif %}</b></i></p>
+                                                                        <p>Vehicle : <i><b>{% if student.transport_vehicle %} {{ student.transport_vehicle|upper }} {% else %} ---------- {% endif %}</b></i></p>
+                                                                        <p>Driver : <i><b>{% if student.transport_vehicle.driver %} {{ student.transport_vehicle.driver|upper }} {% else %} ---------- {% endif %}</b></i></p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="col-12">
+    <div class="card recent-sales overflow-auto">
+
+        <div class="card-body">
+            <h5 class="card-title">RESULT VIEW: <i> {{ subject|upper }} RESULT FOR {{ student_class|upper }} {{ class_section|upper }} {{ session }} SESSION {{ term|upper }}</i></h5>
+            {% if full_list %}
+            <table class="table table-borderless datatable">
+                <thead>
+                <tr>
+                    <th> Image  </th>
+                    <th> Fullname </th>
+                    {% for field in result_field_list %} {% if field.field_type == 'ca' %} <th> {{ field|upper }}  </th> {% endif %} {% endfor %}
+                    {% if result_field_list|length > 0 %} <th> Total CA  </th> {% endif %}
+                    {% for field in result_field_list %} {% if field.field_type == 'exam' %} <th> {{ field|upper }}  </th> {% endif %} {% endfor %}
+                    <th> Total  </th>
+                    <th> Grade </th>
+                    <th> Remark  </th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for key, value in full_list.items %}
+                    <input type="hidden" name="students[]" value="{{value.student.id}}" />
+                    <tr>
+                        <td> <img class="rounded-circle" style="width:50px;height:50px" {% if value.student.image %} src="{{ value.student.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %}  /> </td>
+                        <td> <p style="width:200px">{{ value.student.surname|title }} {% if value.student.middle_name %} {{ value.student.middle_name|title }} {% endif %} {{ value.student.last_name|title }} </p></td>
+                        {% for field in result_field_list %}
+                            {% if field.field_type == 'ca' %}
+                                {% for inner_field, inner_value in value.result.items %}
+                                    {% if inner_field|lower == field|lower %}
+                                        <td> <p>  {{ inner_value }} </p></td>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if result_field_list|length > 0 %}
+                            {% for inner_field, inner_value in value.result.items %}
+                                {% if inner_field|lower == 'total ca' %}
+                                    <td> <p>  {{ inner_value }} </p></td>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                        {% for field in result_field_list %}
+                            {% if field.field_type == 'exam' %}
+                                {% for inner_field, inner_value in value.result.items %}
+                                    {% if inner_field|lower == field|lower %}
+                                        <td> <p>  {{ inner_value }} </p></td>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                        {% for subject_pk, stat in result_stat.result_statistic.items %}
+                            {% if subject_pk == subject.id|stringformat:"i" %}
+                                {% if stat.has_exam %}
+                                    <td> <p> {% if value.result.total %} {{ value.result.total}} {% endif %}  </p></td>
+                                    <td> <p> {% if value.result.grade %} {{ value.result.grade}} {% endif %} </p> </td>
+                                    <td> <p> {% if value.result.remark %} {{ value.result.remark}} {% endif %}  </p></td>
+                                {% else %}
+                                    <td> <p> </p></td>
+                                    <td> <p>  </p> </td>
+                                    <td> <p>  </p></td>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                {% else %}
+
+                </tbody>
+            </table>
+            <h3 class="text-center">THERE IS CURRENTLY NO STUDENT IN THIS CLASS</h3>
+            {% endif %}
+        </div>
+
+        <div style="padding:20px"><p>
+            {% for subject_pk, stat in result_stat.result_statistic.items %}
+                {% if subject_pk == subject.id|stringformat:"i" %}
+
+                    Highest Score: <b>{{ stat.highest_in_class }}</b>
+                    Lowest Score: <b>{{ stat.lowest_in_class }}</b>
+                    Average Score: <b>{{ stat.average_score }}</b>
+                    Total Mark: <b>{{ stat.total_mark_obtained }}</b>
+                    Number of Students: <b>{{ stat.number_of_students }}</b>
+                    Uploaded: <b>{{ stat.updated_at }}</b>  <b> {% if stat.updated_by == 'superadmin' %}  {% else %} by  <a href="{% url 'staff_detail' stat.updated_by_id %}"> {{ stat.updated_by }}</a> {% endif %}</b>
+                {% endif %}
+            {% endfor %}
+
+
+            </p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

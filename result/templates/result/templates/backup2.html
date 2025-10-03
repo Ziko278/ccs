@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Result Template</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            font-size: 14px;
+            color: #333;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header, .performance-summary, .grade-analysis, .remarks-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .header div, .performance-summary div, .grade-analysis div {
+            flex: 1;
+            padding: 5px;
+        }
+        .header .class, .header .student-average, .header .school-resumes {
+            text-align: center;
+            font-weight: bold;
+        }
+        .header .school-resumes {
+            text-align: right;
+            font-weight: normal;
+        }
+        .section-title {
+            background-color: #f2f2f2;
+            padding: 5px;
+            font-weight: bold;
+            text-align: center;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 13px;
+        }
+        table th {
+            background-color: #f9f9f9;
+            font-weight: bold;
+            text-align: center;
+        }
+        table.main-table th:nth-child(1),
+        table.main-table td:nth-child(1) { width: 5%; } /* SUBJCTS */
+        table.main-table th:nth-child(2),
+        table.main-table td:nth-child(2) { width: 25%; text-align: left; padding-left: 10px;} /* SUBJECTS */
+        table.main-table th:nth-child(3),
+        table.main-table td:nth-child(3) { width: 8%; } /* 1ST CAT (30) */
+        table.main-table th:nth-child(4),
+        table.main-table td:nth-child(4) { width: 8%; } /* 2ND CAT (30) */
+        table.main-table th:nth-child(5),
+        table.main-table td:nth-child(5) { width: 8%; } /* EXAM (40) */
+        table.main-table th:nth-child(6),
+        table.main-table td:nth-child(6) { width: 8%; } /* TOTAL (100) */
+        table.main-table th:nth-child(7),
+        table.main-table td:nth-child(7) { width: 8%; } /* SUBJECT POSITION */
+        table.main-table th:nth-child(8),
+        table.main-table td:nth-child(8) { width: 8%; } /* SUBJECT AVERAGE */
+        table.main-table th:nth-child(9),
+        table.main-table td:nth-child(9) { width: 5%; } /* GRADE */
+        table.main-table th:nth-child(10),
+        table.main-table td:nth-child(10) { width: 5%; } /* AVERAGE */
+
+        .domain-table th, .domain-table td {
+            padding: 6px;
+            text-align: left;
+        }
+        .domain-table th:nth-child(1) { width: 50%; }
+        .domain-table th:nth-child(2),
+        .domain-table th:nth-child(3),
+        .domain-table th:nth-child(4),
+        .domain-table th:nth-child(5) { width: 10%; text-align: center;}
+        .domain-table td:nth-child(2),
+        .domain-table td:nth-child(3),
+        .domain-table td:nth-child(4),
+        .domain-table td:nth-child(5) { text-align: center;}
+
+        .check-mark {
+            font-size: 16px;
+            color: green;
+        }
+        .performance-summary, .grade-analysis {
+            border-bottom: none;
+            padding: 0;
+            margin-bottom: 0;
+        }
+        .summary-box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .summary-left, .summary-right {
+            flex: 1;
+            padding-right: 10px;
+        }
+        .summary-right {
+            padding-left: 10px;
+            border-left: 1px solid #eee;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .summary-row span:first-child {
+            font-weight: bold;
+        }
+        .grade-scale {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        .grade-scale h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .grade-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .grade-color-box {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+        }
+        .grade-A { background-color: #008000; } /* Dark Green */
+        .grade-B { background-color: #ADD8E6; } /* Light Blue - assuming this based on image */
+        .grade-C { background-color: #FFFF00; } /* Yellow */
+        .grade-D { background-color: #FFA500; } /* Orange */
+        .grade-F { background-color: #FF0000; } /* Red */
+
+        .rating-index {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        .rating-index h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .rating-index ol {
+            margin: 0;
+            padding-left: 20px;
+            list-style-type: decimal;
+        }
+        .rating-index li {
+            margin-bottom: 5px;
+        }
+
+        .chart-section {
+            margin-top: 20px;
+            display: flex;
+            align-items: flex-end;
+            position: relative;
+            height: 200px;
+            border-bottom: 1px solid #ccc;
+            border-left: 1px solid #ccc;
+            padding-left: 30px;
+        }
+        .chart-y-axis {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 100%;
+            width: 30px;
+            display: flex;
+            flex-direction: column-reverse;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+        .chart-y-axis div {
+            height: 20px; /* Adjust based on max height and number of labels */
+            position: relative;
+            text-align: right;
+            padding-right: 5px;
+        }
+        .chart-y-axis div::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            width: 5px;
+            height: 1px;
+            background-color: #ccc;
+        }
+        .chart-bar-container {
+            display: flex;
+            align-items: flex-end;
+            flex-grow: 1;
+            padding-bottom: 5px;
+        }
+        .bar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 5px;
+        }
+        .bar {
+            width: 40px;
+            background-color: #66CCFF; /* Default bar color */
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #333;
+            font-weight: bold;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+            border: 1px solid #999;
+            box-sizing: border-box;
+        }
+        .bar span {
+            position: absolute;
+            top: -15px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .bar-label {
+            margin-top: 5px;
+            font-size: 12px;
+            text-align: center;
+        }
+        .bar.maths { height: 66px; background-color: #66CCFF; } /* 66.00 */
+        .bar.igbo { height: 55px; background-color: #FFA500; } /* 55.20 - Orange */
+        .bar.hist { height: 66.53px; background-color: #66CCFF; } /* 66.53 */
+        .bar.crs { height: 90.10px; background-color: #008000; } /* 90.10 - Dark Green */
+        .bar.b_st { height: 82.88px; background-color: #008000; } /* 82.88 - Dark Green */
+        .bar.fre { height: 67.40px; background-color: #66CCFF; } /* 67.40 */
+        .bar.nve { height: 75.15px; background-color: #66CCFF; } /* 75.15 */
+        .bar.eng { height: 66.65px; background-color: #66CCFF; } /* 66.65 */
+        .bar.bst { height: 68.17px; background-color: #66CCFF; } /* 68.17 */
+        .bar.cca { height: 83.17px; background-color: #008000; } /* 83.17 - Dark Green */
+        .bar.pov { height: 77.34px; background-color: #66CCFF; } /* 77.34 */
+
+        .remarks-section {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            font-size: 13px;
+        }
+        .remarks-section div {
+            flex: none;
+        }
+        .remarks-section .designation {
+            flex: 1;
+            text-align: left;
+        }
+        .remarks-section .signature {
+            flex: 1;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="class">CLASS: JS1 DIAMOND</div>
+            <div class="student-average">STUDENT AVERAGE: 72.60</div>
+            <div class="school-resumes">SCHOOL RESUMES: 03/05/2025</div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2">SUBJCTS</th>
+                    <th rowspan="2">SUBJECTS</th>
+                    <th colspan="4"></th>
+                    <th rowspan="2">SUBJECT POSITION</th>
+                    <th rowspan="2">SUBJECT AVERAGE</th>
+                    <th rowspan="2">GRADE</th>
+                    <th rowspan="2">AVERAGE</th>
+                </tr>
+                <tr>
+                    <th>1ST CAT (30)</th>
+                    <th>2ND CAT (30)</th>
+                    <th>EXAM (40)</th>
+                    <th>TOTAL (100)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Mathematics</td>
+                    <td>26.00</td>
+                    <td>18.00</td>
+                    <td>22.00</td>
+                    <td>66.00</td>
+                    <td>13th</td>
+                    <td>80.71</td>
+                    <td>C</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Igbo Language</td>
+                    <td>18.03</td>
+                    <td>21.00</td>
+                    <td>16.17</td>
+                    <td>55.20</td>
+                    <td>14th</td>
+                    <td>77.92</td>
+                    <td>P</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>History</td>
+                    <td>23.60</td>
+                    <td>19.85</td>
+                    <td>23.08</td>
+                    <td>66.53</td>
+                    <td>8th</td>
+                    <td>68.52</td>
+                    <td>C</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Christian Religious Studies</td>
+                    <td>26.10</td>
+                    <td>26.80</td>
+                    <td>37.20</td>
+                    <td>90.10</td>
+                    <td>12th</td>
+                    <td>91.73</td>
+                    <td>A</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Business Studies</td>
+                    <td>23.08</td>
+                    <td>27.50</td>
+                    <td>32.30</td>
+                    <td>82.88</td>
+                    <td>9th</td>
+                    <td>82.22</td>
+                    <td>A</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>French Language</td>
+                    <td>23.00</td>
+                    <td>23.00</td>
+                    <td>21.40</td>
+                    <td>67.40</td>
+                    <td>10th</td>
+                    <td>71.49</td>
+                    <td>C</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>National Values Education</td>
+                    <td>23.73</td>
+                    <td>22.80</td>
+                    <td>28.62</td>
+                    <td>75.15</td>
+                    <td>11th</td>
+                    <td>77.67</td>
+                    <td>B</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>English Language</td>
+                    <td>22.80</td>
+                    <td>20.50</td>
+                    <td>23.35</td>
+                    <td>66.65</td>
+                    <td>10th</td>
+                    <td>68.18</td>
+                    <td>C</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>9</td>
+                    <td>Basic Science and Technology</td>
+                    <td>23.34</td>
+                    <td>21.56</td>
+                    <td>23.27</td>
+                    <td>68.17</td>
+                    <td>10th</td>
+                    <td>70.54</td>
+                    <td>C</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td>Cultural and Creative Arts</td>
+                    <td>25.67</td>
+                    <td>24.33</td>
+                    <td>33.17</td>
+                    <td>83.17</td>
+                    <td>9th</td>
+                    <td>84.12</td>
+                    <td>A</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>11</td>
+                    <td>Pre-Vocational Studies</td>
+                    <td>25.85</td>
+                    <td>22.15</td>
+                    <td>29.34</td>
+                    <td>77.34</td>
+                    <td>8th</td>
+                    <td>78.12</td>
+                    <td>B</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="display: flex;">
+            <div style="flex: 1; margin-right: 10px;">
+                <div class="section-title">PERFORMANCE SUMMARY</div>
+                <div class="summary-box">
+                    <div class="summary-left">
+                        <div class="summary-row"><span>TOTAL MARK OBTAINED:</span> <span>798.59</span></div>
+                        <div class="summary-row"><span>TOTAL MARK OBTAINABLE:</span> <span>1100</span></div>
+                        <div class="summary-row"><span>TOTAL SUBJECTS:</span> <span>11</span></div>
+                    </div>
+                </div>
+            </div>
+            <div style="flex: 1; margin-left: 10px;">
+                <div class="section-title">GRADE ANALYSIS</div>
+                <div class="summary-box">
+                    <div class="summary-right">
+                        <div class="summary-row"><span>A:</span> <span>3</span></div>
+                        <div class="summary-row"><span>B:</span> <span>2</span></div>
+                        <div class="summary-row"><span>C:</span> <span>5</span></div>
+                        <div class="summary-row"><span>P:</span> <span>1</span></div>
+                        <div class="summary-row"><span>F:</span> <span>0</span></div>
+                    </div>
+                </div>
+            </div>
+            <div style="flex: 1; margin-left: 10px;">
+                <div class="section-title">AFFECTIVE DOMAIN</div>
+                <table class="domain-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>5</th>
+                            <th>4</th>
+                            <th>3</th>
+                            <th>2</th>
+                            <th>1</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Attentiveness</td><td></td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td></tr>
+                        <tr><td>Honesty</td><td></td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td></tr>
+                        <tr><td>Neatness</td><td></td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td></tr>
+                        <tr><td>Politeness</td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td><td></td></tr>
+                        <tr><td>Punctuality/Assembly</td><td></td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td></tr>
+                        <tr><td>Self-Control/Calmness</td><td></td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td></tr>
+                        <tr><td>Obedience</td><td></td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td></tr>
+                        <tr><td>Reliability</td><td></td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td></tr>
+                        <tr><td>Sense of Responsibility</td><td></td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td></tr>
+                        <tr><td>Relationship with others</td><td></td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td></tr>
+                    </tbody>
+                </table>
+                <div class="section-title">PSYCHOMOTOR DOMAIN</div>
+                <table class="domain-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>5</th>
+                            <th>4</th>
+                            <th>3</th>
+                            <th>2</th>
+                            <th>1</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Handling of Tools</td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td><td></td></tr>
+                        <tr><td>Drawing/Painting</td><td></td><td><span class="check-mark">&#10003;</span></td><td></td><td></td><td></td></tr>
+                        <tr><td>Handwriting</td><td></td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td></tr>
+                        <tr><td>Public Speaking</td><td></td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td></tr>
+                        <tr><td>Speech Fluency</td><td></td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td></tr>
+                        <tr><td>Sports/Games</td><td></td><td></td><td></td><td><span class="check-mark">&#10003;</span></td><td></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div style="display: flex; margin-top: 20px;">
+            <div style="flex: 1; margin-right: 10px;">
+                <div class="rating-index">
+                    <h4>RATING INDEX</h4>
+                    <ol>
+                        <li>Has no regard for observable traits.</li>
+                        <li>Shows mental regard for observable traits.</li>
+                        <li>Maintains acceptable level of observable traits.</li>
+                        <li>Maintains a high level of observable traits.</li>
+                        <li>Maintains an excellent degree of observable traits.</li>
+                    </ol>
+                </div>
+            </div>
+            <div style="flex: 1; margin-left: 10px;">
+                <div class="grade-scale">
+                    <h4>GRADE SCALE</h4>
+                    <div class="grade-item"><div class="grade-color-box grade-A"></div>A: (80 - 100)</div>
+                    <div class="grade-item"><div class="grade-color-box grade-B"></div>B: (70 - 79.999)</div>
+                    <div class="grade-item"><div class="grade-color-box grade-C"></div>C: (60 - 69.999)</div>
+                    <div class="grade-item"><div class="grade-color-box grade-D"></div>P: (50 - 59.999)</div>
+                    <div class="grade-item"><div class="grade-color-box grade-F"></div>F: (0 - 49.999)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-y-axis">
+                <div>100-</div>
+                <div>90-</div>
+                <div>80-</div>
+                <div>70-</div>
+                <div>60-</div>
+                <div>50-</div>
+                <div>40-</div>
+                <div>30-</div>
+                <div>20-</div>
+                <div>10-</div>
+                <div>0-</div>
+            </div>
+            <div class="chart-bar-container">
+                <div class="bar-wrapper">
+                    <div class="bar maths" style="height: 66px;"></div>
+                    <div class="bar-label">Maths</div>
+                </div>
+                <div class="bar-wrapper">
+                    <div class="bar igbo" style="height: 55.2px; background-color: #FFA500;"></div>
+                    <div class="bar-label">Igbo</div>
+                </div>
+                <div class="bar-wrapper">
+                    <div class="bar hist" style="height: 66.53px;"></div>
+                    <div class="bar-label">Hist</div>
+                </div>
+                <div class="bar-wrapper">
+                    <div class="bar crs" style="height: 90.10px; background-color: #008000;"></div>
+                    <div class="bar-label">C.rs</div>
+                </div>
+                <div class="bar-wrapper">
+                    <div class="bar b_st" style="height: 82.88px; background-color: #008000;"></div>
+                    <div class="bar-label">B.st</div>
+                </div>
+                <div class="bar-wrapper">
+                    <div class="bar fre" style="height: 67.40px;"></div>
+                    <div class="bar-label">Fre</div>
+                </div>
+                <div class="bar-wrapper">
+                    <div class="bar nve" style="height: 75.15px;"></div>
+                    <div class="bar-label">Nve</div>
+                </div>
+                <div class="bar-wrapper">
+                    <div class="bar eng" style="height: 66.65px;"></div>
+                    <div class="bar-label">Eng</div>
+                </div>
+                <div class="bar-wrapper">
+                    <div class="bar bst" style="height: 68.17px;"></div>
+                    <div class="bar-label">Bst</div>
+                </div>
+                <div class="bar-wrapper">
+                    <div class="bar cca" style="height: 83.17px; background-color: #008000;"></div>
+                    <div class="bar-label">Cca</div>
+                </div>
+                <div class="bar-wrapper">
+                    <div class="bar pov" style="height: 77.34px;"></div>
+                    <div class="bar-label">Pov</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="remarks-section">
+            <div class="designation">DESIGNATION: </div>
+            <div class="name">NAME: </div>
+            <div class="remarks">REMARKS: </div>
+            <div class="signature">SIGNATURE/DATE: </div>
+        </div>
+    </div>
+</body>
+</html>

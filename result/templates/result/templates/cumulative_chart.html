@@ -1,0 +1,90 @@
+{% extends 'layout.html' %}
+{% block 'page' %} RESULT {%endblock %}
+{% block 'subpage' %} CUMULATIVE RESULT CHART  {%endblock %}
+{% block 'main' %}
+{% load static %}
+<div class="col-lg-12">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">CUMMULATIVE RESULT CHART OF {{ student.surname|upper }} {% if student.middle_name %} {{ student.middle_name|upper }} {% endif %} {{ student.last_name|upper }} FOR {{ session }} SESSION</h5>
+            <div id="columnChart"></div>
+            <input type="hidden" id="subject_list" value='{% for key, value in subject_list.items %} {% if not forloop.last %} {{ value|upper }}, {% else %} {{ value|upper }} {% endif %} {% endfor %} '>
+            <input type="hidden" id="first_list" value='{% for key, value in cumulative_first.items %} {% if not forloop.last %} {{ value|upper }}, {% else %} {{ value|upper }} {% endif %} {% endfor %} '>
+            <input type="hidden" id="second_list" value='{% for key, value in cumulative_second.items %} {% if not forloop.last %} {{ value|upper }}, {% else %} {{ value|upper }} {% endif %} {% endfor %} '>
+            <input type="hidden" id="third_list" value='{% for key, value in cumulative_third.items %} {% if not forloop.last %} {{ value|upper }}, {% else %} {{ value|upper }} {% endif %} {% endfor %} '>
+
+             <script src="{% static 'scripts/jquery.js' %}"></script>
+          <script>
+          $(document).ready(function(){
+                subjects = $('#subject_list').val()
+                subject_list = subjects.split(",")
+
+                first = $('#first_list').val()
+                first_list = first.split(",")
+
+                second = $('#second_list').val()
+                second_list = second.split(",")
+
+                third = $('#third_list').val()
+                third_list = third.split(",")
+          })
+
+          document.addEventListener("DOMContentLoaded", () => {
+              new ApexCharts(document.querySelector("#columnChart"), {
+                series: [{
+                  name: '1st Term',
+                  data: first_list
+                }, {
+                  name: '2nd Term',
+                  data: second_list
+                }, {
+                  name: '3rd Term',
+                  data: third_list
+                }],
+                chart: {
+                  type: 'bar',
+                  height: 350
+                },
+                plotOptions: {
+                  bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    endingShape: 'rounded'
+                  },
+                },
+                dataLabels: {
+                  enabled: false
+                },
+                stroke: {
+                  show: true,
+                  width: 2,
+                  colors: ['transparent']
+                },
+                xaxis: {
+                  categories: subject_list,
+                },
+                yaxis: {
+                  title: {
+                    text: 'Marks Obtained'
+                  }
+                },
+                fill: {
+                  opacity: 1
+                },
+                tooltip: {
+                  y: {
+                    formatter: function(val) {
+                      return + val + " Marks"
+                    }
+                  }
+                }
+              }).render();
+            });
+          </script>
+
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

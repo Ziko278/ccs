@@ -1,0 +1,62 @@
+{% extends 'admin_layout.html' %}
+{% load static %}
+{% block extra_script %}
+<!-- ======= EXTRA SCRIPT GOES IN HERE ======= -->
+<script src="{% static 'sparrow_admin/scripts/custom/result/print.js' %}"></script>
+{% endblock %}
+{% block 'main_content' %}
+<style>
+	td{
+		border:1px solid black;
+	}
+
+</style>
+<div class="col-sm-12 col-md-12 col-lg-12" style="color:black">
+    <section class="panel">
+        <div style='width:100%;background:white;min-height:1000px;padding:50px 100px;'>
+			<div style='border:7px solid black;height:900px;'>
+				<div class="row">
+					<div class="col-md-2">
+						<img src="{% static 'sparrow_admin/images/logo.png' %}" style="margin-left:30px;margin-top:10px" />
+					</div>
+					<div class="col-md-10"><br />
+						<h2 class="text-center">AL-YAQEEN ISLAMMIYA COLLEGE</h2>
+						<h4 style='' class='text-center'>Al-yaqeen Center For Arabic And  Islamic Studies (Islammiya)</h4>
+                		<h3 class='text-center'><b>{{ academic_setting.term }} REPORT</b></h3>
+					</div>
+            	</div>
+
+				<table style='margin:30px 10px;color:black'>
+					<tbody>
+					<tr>
+						<td style='width:150px;padding:0px 10px;'><b>NAME</b></td><td style='width:100%;padding-left:10px;'> {{ student.surname|title }} {% if student.middle_name %} {{ student.middle_name|title }} {% endif %} {{ student.last_name|title }}</td></tr>
+					<tr>
+						<td style='width:150px;padding:0px 10px;'><b>CLASS</b></td><td style='padding-left:10px;'>{{ student.student_class|title }}</td></tr>
+					<tr>
+						<td style='width:150px;padding:0px 10px;'><b>TERM</b></td><td style='padding-left:10px;'>{{ academic_setting.term }}</td></tr>
+					<tr>
+						<td style='width:150px;padding:0px 10px;'><b>SESSION</b></td><td style='padding-left:10px;'>{{ academic_setting.session }}</td></tr>
+
+					</tbody>
+				</table>
+
+				<table style='margin:2%;width:96%;color:black'>
+						<thead>
+							<tr>
+								<td><b>Subjects</b></td>
+								<td><b>Subject</b></td>
+								<td><b>Total</b></td>
+								<td><b>Exam</b></td>
+								<td><b>Highest</b></td>
+								<td><b>Lowest</b></td>
+								<td><b>Grade</b></td>
+								<td><b>Remark</b></td>
+							</tr>
+						</thead>
+				</table>
+			</div>
+        </div>
+    </section>
+</div>
+
+{% endblock %}

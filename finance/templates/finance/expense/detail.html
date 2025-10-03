@@ -1,0 +1,160 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block 'main' %}
+<div class="card">
+    <div class="card-body ">
+        <h5 class="card-title">Actions</h5>
+        <a title="Edit Expense" href="{% url 'expense_edit' expense.id %}" class="btn btn-outline-warning"><i class="bi bi-pencil-square"></i></a>
+        <a title="Delete Expense" href="{% url 'expense_delete' expense.id %}" class="btn btn-outline-danger"><i class="bi bi-trash"></i></a>
+        <a title="View All Expenses" href="{% url 'expense_index' %}?session={{academic_info.session.id}}&term={{academic_info.term}}" class="btn btn-outline-primary"><i class="bi bi-menu-down"></i></a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3">
+                <ul class="nav nav-tabs nav-tabs-bordered">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Expense Detail</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content pt-2">
+                    <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                        <h5 class="card-title">Expense Details</h5>
+                        <div class="row">
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-cash-coin"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ expense.amount|intcomma }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Amount</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="ri-code-box-line"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ expense.category|title }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Category</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="ri-code-box-line"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ expense.expense_type|title }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Type</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-hash"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6 style="font-size:16px">{{ expense.invoice_number|upper }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Invoice Number</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-calendar2-week-fill"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ expense.date|date }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Transaction Date</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-question-octagon"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ expense.session|title }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Academic Session</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-question-circle"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ expense.term|title}}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Term</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p><span class="card-title">Extra Info:</span> <b>{{ expense.description }}</b></p>
+                            <p><span class="card-title">Proof of Fund:</span> <b>{% if expense.expense_proof %} <a href="{{ expense.expense_proof.url }}" target="_blank">View</a> {% endif %}</b></p>
+                            <p><i>This expense was recorded by {{ expense.user|lower }} at {{ expense.created_at|date }} {% if expense.updated_by %} and updated by {{ expense.updated_by|lower }} at {{ expense.updated_at|date }} {% endif %}</i></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{%endblock %}

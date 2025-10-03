@@ -1,0 +1,21 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+<div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Delete Lesson Note</h4>
+            <p>Class: <i>{{lesson_note.title|upper }}</i></p>
+
+            <p>This Lesson Note will be permanently deleted.</p>
+
+            <form style="display:inline" method="post">
+                {% csrf_token %}
+
+                <button class="btn btn-success">Proceed</button>
+            </form>
+            <a onclick="window.history.back()" class="btn btn-danger"> Cancel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

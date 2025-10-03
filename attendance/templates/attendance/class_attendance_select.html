@@ -1,0 +1,59 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="row">
+    <div class="col-12 grid-margin">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">SELECT CLASS TO TAKE ATTENDANCE</h4>
+                {% if not class_list %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    It Seem you are not a form teacher of any class, so you cannot take class attendance
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+               <form method="POST" class="form-sample" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <div class="row">
+                      <div class="col-md-6">
+                          <div class="form-group row">
+                              <label class="col-12 col-form-label">Select a Class</label>
+                              <div class="col-md-12">
+                                  <select name="class" class="form-control" id="id_student_class" required>
+                                      <option value="">-------------------</option>
+                                      {% for class in class_list %}
+                                      <option value="{{class.id}}">{{class|upper}}</option>
+                                      {% endfor %}
+                                  </select>
+                              </div>
+                          </div>
+                      </div>
+
+                      <div class="col-md-6">
+                          <div class="form-group row">
+                              <label class="col-12 col-form-label">Date</label>
+                              <div class="col-md-12">
+                                  <input type="date" class="form-control" value="07-06-23" required name="date">
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+
+                  <div class="row">
+                      <div class="col-md-6">
+                          <div class="form-group row">
+                              <div class="col-sm-12" style="float:right">
+                                  <br />
+                                  <button style="width:150px;margin:10px" class="btn btn-success btn-rounded">Proceed</button>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+               </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="row">
+  <div class="col-12 grid-margin">
+    <div class="card">
+      <div class="card-body">
+          {% if is_update %}
+          <h4 class="card-title">RESULT UPDATE: <i> {{ subject|upper }} FOR {{ class|upper }} {{ section|upper }} ( {{ academic_setting.session }} session, {{ academic_setting.term|upper }} ) <span style="float:right">{% now "" %}</span> </i></h4>
+          {% else %}
+              <h4 class="card-title">RESULT UPLOAD: <i> {{ subject|upper }} FOR {{ class|upper }} {{ section|upper }} ( {{ academic_setting.session }} session, {{ academic_setting.term|upper }} ) <span style="float:right">{% now "" %}</span> </i></h4>
+          {% endif %}
+          <form method="POST" class="form-sample" enctype="multipart/form-data">
+          {% csrf_token %}
+              <input type="hidden" name="user" value="{{user}}" />
+              <input type="hidden" name="subject" value="{{subject.id}}" />
+              <input type="hidden" name="student_class" value="{{class.id}}" />
+              <input type="hidden" name="class_section" value="{{section.id}}" />
+              {% if is_update %}
+              <input type="hidden" name="session" value="{{session_pk}}" />
+              <input type="hidden" name="term" value="{{term}}" />
+              {% else %}
+              <input type="hidden" name="session" value="{{academic_setting.session.id}}" />
+              <input type="hidden" name="term" value="{{academic_setting.term}}" />
+              {% endif %}
+          {% if full_list %}
+
+          <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th> Image  </th>
+                            <th style="width:200px"> Fullname </th>
+                            <th class="text-center"> Registration No </th>
+                            {% for field in result_field_list %} <th> {{ field|upper }}  </th> {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    {% for key, value in full_list.items %}
+                    <input type="hidden" name="students[]" value="{{value.student.id}}" />
+                        <tr>
+                            <td> <img class="rounded-circle" style="width:50px;height:50px" {% if value.student.image %} src="{{ value.student.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %}  /> </td>
+                            <td style="width:200px"> <p style="width:200px"> {{ value.student|title }} </p></td>
+                            <td  class="text-center"> {{ value.student.registration_number|upper }} </td>
+
+                             {% for field in result_field_list %}
+                             <td><input {% if not field in result_setting.current_result_upload.all %} readonly {% endif %}  {% for inner_field, inner_value in value.result.items %} {% if inner_field|lower == field|lower %} value="{{ inner_value }}" {% endif %} {% endfor %} style="width:70px" type="number" max="{{field.max_mark}}" min="0" {% if value.result.exam %} value="{{ value.result.exam}}" {% endif %}  step=".01" name="{{field.name}}[]" class="form-control"> </td>
+                            {% endfor %}
+
+                        </tr>
+
+                    {% endfor %}
+                    </tbody>
+                </table>
+          </div>
+          {% else %}
+            <br /><br />
+            <h3 class="text-center">THERE IS CURRENTLY NO STUDENT IN THIS CLASS</h3>
+          {% endif %}
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group row">
+                <label class="col-sm-3 col-form-label"></label>
+                <div class="col-sm-9">
+
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group row">
+                <div class="col-sm-12" style="float:left">
+                  {% if full_list %} <button style="width:150px;margin:10px" class="btn btn-primary btn-rounded">Upload Result</button> {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

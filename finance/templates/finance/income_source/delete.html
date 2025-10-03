@@ -1,0 +1,25 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+<div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Delete Income Source</h4>
+            <p>Source: <i>{{income_source|upper }}</i></p>
+
+            <p>The income source will be permanently deleted.</p>
+            {% if income_source.no_of_incomes > 0 %}
+                <p>{{ income_source.no_of_incomes }} income{{income_source.no_of_incomes|pluralize }} from this source will be deleted</p>
+            {% else %}
+                <p>There is currently no income from this source.</p>
+            {% endif %}
+            <form style="display:inline" method="post">
+                {% csrf_token %}
+
+                <button class="btn btn-success">Proceed</button>
+            </form>
+            <a class="btn btn-danger" href="{% url 'income_source_index' %}"> Cancel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

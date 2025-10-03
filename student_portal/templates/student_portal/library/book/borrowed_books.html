@@ -1,0 +1,90 @@
+{% extends 'student_portal/layout.html' %}
+{% block 'main' %}
+{% load static %}
+{% load humanize %}
+
+<div class="col-12">
+    <div class="card recent-sales overflow-auto">
+
+        <div class="card-body">
+            <h5 class="card-title">My Borrowed Books
+            </h5>
+            {% if form.errors %}
+                <h5 class="text-danger">{{form.errors}}</h5>
+            {% endif %}
+            <table class="table table-borderless datatable">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Book</th>
+                    <th scope="col">Copy</th>
+                    <th scope="col">Borrower</th>
+                    <th>Due Date</th>
+                    <th>Charge</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if book_list %}
+                {% for book_borrow in book_list %}
+                <tr>
+                    <th scope="row"><a href="#">{{ forloop.counter }}</a></th>
+                    <td>{{ book_borrow.book }}</td>
+                    <td>{{ book_borrow.book.copy_id|upper }}</td>
+                    <td>{{ book_borrow.date|date }}</td>
+                    <td {% if book_borrow.is_due and book_borrow.status == 'active' %} class="text-danger" {% elif book_borrow.book_fine > 0 %} class="text-warning" {% endif %}>{{ book_borrow.due_date|date }}</td>
+                    <td>{% if book_borrow.status == 'returned' %} {{ book_borrow.charge }} {% else %} {{ book_borrow.book_fine }} {% endif %}</td>
+                    <td {% if book_borrow.status == 'returned' %} class="text-success" {% endif %}>{{ book_borrow.status|title }}</td>
+
+                </tr>
+                {% endfor %}
+                {% endif %}
+
+
+                </tbody>
+            </table>
+            {% if not book_list %}
+                <h3 class="text-center">No Currently Borrowed Yet</h3>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+{% for book_borrow in book_list %}
+{% if book_borrow.status != 'returned' %}
+<form method="POST" action="{% url 'book_return' book_borrow.id %}">
+    {% csrf_token %}
+    <div class="modal fade" id="book-return{{forloop.counter}}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Return Borrowed Book</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h4 class="card-title">You are about to mark {{ book_borrow.book }} ({{ book_borrow.book.copy_id|upper }}) borrowed by
+                    {{ book_borrow.student|title }} on {{ book_borrow.date|date }} as returned</h4>
+                    {% if book_borrow.is_due %}
+                    <h4 class="card-title">The book is overdue by {{ book_borrow.due_days }} day{{ book_borrow.due_days|length|pluralize }} and has
+                    a charge of N{{ book_borrow.book_fine }}</h4>
+                    <p class="card-description">Return if student has paid</p>
+                    {% endif %}
+                    <div class="row">
+
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Return Book</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endif %}
+{% endfor %}
+
+{% endblock %}

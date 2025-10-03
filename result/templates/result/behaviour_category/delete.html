@@ -1,0 +1,25 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+<div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Delete Behaviour Category</h4>
+            <p>Category: <i>{{category.name|upper }}</i></p>
+
+            <p>The Behaviour Category will be permanently deleted.</p>
+            {% if category.no_of_behaviours > 0 %}
+                <p>{{ category.no_of_behaviours }} behaviour{{ category.no_of_behaviours|pluralize }} under the category will be without also be deleted</p>
+            {% else %}
+                <p>There is currently no behaviour under this category.</p>
+            {% endif %}
+            <form style="display:inline" method="post">
+                {% csrf_token %}
+
+                <button class="btn btn-success">Proceed</button>
+            </form>
+            <a class="btn btn-danger" href="{% url 'result_behaviour_category_index' %}"> Cancel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title text-center"> <b>{{ category.name|upper }}</b></h4>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th colspan="2" style="min-width:300px">Field</th>
+                    <th>Rating</th>
+
+                </tr>
+            </thead>
+            {% for field in result_field_list %}
+            {% if field.category == category %}
+            <tr>
+                <td class="pt-3" colspan="2">{{field.name|title }}</td>
+                <td class="pt-3">
+                    <select name="{{field.name }}" class="form-control">
+                        <option value="">----------------</option>
+                        <option {% for key, value in result_list.result.items %} {% if key|lower == field|lower and value.rating|lower == 'achieved' %} selected {% endif %} {% endfor %}>ACHIEVED</option>
+                        <option {% for key, value in result_list.result.items %} {% if key|lower == field|lower and value.rating|lower == 'consolidating' %} selected {% endif %} {% endfor %}>CONSOLIDATING</option>
+                        <option {% for key, value in result_list.result.items %} {% if key|lower == field|lower and value.rating|lower == 'developing' %} selected {% endif %} {% endfor %}>DEVELOPING</option>
+                    </select>
+                </td>
+
+            </tr>
+
+            {% endif %}
+            {% endfor %}
+        </table>
+    </div>
+</div>

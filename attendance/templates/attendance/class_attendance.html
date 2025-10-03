@@ -1,0 +1,69 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+{% load attendance_custom_filters %}
+
+<div class="row">
+    <div class="col-12 grid-margin">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Class: {{ class_info }}
+                {% if class_info.form_teacher %} Form Teacher: {{ class_info.form_teacher|title }} {% endif %}
+                {% if class_info.assistant_form_teacher %} Assistant Form Teacher: {{ class_info.assistant_form_teacher|title }} {% endif %}
+
+                </h4>
+                <h4 class="card-title" style="margin-top:-20px">Date: {{ date|date }} <span style="float:right">{% now '' %}</span> </h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form action="" method="POST">
+    {% csrf_token %}
+
+    <div class="grid-margin">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{% if 0 %} Edit {% else %} Take {% endif %} Student Attendance</h5>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Name</th>
+                                <th scope="col" class="text-center">Roll No</th>
+                                <th scope="col" class="text-center" colspan="3">Attendance </th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in student_list %}
+                              <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>
+                                    {{ student|title }}
+                                    <input type="hidden" name="students[]" value="{{student.id}}">
+                                </td>
+                                <td class="text-center">{{ student.class_number }}</td>
+                                <td colspan="3" class="text-center">
+                                    <input style="margin-left:30px" type="radio" value="present" name="attendance{{student.id}}" {% if student|check_student_attendance:date == 'present' %} checked {% else %} checked {% endif %}> Present
+                                    <input style="margin-left:30px" type="radio" value="late" name="attendance{{student.id}}" {% if student|check_student_attendance:date == 'late' %} checked {% endif %}> Late
+                                    <input style="margin-left:30px" type="radio" value="absent" name="attendance{{student.id}}" {% if student|check_student_attendance:date == 'absent' %} checked {% endif %}> Absent
+                                </td>
+
+
+                              </tr>
+                              {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <input type="submit" value="Save Attendance" class="btn btn-primary">
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</form>
+
+{% endblock %}

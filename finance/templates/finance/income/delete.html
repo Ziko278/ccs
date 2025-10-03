@@ -1,0 +1,22 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+{% load humanize %}
+<div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Delete Income</h4>
+            <p>Income: <i>N{{income.amount|intcomma }} for {{ income.category|title }} from {{ income.source|title }}</i></p>
+
+            <p>The income will be permanently deleted, and might affect other statistic.</p>
+
+            <form style="display:inline" method="post">
+                {% csrf_token %}
+
+                <button class="btn btn-success">Proceed</button>
+            </form>
+            <a class="btn btn-danger" href="{% url 'income_detail' income.id %}"> Cancel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

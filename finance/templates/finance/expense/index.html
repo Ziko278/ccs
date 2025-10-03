@@ -1,0 +1,111 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+{% load humanize %}
+<div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Select Income Record</h4>
+            <form>
+                <div class="row">
+                    <div class="col-4">
+                        <select name="session" required class="form-control">
+                            <option value="">-------------------</option>
+                            {% for session in session_list %}
+                            <option {% if session == current_session %} selected {% endif %} value="{{session.id}}">{{ session }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-4">
+                        <select name="term" required class="form-control">
+                            <option value="">-------------------</option>
+                            <option value="1st term" {% if term == '1st term' %} selected {% endif %}>1st Term</option>
+                            <option value="2nd term" {% if term == '2nd term' %} selected {% endif %}>2nd Term</option>
+                            <option value="3rd term" {% if term == '3rd term' %} selected {% endif %}>3rd Term</option>
+
+                        </select>
+                    </div>
+
+                    <div class="col-4">
+                        <input style="width:50%;margin-left:25%" type="submit" value="Proceed" class="btn btn-success">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="col-12">
+    <div class="card recent-sales overflow-auto">
+        <div class="filter">
+            <a title="Add Expense" class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                <li class="dropdown-header text-start">
+                    <h6>Action</h6>
+                </li>
+
+                <li><a class="dropdown-item" href="#">
+                    <a title="Add Expense"  href="{% url 'expense_create' %}" class="btn btn-primary" style="width:100%">Add Expense</a>
+                </a></li>
+            </ul>
+        </div>
+
+        <div class="card-body">
+            <h5 class="card-title">List of Expenses
+                {% if school_info.separate_school_section and school_info.school_type == 'mix' %}
+                    {% if user.profile.type == 'pri' %}
+                        in Primary Division of the School
+                    {% elif user.profile.type == 'sec' %}
+                        in Secondary Division of the School
+                    {% elif user.profile.type == 'mix' %}
+                        in the School
+                    {% endif %}
+                {% endif %}
+            </h5>
+            {% if form.errors %}
+                <h5 class="text-danger">{{form.errors}}</h5>
+            {% endif %}
+            <table class="table table-borderless datatable">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Amount</th>
+                    <th scope="col">Invoice No.</th>
+                    <th scope="col">Date</th>
+                    {% if school_info.school_type|lower == 'mix' and not school_info.separate_school_section %} <th scope="col">Category</th> {% endif %}
+                    <th scope="col" class="text-center">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if expense_list %}
+                {% for expense in expense_list %}
+                <tr>
+                    <th scope="row"><a href="#">{{ forloop.counter }}</a></th>
+                    <td>{{ expense.category|upper }}</td>
+                    <td>{{ expense.expense_type|title }}</td>
+                    <td>{{ expense.amount|intcomma }}</td>
+                    <td>{{ expense.invoice_number|upper }}</td>
+                    <td>{{ expense.date|date }}</td>
+                    {% if school_info.school_type|lower == 'mix' and not school_info.separate_school_section %}
+                    <td>{% if expense.type|lower == 'pri' %} PRIMARY {% elif expense.type|lower == 'sec' %} SECONDARY  {% endif %} </td>
+                    {% endif %}
+                    <td class="text-center">
+                        <a href="{% url 'expense_detail' expense.id %}" title="View Expense Detail" class="btn btn-primary"><i class="bi bi-eye"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+
+                </tbody>
+            </table>
+            {% if not expense_list %}
+                <h3 class="text-center">No Expense Recorded Yet</h3>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

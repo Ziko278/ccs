@@ -1,0 +1,96 @@
+{% extends 'student_portal/layout.html' %}
+{% block 'main' %}
+{% load static %}
+{% load humanize %}
+{% load fee_custom_filters %}
+
+<div class="col-12">
+    <div class="card recent-sales overflow-auto">
+
+        <div class="card-body">
+            <h5 class="card-title">Fee Payment Details
+                {% if status == 'success' %}
+                    <span class="text-success">Successful Payment</span>
+                {% elif status == 'fail' %}
+                    <span class="text-success">Payment Error</span>
+                {% endif %}
+            </h5>
+
+            {% if status == 'success' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card info-card sales-card">
+                        <div class="card-body">
+                            <h5 class="card-title"></h5>
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    {% if payment.method|lower == 'paystack' %}
+                                        <img style="width:70px;height:70px;border-radius:35px;border:1px solid skyblue;" src="{% static 'admin_dashboard/images/online_payment/paystack.png' %}">
+                                    {% elif payment.method|lower == 'flutterwave' %}
+                                        <img style="width:70px;height:70px;border-radius:35px;border:1px solid skyblue;" src="{% static 'admin_dashboard/images/online_payment/flutterwave.png' %}">
+                                    {% elif payment.method|lower == 'quickteller' %}
+                                        <img style="width:70px;height:70px;border-radius:35px;border:1px solid skyblue;" src="{% static 'admin_dashboard/images/online_payment/quickteller.png' %}">
+                                    {% elif payment.method|lower == 'interswitch' %}
+                                        <img style="width:70px;height:70px;border-radius:35px;border:1px solid skyblue;" src="{% static 'admin_dashboard/images/online_payment/interswitch.png' %}">
+
+                                    {% endif %}
+                                </div>
+                                <div class="ps-3">
+                                    <h6>Fee: {{ payment.fee }} - {{ payment.student|title }}</h6><br />
+                                    <span class="text-muted small pt-2 ps-1">Total Amount:
+                                        <b>N
+                                            {% if payment.fee.same_termly_price or payment.fee.fee_occurrence != 'termly' %}
+                                            {{ payment.fee.amount|intcomma }}
+                                            {% else %}
+
+                                            {% if academic_setting.term|lower == '1st term' %}
+                                                {{ payment.fee.first_term_amount|intcomma }}
+                                            {% elif academic_setting.term|lower == '2nd term' %}
+                                                {{ payment.fee.second_term_amount|intcomma }}
+                                            {% elif academic_setting.term|lower == '3rd term' %}
+                                                {{ payment.fee.third_term_amount|intcomma }}
+                                            {% endif %}
+                                            {% endif %}
+                                        </b>
+                                    </span>
+                                    <span class="text-muted small pt-2 ps-1">Amount Paid: <b>{{ payment.fee|get_amount_paid:student.id|intcomma }}</b></span>
+                                    <span class="text-muted small pt-2 ps-1">Discount: <b>{{ payment.fee|get_fee_discount:student.id|intcomma }}</b></span>
+                                    <span class="text-muted small pt-2 ps-1">Penalty: <b>{{ payment.fee|get_fee_penalty:student.id|intcomma }}</b></span>
+                                    <span class="text-muted small pt-2 ps-1">Balance: <b>{{ payment.fee|get_fee_balance:student.id|intcomma }}</b></span> <br/>
+                                    <h3 class="card-title">Amount Paid: {{ amount_in_word|title }} Naira (N{{ payment.amount|intcomma }}) </h3>
+                                    <button id="paystack" class="btn btn-success">View Receipt</button>
+
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% elif status == 'fail' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card info-card sales-card">
+                        <div class="card-body">
+                            <h5 class="card-title"></h5>
+                            <div class="d-flex align-items-center">
+
+                                <div class="ps-3">
+                                    <h6>Payment Not Processed, Please Contact Admin</h6><br />
+                                    <h6>Payment ID: {{ reference }}</h6>
+                                    <a href="{% url 'student_dashboard' %}" class="btn btn-primary">Go To Dashboard</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

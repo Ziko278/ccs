@@ -1,0 +1,150 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block 'main' %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="row" style="margin-bottom:10px">
+            <h3><b><span class="text-info">FINANCE SETTING DETAIL</span></b>
+                <button style="float:right;width:120px" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#verticalycentered">Edit Info</button>
+            </h3>
+        </div>
+        {% if form.errors %}
+        <h5 class="text-danger">{{form.errors}}</h5>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-xxl-4 col-md-6">
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-calendar-check-fill"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{% if finance_info.use_discount %} YES {% else %} NO {% endif %}</h6>
+                                <span class="text-muted small pt-2 ps-1">Make Use of Fee Discount</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xxl-4 col-md-6">
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-flag"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{% if finance_info.use_penalty %} YES {% else %} NO {% endif %}</h6>
+                                <span class="text-muted small pt-2 ps-1">Make Use of Fee Penalty</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xxl-4 col-md-6">
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-file-earmark-lock2-fill"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{% if finance_info.use_2fa_manual %} YES {% else %} NO {% endif %}</h6>
+                                <span class="text-muted small pt-2 ps-1">Authenticate Manual Payment</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xxl-4 col-md-6">
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-file-earmark-lock2-fill"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{% if finance_info.use_2fa_online %} YES {% else %} NO {% endif %}</h6>
+                                <span class="text-muted small pt-2 ps-1">Authenticate Online Payment</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<form method="POST" {% if is_finance_info %} action="{% url 'finance_info_update' finance_info.id %}" {% else %} action="{% url 'finance_info_create' %}" {% endif %} enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="modal fade" id="verticalycentered" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Finance Setting Info</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body row">
+                    <div class="col-6">
+                        <input type="hidden" name="type" value="{{ user.profile.type }}" />
+                        <input type="hidden" name="user" value="{{ user.id }}" />
+                        <input type="hidden" name="updated_by" value="{{ user.id }}" />
+
+                        <div class="form-floating">
+                            {{ form.use_discount }}
+                            <label for="floatingName">Make use of Discount </label>
+                        </div><br />
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            {{ form.use_penalty }}
+                            <label for="floatingName">Make use of Penalty </label>
+                        </div><br />
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            {{ form.use_2fa_manual }}
+                            <label for="floatingName">Authenticate Manual Payment </label>
+                        </div><br />
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            {{ form.use_2fa_online }}
+                            <label for="floatingName">Authenticate Online Payment </label>
+                        </div><br />
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block 'main' %}
+
+<section class="section dashboard">
+    <div class="row">
+        <div class="col-12">
+            <div class="card info-card sales-card">
+                <div class="card-body">
+                    <h4 class="card-title">ATTENDANCE RECORD: {{ selected_date|date }}, {{ session }} Session, {{ term|title }}
+                    <button class="btn btn-danger" title="Go Back" onclick="window.history.back()" style="float:right"><i class="bi bi-arrow-left"></i> </button> </h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4 col-md-6">
+            <div class="card info-card sales-card">
+                <div class="card-body">
+                    <h5 class="card-title">Students <span>| Total Students</span></h5>
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div class="ps-3">
+                            <h6>{{ total_student }}</h6>
+                            <span class="text small pt-1 fw-bold">Total Students</span> <span class="text-muted small pt-2 ps-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4 col-md-6">
+            <div class="card info-card sales-card">
+                <div class="card-body">
+                    <h5 class="card-title">Students <span>| Present Students</span></h5>
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="bi bi-gender-male"></i>
+                        </div>
+                        <div class="ps-3">
+                            <h6>{{ total_attendance }}</h6>
+                            <span class="text small pt-1 fw-bold">Present Students</span> <span class="text-muted small pt-2 ps-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4 col-md-6">
+            <div class="card info-card sales-card">
+                <div class="card-body">
+                    <h5 class="card-title">Students <span>| Absent Students</span></h5>
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="bi bi-gender-female"></i>
+                        </div>
+                        <div class="ps-3">
+                            <h6>{{ absent_student }}</h6>
+                            <span class="text small pt-1 fw-bold">Absent Students</span> <span class="text-muted small pt-2 ps-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4 col-md-6">
+            <div class="card info-card sales-card">
+                <div class="card-body">
+                    <h5 class="card-title">Students <span>| Percentage Present</span></h5>
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="bi bi-percent"></i>
+                        </div>
+                        <div class="ps-3">
+                            <h6>{{ percentage_student }}%</h6>
+                            <span class="text small pt-1 fw-bold">Percentage Present</span> <span class="text-muted small pt-2 ps-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4 col-md-6">
+            <div class="card info-card sales-card">
+                <div class="card-body">
+                    <h5 class="card-title">Staff <span>| Total Staff</span></h5>
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div class="ps-3">
+                            <h6>{{ total_staff }}</h6>
+                            <span class="text small pt-1 fw-bold">Total Staff</span> <span class="text-muted small pt-2 ps-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4 col-md-6">
+            <div class="card info-card sales-card">
+                <div class="card-body">
+                    <h5 class="card-title">Staff <span>| Present Staff</span></h5>
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="bi bi-gender-male"></i>
+                        </div>
+                        <div class="ps-3">
+                            <h6>{{ total_staff_attendance }}</h6>
+                            <span class="text small pt-1 fw-bold">Present Staff</span> <span class="text-muted small pt-2 ps-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4 col-md-6">
+            <div class="card info-card sales-card">
+                <div class="card-body">
+                    <h5 class="card-title">Staff <span>| Absent Staff</span></h5>
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="bi bi-gender-female"></i>
+                        </div>
+                        <div class="ps-3">
+                            <h6>{{ absent_staff }}</h6>
+                            <span class="text small pt-1 fw-bold">Absent Staff</span> <span class="text-muted small pt-2 ps-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4 col-md-6">
+            <div class="card info-card sales-card">
+                <div class="card-body">
+                    <h5 class="card-title">Staff <span>| Percentage Present</span></h5>
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="bi bi-percent"></i>
+                        </div>
+                        <div class="ps-3">
+                            <h6>{{ percentage_staff }}%</h6>
+                            <span class="text small pt-1 fw-bold">Percentage Present</span> <span class="text-muted small pt-2 ps-1"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

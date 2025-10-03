@@ -1,0 +1,70 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="col-12">
+    <div class="card recent-sales overflow-auto">
+
+        <div class="card-body">
+            <h5 class="card-title">Upload Lesson Document</h5>
+
+            <form method="POST" action="" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="type" value="{{ user.profile.type }}" />
+                <input type="hidden" name="user" value="{{ user.id }}" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select class="form-control" name="subject" required>
+                                <option value="">-------------</option>
+                                {% for subject in subject_list %}
+                                <option value="{{subject.id}}">{{ subject|upper }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="floatingName">Subject <span style="color:red"><b>*</b></span></label>
+                        </div><br />
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.title }}
+                            <label for="floatingName">Title <span style="color:red"><b>*</b></span></label>
+                        </div><br />
+                    </div>
+
+                    <div class="col-md-12">
+                        <h4 class="card-title" style="margin-top:-20px">Select Classes </h4>
+                        <div class="form-floaing">
+                            {% for class in class_info_list %}
+                                <span style="margin-right:20px">{{ class|title }} <input type="checkbox" name="student_class" value="{{class.id}}"></span>
+                            {% endfor %}
+                        </div><br />
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.document }}
+                            <label for="floatingName">Select Document <span style="color:red"><b>*</b></span></label>
+                        </div><br />
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="checkbox" name="grant_access">
+                            <label for="floatingName">Access to Student</label>
+                        </div><br />
+                    </div>
+
+                    <div class="modal-footer">
+                        <a onclick="window.history.back()" class="btn btn-danger" >Cancel</a>
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

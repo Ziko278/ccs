@@ -1,0 +1,250 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% block 'main' %}
+<div class="card">
+    <div class="card-body ">
+        <h5 class="card-title">Actions</h5>
+        <button type="button" title="Edit Subject" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#edit{{ forloop.counter }}"><i class="bi bi-pencil-square"></i></button>
+        <a type="button" title="Delete subject" href="{% url 'subject_delete' subject.id %}" class="btn btn-outline-danger"><i class="bi bi-trash"></i></a>
+        <button type="button" title="Add Subject Teacher" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addsubject"><i class="bi bi-person-plus-fill"></i></button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3">
+                <ul class="nav nav-tabs nav-tabs-bordered">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Overview</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Teachers</button>
+                    </li>
+
+                </ul>
+
+                <div class="tab-content pt-2">
+                    <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                        <h5 class="card-title">Subject Details</h5>
+
+                        <div class="row">
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="ri-contacts-book-2-fill"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ subject.name|upper }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Subject Name</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="ri-code-box-line"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ subject.code|upper }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Subject Code</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-flag-fill"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ subject.subject_type|upper }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Subject Type</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-body">
+                                    {% if subject.subject_class_info.all %}
+                                    <h5 class="card-title">Classes offering {{ subject|upper }}</h5>
+                                    <ul class="list-group">
+                                        {% for class_info in subject.subject_class_info.all %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                  {{ class_info.student_class|upper }} {{ class_info.section.name|upper }}
+                                                <span class="">
+                                                    <a title="View Class Detail" href="{% url 'class_section_info_detail' class_info.student_class.id class_info.section.id %}" class="btn btn-primary"><i class="bi bi-eye"></i></a>
+                                                </span>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                        <h5 class="card-title text-center">No class currently offering {{ subject.name|upper }} </h5>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <p><i>This subject was created by {{ subject.user|lower }} at {{ subject.created_at|date }} {% if subject.updated_by %} and updated by {{ subject.updated_by|lower }} at {{ subject.updated_at|date }} {% endif %}</i></p>
+                        </div>
+
+                    </div>
+
+                <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
+                    <h5 class="card-title">Subject Teachers for {{ subject.name|upper }}</h5>
+                    <div class="row" style="overflow-x:auto">
+                        {% if subject.subject_class_section_info.all %}
+                        <table class="table table-borderless datatable" style="overflow-x:auto">
+                            <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Classes</th>
+                                <th scope="col">Sections</th>
+                                <th scope="col">Teachers</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            {% for subject_info in subject.subject_class_section_info.all %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{% for class in subject_info.student_class.all %} {{ class }} <br /> {% endfor %}</td>
+                                <td>{% for section in subject_info.class_section.all %} {{ section }} <br/> {% endfor %}</td>
+                                <td style="min-width:200px">{% for teacher in subject_info.teachers.all %} {{ teacher|title }} <br/> {% endfor %}</td>
+                                <td><a title="Delete Teacher Assignment" class="btn btn-danger" href="{% url 'class_subject_info_delete' subject_info.id %}"><i class="bi bi-trash"></i> </a></td>
+                            </tr>
+                            {% endfor %}
+
+
+                            </tbody>
+                        </table>
+                        {% else %}
+                            <div class="row">
+                                <div class="col-lg-12 col-md-12 label ">NO TEACHER ASSIGNED TO {{ subject.name|upper }}</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+              </div><!-- End Bordered Tabs -->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+<form method="POST" action="{% url 'subject_edit' subject.id %}">
+    {% csrf_token %}
+    <div class="modal fade" id="edit" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Subject</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="updated_by" value="{{ user.id }}" />
+                    <div class="form-floating">
+                        <input type="text" name="name" value="{{ subject.name|lower }}" autocomplete="off" required class="form-control">
+                        <label for="floatingName">Subject Name <span style="color:red"><b>*</b></span></label>
+                    </div><br />
+
+                    <div class="form-floating">
+                        <input type="text" name="code" value="{{ subject.code|lower }}" autocomplete="off" required class="form-control">
+                        <label for="floatingName">Subject Code <span style="color:red"><b>*</b></span></label>
+                    </div><br />
+
+                    <div class="form-floating">
+                        <select name="subject_type" class="form-control">
+                            <option value="theory" {% if subject.subject_type == 'theory' %} selected {% endif %}>THEORY</option>
+                            <option value="practical" {% if subject.subject_type == 'practical' %} selected {% endif %}>PRACTICAL</option>
+                        </select>
+                        <label for="floatingName">Subject Type <span style="color:red"><b>*</b></span></label>
+                    </div><br />
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form method="POST" action="{% url 'class_subject_info_create' %}">
+    {% csrf_token %}
+    <div class="modal fade" id="addsubject" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Assign  Teachers to {{ subject|title }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <input type="hidden" name="type" value="{{ user.profile.type }}" />
+                        <input type="hidden" name="user" value="{{ user.id }}" />
+                        <input type="hidden" name="subject" value="{{ subject.id }}">
+
+                        <div class="col-md-6">
+                            <h4 class="card-title" style="margin-top:-20px">Select Classes</h4>
+                            <div class="form-floaing">
+                                {{ form.student_class }}
+                            </div><br />
+                        </div>
+
+                        <div class="col-md-6">
+                            <h4 class="card-title" style="margin-top:-20px">Select Sections</h4>
+                            <div class="form-floaing">
+                                {{ form.class_section }}
+                            </div><br />
+                        </div>
+
+                        <div class="form-floaing">
+                            <h4 class="card-title" style="margin-top:-20px">Select Teachers</h4>
+                            <ol class="list-group">
+                                {% for staff in staff_list %}
+                                <li class="list-group-item d-flex justify-content-between align-items-start">
+                                    <div class="ms-2 me-auto">
+                                        <div class="fw-bold">
+                                            <img class="rounded-circle" style="width:40px;height:40px;" {% if staff.image %} src="{{ staff.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} />
+                                            {{ staff|upper }}
+                                        </div>
+                                    </div>
+                                    <span class=""><input type="checkbox" {% if staff == class_section_info.form_teacher %} checked {% endif %} name="teachers" value="{{ staff.id }}"></span>
+                                </li>
+                                {% endfor %}
+                            </ol>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{%endblock %}

@@ -1,0 +1,238 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block 'main' %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="row" style="margin-bottom:10px">
+            <h3><b><span class="text-info">ACADEMIC SETTING DETAIL</span></b>
+                <button style="float:right;width:120px" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#verticalycentered">Edit Info</button>
+            </h3>
+        </div>
+        {% if form.errors %}
+        <h5 class="text-danger">{{form.errors}}</h5>
+        {% endif %}
+
+        <div class="row">
+            {% if academic_info.head_teacher %}
+            <div class="col-md-6">
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                {% if academic_info.head_teacher.image %} <img class="rounded-circle" style="width:60px;height:60px" src="{{ academic_info.head_teacher.image.url }}" /> {% else %} <i class="bi bi-person-check-fill"></i> {% endif %}
+                            </div>
+                            <div class="ps-3">
+                                <h6>{{ academic_info.head_teacher|title }}</h6>
+                                <span class="text-muted small pt-2 ps-1">Head Teacher</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-md-6">
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-person-check-fill"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6>-----------------</h6>
+                                <span class="text-muted small pt-2 ps-1">Head Teacher</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="col-md-6">
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-calendar-check-fill"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{{ academic_info.week_start_day }}</h6>
+                                <span class="text-muted small pt-2 ps-1">Week Start</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+	    <div class="col-md-6">
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-calendar-check-fill"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{{ academic_info.date_school_closed|date }}</h6>
+                                <span class="text-muted small pt-2 ps-1">Current Term Close Date</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+	    <div class="col-md-6">
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-calendar-check-fill"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{{ academic_info.next_term_open|date }}</h6>
+                                <span class="text-muted small pt-2 ps-1">Next Term Resumption Date</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Active School Days</h5>
+                        <ul class="list-group">
+                            {% for day in academic_info.active_days.all %}
+                            <li class="list-group-item">{{ day|upper }}</li>
+                            {% endfor %}
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex text-success align-items-center justify-content-center">
+                                <i class="bi bi-pin-fill"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{{ academic_info.promotion_cutoff_score }} %</h6>
+                                <span class="text-muted small pt-2 ps-1">Promotion Cutoff Score</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-question-diamond"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{% if academic_info.use_promotion_cutoff %} YES {% else %} NO {% endif %}</h6>
+                                <span class="text-muted small pt-2 ps-1">Use Promotion Cutoff Score</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<form method="POST" {% if is_academic_info %} action="{% url 'academic_info_update' academic_info.id %}" {% else %} action="{% url 'academic_info_create' %}" {% endif %} enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="modal fade" id="verticalycentered" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Academic Setting Info</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body row">
+                    <div class="col-6">
+                        <div class="form-floatig">
+                            <input type="hidden" name="type" value="{{ user.profile.type }}" />
+                            <input type="hidden" name="updated_by" value="{{ user.id }}" />
+                            <h4 class="card-title">Active School Days</h4>
+                            {{ form.active_days }}
+                            <br />
+                        </div><br />
+
+                        <div class="form-floating">
+                            {{ form.week_start_day }}
+                            <label for="floatingName">First Week Day </label>
+                        </div><br />
+
+                        <div class="form-floating">
+                            {{ form.lesson_note_approver }}
+                            <label for="floatingName">Can Approve Lesson Note </label>
+                        </div><br />
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            {{ form.head_teacher }}
+                            <label for="floatingName">Head Teacher </label>
+                        </div><br />
+
+                        <div class="form-floating">
+                            {{ form.nursery_head_teacher }}
+                            <label for="floatingName">Nursery Head Teacher </label>
+                        </div><br />
+
+                        <div class="form-floating">
+                            {{ form.promotion_cutoff_score }}
+                            <label for="floatingName">Minimum Promotion Score </label>
+                        </div><br />
+
+                        <div class="form-floating">
+                            {{ form.use_promotion_cutoff }}
+                            <label for="floatingName">Use Promotion Score </label>
+                        </div><br />
+
+                        <div class="form-floating">
+                            {{ form.date_school_closed }}
+                            <label for="floatingName">Current Term Closed </label>
+                        </div><br />
+
+			<div class="form-floating">
+                            {{ form.next_term_open }}
+                            <label for="floatingName">Next Resumption Date </label>
+                        </div><br />
+
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% endblock %}

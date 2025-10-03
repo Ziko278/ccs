@@ -1,0 +1,40 @@
+{% extends 'student_portal/layout.html' %}
+{% load static %}
+{% block 'main' %}
+<div class="col-12">
+    <div class="card recent-sales overflow-auto">
+        <div class="card-body">
+            <h5 class="card-title">List of Fee Payment Bank Accounts</h5>
+
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Bank Name</th>
+                    <th scope="col">Account Name</th>
+                    <th scope="col">Account Number</th>
+
+                </tr>
+                </thead>
+                <tbody>
+                {% if fee_bank_account_list %}
+                {% for account in fee_bank_account_list %}
+                <tr>
+                    <th scope="row"><a href="#">{{ forloop.counter }}</a></th>
+                    <td>{{ account.bank_name|upper }}</td>
+                    <td>{{ account.account_name|upper }}</td>
+                    <td>{{ account.account_number|upper }}</td>
+
+                </tr>
+                {% endfor %}
+                {% endif %}
+
+                </tbody>
+            </table>
+            {% if not fee_bank_account_list %}
+                <h3 class="text-center">No Account Added Yet</h3>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

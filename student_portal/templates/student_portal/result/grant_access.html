@@ -1,0 +1,64 @@
+{% extends 'student_portal/layout.html' %}
+{% load static %} 
+{% load humanize %}
+{% block 'main' %} 
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3">
+                <ul class="nav nav-tabs nav-tabs-bordered">
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">UNLOCK RESULT</a>
+                    </li>
+
+                </ul>
+
+                <div class="tab-content pt-2">
+
+                    <div class="tab-pane active show profile-edit pt-3" id="profile-edit">
+                        <div class="row">
+                            <div class="col-12 grid-margin">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="card-title">{{ session }} {{ term|upper }} RESULT UNLOCK</h4>
+                                        <form method="POST" action="" class="form-sample" enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group row">
+                                                        <div class="col-12">
+                                                            <input placeholder="Enter Access Code" class="form-control" type="text" name="code" required autocomplete="off">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group row">
+                                                        <div class="col-sm-12" style="float:right">
+                                                            <button style="width:150px;margin:10px" class="btn btn-success btn-rounded">Proceed</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <p class="card-description"><b>Don't have Code?? <a href="{% url 'student_buy_result_access' %}?session_id={{session.id}}&term={{term}}">Buy Now</a> </b></p>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+{%endblock %}

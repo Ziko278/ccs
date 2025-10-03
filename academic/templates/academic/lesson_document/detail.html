@@ -1,0 +1,38 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% block 'main' %}
+<div class="card">
+    <div class="card-body ">
+        <h5 class="card-title">Actions</h5>
+        <a title="Edit Document Detail" href="{% url 'lesson_document_edit' lesson_document.id %}" class="btn btn-warning"><i class="bi bi-pencil-square"></i></a>
+        <a title="Delete Document" href="{% url 'lesson_document_delete' lesson_document.id %}" class="btn btn-danger"><i class="bi bi-trash"></i></a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3">
+                <ul class="nav nav-tabs nav-tabs-bordered">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Lesson Note Detail</button>
+                    </li>
+
+                </ul>
+
+                <div class="tab-content pt-2">
+                    <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                        <h5 class="card-title">{{ lesson_document.subject|title }}: {{ lesson_document.title }}</h5>
+                        <p class="card-description">Classes: {% for class in lesson_document.student_class.all %} <span style="margin-right:15px"> {{ class }} </span> {% endfor %}</p>
+                        <p class="card-description">Student Access: {% if lesson_document.grant_access %} YES {% else %} NO {% endif %}</p>
+                        <p class="card-description"><a href="{{ lesson_document.document.url}}"><b>View Document</b></a> </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{%endblock %}

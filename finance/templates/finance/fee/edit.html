@@ -1,0 +1,96 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="col-12">
+    <div class="card recent-sales overflow-auto">
+
+        <div class="card-body">
+            <h5 class="card-title">Edit Fee - {{ fee|upper }} ({{fee.code|upper}})</h5>
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="moda" id="verticalycentered" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Edit Fee</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <input type="hidden" name="updated_by" value="{{ user.id }}" />
+                            <div class="modal-body row">
+                                <div class="form-floating col-md-6">
+                                    {{ form.name }}
+                                    <label for="floatingName">Fee Name <span style="color:red"><b>*</b></span></label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6">
+                                    {{ form.code }}
+                                    <label for="floatingName">Fee Code <span style="color:red"><b>*</b></span></label>
+                                    <br />
+                                </div><br />
+
+                                <div class="form-floating col-md-6">
+                                    {{ form.description }}
+                                    <label for="floatingName">Fee Description </label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6">
+                                    <select class="form-control" name="fee_occurrence" id="occurrence" required>
+                                        <option value="">--------------</option>
+                                        <option {% if fee.fee_occurrence == 'termly' %} selected {% endif %} value="termly">Termly</option>
+                                        <option {% if fee.fee_occurrence == 'annually' %} selected {% endif %}  value="annually">Annually</option>
+                                        <option {% if fee.fee_occurrence == 'one time' %} selected {% endif %}  value="one time">One Time</option>
+                                    </select>
+                                    <br />
+                                    <label for="floatingName">Fee Occurrence <span style="color:red"><b>*</b></span></label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6 {% if fee.fee_occurrence != 'annually' and fee.fee_occurrence != 'one time' %} d-none {% endif %}" id="payment_term_div">
+                                    <select class="form-control" name="payment_term" id="payment_term">
+                                        <option value="">--------------</option>
+                                        <option {% if fee.payment_term == '1st term' %} selected {% endif %}  value="1st term">First Term</option>
+                                        <option {% if fee.payment_term == '2nd term' %} selected {% endif %}  value="2nd term">Second Term</option>
+                                        <option {% if fee.payment_term == '3rd term' %} selected {% endif %}  value="3rd term">Third Term</option>
+                                        <option {% if fee.payment_term == 'any term' %} selected {% endif %}  value="any term">Any Term</option>
+                                    </select>
+                                    <label for="floatingName">Payment Term <span style="color:red"><b>*</b></span></label>
+                                </div><br />
+
+                            </div>
+                            <div class="modal-footer">
+                                <a href="{% url 'fee_index' %}" class="btn btn-danger">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Save changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+
+        </div>
+    </div>
+</div>
+
+
+
+
+<script src="{% static 'admin_dashboard/scripts/jquery.js' %}"></script>
+<script>
+$(document).ready(function(){
+    $('#occurrence').change(function(){
+        occurrence = $(this).val()
+        if(occurrence == 'one time' | occurrence == 'annually'){
+            $('#payment_term_div').removeClass('d-none')
+            $('#payment_term').attr('required', true)
+        }else{
+            $('#payment_term_div').addClass('d-none')
+            $('#payment_term').attr('required', false)
+        }
+    })
+
+})
+
+</script>
+
+{% endblock %}

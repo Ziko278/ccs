@@ -1,0 +1,112 @@
+{% extends 'student_portal/layout.html' %}
+{% load static %}
+{% block 'main' %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3">
+                <ul class="nav nav-tabs nav-tabs-bordered">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Class Detail</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content pt-2">
+                    <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                        <h5 class="card-title">Class Details</h5>
+                        <div class="row">
+
+                            <div class="col-12 grid-margin">
+                                <div class="card" style="margin-top:15px;padding:20px">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p class="card-title"> FORM TEACHER INFORMATION </p>
+                                                <div class="row">
+                                                    {% if class_section_info.form_teacher %}
+                                                    <div class="col-md-4">
+                                                        <img class="rounded-circle" style="width:100px" {% if class_section_info.form_teacher.image %} src="{{ class_section_info.form_teacher.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} />
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <p> {{class_section_info.form_teacher|title}}</p>
+                                                        <p>{% if class_section_info.form_teacher.registration_number %} {{class_section_info.form_teacher.registration_number|title}} {% endif %}</p>
+                                                        <p>{% if class_section_info.form_teacher.mobile %} {{class_section_info.form_teacher.mobile|title}} {% else %} Mobile Not Provided {% endif %}</p>
+                                                        <p>{% if class_section_info.form_teacher.email %} {{class_section_info.form_teacher.email|lower}} {% else %} Email Not Provided {% endif %}</p>
+                                                    </div>
+                                                    {% else %}
+                                                        <h4 class="text-description">FORM TEACHER NOT ASSIGNED</h4>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p class="card-title"> ASSISTANT FORM TEACHER INFORMATION </p>
+                                                <div class="row">
+                                                    {% if class_section_info.assistant_form_teacher %}
+                                                    <div class="col-md-4">
+                                                        <img class="rounded-circle" style="width:100px" {% if class_section_info.assistant_form_teacher.image %} src="{{ class_section_info.assistant_form_teacher.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} />
+                                                    </div>
+                                                    <div class="col-md-8">
+                                                        <p> {{class_section_info.assistant_form_teacher|title}}</p>
+                                                        <p>{% if class_section_info.assistant_form_teacher.registration_number %} {{class_section_info.assistant_form_teacher.registration_number|title}} {% endif %}</p>
+                                                        <p>{% if class_section_info.assistant_form_teacher.mobile %} {{class_section_info.assistant_form_teacher.mobile|title}} {% else %} Mobile Not Provided {% endif %}</p>
+                                                        <p>{% if class_section_info.assistant_form_teacher.email %} {{class_section_info.assistant_form_teacher.email|lower}} {% else %} Email Not Provided {% endif %}</p>
+                                                    </div>
+                                                    {% else %}
+                                                        <h4>ASSISTANT FORM TEACHER NOT ASSIGNED</h4>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+							
+							
+ 			<div class="col-md-6">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+					<h5 class="card-title">My Class Mates</h5>
+
+  <!-- Slides with captions -->
+  <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel">
+	<div class="carousel-indicators">
+	{% for classmate in classmate_list %}
+	  <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="{{forloop.counter0}}" {% if forloop.counter0 == 0 %} class="active" aria-current="true" {% endif %} aria-label="Slide {{ forloop.counter }}"></button>
+	{% endfor %}
+	</div>
+	<div class="carousel-inner">
+	{% for classmate in classmate_list %}
+	  <div class="carousel-item {% if forloop.counter == 1 %} active {% endif %}">
+		<img style="height:250px" {% if classmate.image %} src="{{classmate.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} class="d-block w-100" alt="...">
+		<div class="carousel-caption d-none d-md-block">
+		  <h3 style="color:black;text-shadow:1px 1px yellow;font-weight:bolder;position:relative;top:25px">{{ classmate|title }}</h3>
+		  
+		</div>
+	  </div>
+	 {% endfor %}
+	  
+	</div>
+
+	<button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+	  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+	  <span class="visually-hidden">Previous</span>
+	</button>
+	<button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+	  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+	  <span class="visually-hidden">Next</span>
+	</button>
+
+  </div><!-- End Slides with captions -->
+                                    </div>
+                                </div>
+                            </div>
+
+
+                
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

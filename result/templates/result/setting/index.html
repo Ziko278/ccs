@@ -1,0 +1,208 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block 'main' %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="row" style="margin-bottom:10px">
+            <h3 class="card-title"><b>RESULT SETTING DETAIL</b>
+                <button style="float:right;width:120px" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#verticalycentered">Edit Info</button>
+            </h3>
+        </div>
+        {% if form.errors %}
+        <h5 class="text-danger">{{form.errors}}</h5>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-question-diamond"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{% if result_info.allowed_user == 'both' %} Form or Subject Teacher {% elif result_info.allowed_user == 'any' %} Any Staff {% else %} {{ result_info.allowed_user|title }} {% endif %}</h6>
+                                <span class="text-muted small pt-2 ps-1">Result Allowed Users</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title">Active Uploadable Result</h5>
+                        <ul class="list-group">
+                            {% if result_info.current_result_upload.all %}
+                                {% for result in result_info.current_result_upload.all %}
+                                <li class="list-group-item">{{ result|upper }}</li>
+                                {% endfor %}
+                            {% else %}
+                                <li class="list-group-item">None</li>
+                            {% endif %}
+                        </ul>
+
+                    </div>
+                </div>
+
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-percent"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{{ result_info.fee_payment }} %</h6>
+                                <span class="text-muted small pt-2 ps-1">Fee Payment % to Access Result</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md-6">
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-question-diamond"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{{ result_info.result_status|title }} </h6>
+                                <span class="text-muted small pt-2 ps-1">Current Result Status</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-question-diamond"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{% if result_info.text_result_allowed_user == 'both' %} Form or Subject Teacher {% elif result_info.text_result_allowed_user == 'any' %} Any Staff {% else %} {{ result_info.text_result_allowed_user|title }} {% endif %}</h6>
+                                <span class="text-muted small pt-2 ps-1">Text Result Allowed Users</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-calendar-check-fill"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{{ result_info.student_view_result|title }}</h6>
+                                <span class="text-muted small pt-2 ps-1">Student See Result</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex text-success align-items-center justify-content-center">
+                                <i class="bi bi-pin-fill"></i>
+                            </div>
+
+                            <div class="ps-3">
+                                <h6>{{ result_info.default_comment|title }} Comment</h6>
+                                <span class="text-muted small pt-2 ps-1">Default Result Comment</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<form method="POST" {% if is_result_info %} action="{% url 'result_info_update' result_info.id %}" {% else %} action="{% url 'result_info_create' %}" {% endif %} enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="modal fade" id="verticalycentered" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Result Setting Info</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body row">
+                    <div class="col-6">
+                        <div class="form-floatig">
+                            <input type="hidden" name="type" value="{{ user.profile.type }}" />
+                            <input type="hidden" name="updated_by" value="{{ user.id }}" />
+                            <h4 class="card-title">Active Uploadable Results</h4>
+                            {{ form.current_result_upload }}
+                            <br />
+                        </div><br />
+
+                        <div class="form-floating">
+                            {{ form.allowed_user }}
+                            <label for="floatingName">Result Upload By </label>
+                        </div><br />
+
+                        <div class="form-floating">
+                            {{ form.fee_payment }}
+                            <label for="floatingName">Fee Payment % to Access Result </label>
+                        </div><br />
+                    </div>
+
+                    <div class="col-6">
+                        <div class="form-floating">
+                            {{ form.result_status }}
+                            <label for="floatingName">Current Result Status </label>
+                        </div><br />
+
+                        <div class="form-floating">
+                            {{ form.text_result_allowed_user }}
+                            <label for="floatingName">Text Result Upload By </label>
+                        </div><br />
+
+                        <div class="form-floating">
+                            {{ form.student_view_result }}
+                            <label for="floatingName">When Student View Result </label>
+                        </div><br />
+
+                        <div class="form-floating">
+                            {{ form.default_comment }}
+                            <label for="floatingName">Default Result Comments </label>
+                        </div><br />
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+{% endblock %}

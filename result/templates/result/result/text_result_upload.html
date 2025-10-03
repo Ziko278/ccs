@@ -1,0 +1,66 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="row">
+    <div class="col-12 grid-margin">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">{{ academic_setting.session }} {{ academic_setting.term|upper }} RESULT FOR {{ student|upper }} ({{ student.registration_number|upper }})
+                    <image class="rounded-circle" style="width:70px;height:70px;float:right" {% if student.image %} src="{{ student.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %}/>
+                </h4>
+                <h4 class="card-title" style="margin-top:-30px">{{ student.student_class|upper }} {{ student.class_section|upper }}</h4>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 grid-margin">
+
+                <form method="POST" action="" class="form-sample" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for category in result_category_list %}
+                        {% if result_setting.text_result_allowed_user == 'form teacher' %}
+                            {% if staff_is_form_teacher %}
+                                {% include 'result/partial/text_result_upload.html' %}
+                            {% endif %}
+                        {% endif %}
+
+                        {% if result_setting.text_result_allowed_user == 'subject teacher' %}
+                            {% if category in allowed_subjects %}
+                                {% include 'result/partial/text_result_upload.html' %}
+                            {% endif %}
+                        {% endif %}
+
+                        {% if result_setting.text_result_allowed_user == 'both' %}
+                            {% if staff_is_form_teacher %}
+                                {% include 'result/partial/text_result_upload.html' %}
+                            {% else %}
+                                {% if category in allowed_subjects %}
+                                    {% include 'result/partial/text_result_upload.html' %}
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+
+                        {% if result_setting.text_result_allowed_user == 'any' %}
+                            {% include 'result/partial/text_result_upload.html' %}
+                        {% endif %}
+                    {% endfor %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {% if result_setting.text_result_allowed_user == 'any' or can_upload %}
+                                <button style="width:150px;margin:10px" class="btn btn-primary btn-rounded">SAVE</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+    </div>
+</div>
+
+{%endblock %}

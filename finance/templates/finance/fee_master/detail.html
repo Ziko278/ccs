@@ -1,0 +1,250 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block 'main' %}
+<div class="card">
+    <div class="card-body ">
+        <h5 class="card-title">Actions</h5>
+            <a title="Edit Fee Grouping" href="{% url 'fee_master_edit' fee_master.id %}" class="btn btn-warning" href=""><i class="bi bi-pencil-square"></i></a>
+            <a title="Delete Fee Grouping" href="{% url 'fee_master_delete' fee_master.id %}" class="btn btn-danger"><i class="bi bi-trash"></i></a>
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3">
+                <ul class="nav nav-tabs nav-tabs-bordered">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Overview</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Payments</button>
+                    </li>
+
+                </ul>
+
+                <div class="tab-content pt-2">
+                    <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                        <h5 class="card-title">{{ fee_master|upper }}</h5>
+
+                        {% if fee_master.fee.fee_occurrence == 'termly' %}
+                        {% if not fee_master.same_termly_price %}
+                        <div class="row">
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-cash-stack"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ fee_master.first_term_amount|intcomma }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">First Term</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-cash-stack"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ fee_master.second_term_amount|intcomma }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Second Term</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-cash-stack"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ fee_master.third_term_amount|intcomma }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Third Term</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        {% else %}
+
+                        <div class="row">
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-cash-stack"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ fee_master.amount|intcomma }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Amount</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-code-square"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ fee_master.fee.code|lower }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Fee</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-arrow-repeat"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ fee_master.fee.fee_occurrence|title }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Fee Occurrence</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        {% endif %}
+
+                        {% else %}
+                        <div class="row">
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-cash-stack"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ fee_master.amount|intcomma }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Amount</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-code-square"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ fee_master.fee|lower }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Fee</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-arrow-repeat"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ fee_master.fee.fee_occurrence|title }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Fee Occurrence</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <div class="card col-md-6">
+                                <div class="card-body">
+                                    {% if fee_master.student_class.all %}
+                                    <h5 class="card-title">Classes Assigned to Fee group</h5>
+                                    <ul class="list-group">
+                                        {% for class in fee_master.student_class.all %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                  {{ class.name|upper }} {{ section.name|upper }}
+
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                        <h5 class="card-title text-center">No Class assigned to fee group</h5>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="card col-md-6">
+                                <div class="card-body">
+                                    {% if fee_master.class_section.all %}
+                                    <h5 class="card-title">Class Sections Assigned to Fee group</h5>
+                                    <ul class="list-group">
+                                        {% for section in fee_master.class_section.all %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                {{ section.name|upper }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                        <h5 class="card-title text-center">No Class Section assigned to fee group</h5>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{%endblock %}

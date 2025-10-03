@@ -1,0 +1,176 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block 'main' %}
+<div class="card">
+    <div class="card-body ">
+        <h5 class="card-title">Actions</h5>
+            <a title="Edit Fee Penalty" href="{% url 'fee_penalty_edit' fee_penalty.id %}" class="btn btn-warning" href=""><i class="bi bi-pencil-square"></i></a>
+            <a title="Delete Fee Penalty" href="{% url 'fee_penalty_delete' fee_penalty.id %}" class="btn btn-danger"><i class="bi bi-trash"></i></a>
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3">
+                <ul class="nav nav-tabs nav-tabs-bordered">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Overview</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Benefactors</button>
+                    </li>
+
+                </ul>
+
+                <div class="tab-content pt-2">
+                    <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                        <h5 class="card-title">PENALTY: {{ fee_penalty.fee_master|upper }}</h5>
+
+                        <div class="row">
+                            {% if fee_penalty.method == 'amount' %}
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-cash-stack"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{% if fee_penalty.amount %} {{ fee_penalty.amount|intcomma }} {% else %} ------------ {% endif %}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Amount</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if fee_penalty.method == 'percentage' %}
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                %
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{% if fee_penalty.percentage %} {{ fee_penalty.percentage|intcomma }} {% else %} ------------ {% endif %}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Percentage</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if fee_penalty.date_reference == 'days' %}
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-calendar2-week"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ fee_penalty.days_from_resumption }} </h6>
+                                                <span class="text-muted small pt-2 ps-1">Days From Resumption</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if fee_penalty.date_reference == 'date' %}
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-calendar2-week"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ fee_penalty.due_date|date }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Due Date</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-flag"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6><span class="text-center {% if fee_penalty.status|lower == 'active' %} text-success {% else %} text-danger {% endif %}"> {{fee_penalty.status|upper}} </span></h6>
+                                                <span class="text-muted small pt-2 ps-1">Status</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <div class="row">
+                            <div class="card col-md-6">
+                                <div class="card-body">
+                                    {% if fee_penalty.fee_master.student_class.all %}
+                                    <h5 class="card-title">Affected Classes</h5>
+                                    <ul class="list-group">
+                                        {% for class in fee_penalty.fee_master.student_class.all %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                  {{ class.name|upper }} {{ section.name|upper }}
+
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                        <h5 class="card-title text-center">No Affected Class</h5>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="card col-md-6">
+                                <div class="card-body">
+                                    {% if fee_penalty.fee_master.class_section.all %}
+                                    <h5 class="card-title">Affected Class Sections</h5>
+                                    <ul class="list-group">
+                                        {% for section in fee_penalty.fee_master.class_section.all %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                {{ section.name|upper }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                        <h5 class="card-title text-center">No Affected Class Section</h5>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{%endblock %}

@@ -1,0 +1,193 @@
+{% extends 'layout.html' %}
+{% block 'page' %} Result {%endblock %}
+{% block 'subpage' %} Result Chart {%endblock %}
+{% block 'main' %}
+{% load static %}
+<input type="hidden" id="subject_list" value='{% for key, value in subject_list.items %} {% if not forloop.last %} {{ value|upper }}, {% else %} {{ value|upper }} {% endif %} {% endfor %} '>
+<input type="hidden" id="lowest_list" value='{% for key, value in result.result.items %} {% if not forloop.last %} {{ value.lowest_in_class }}, {% else %} {{ value.lowest_in_class }} {% endif %} {% endfor %} '>
+<input type="hidden" id="score_list" value='{% for key, value in result.result.items %} {% if not forloop.last %} {{ value.total }}, {% else %} {{ value.total }} {% endif %} {% endfor %} '>
+<input type="hidden" id="highest_list" value='{% for key, value in result.result.items %} {% if not forloop.last %} {{ value.highest_in_class }}, {% else %} {{ value.highest_in_class }} {% endif %} {% endfor %} '>
+<input type="hidden" id="average_list" value='{% for key, value in result.result.items %} {% if not forloop.last %} {{ value.average }}, {% else %} {{ value.average }} {% endif %} {% endfor %} '>
+
+
+<script src="{% static 'scripts/jquery.js' %}"></script>
+<script>
+      $(document).ready(function(){
+            subjects = $('#subject_list').val()
+            subject_list = subjects.split(",")
+
+            lowest = $('#lowest_list').val()
+            lowest_list = lowest.split(",")
+
+            highest = $('#highest_list').val()
+            highest_list = highest.split(",")
+
+            score = $('#score_list').val()
+            score_list = score.split(",")
+
+            average = $('#average_list').val()
+            average_list = average.split(",")
+
+      })
+</script>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ student.student_class|upper }} RESULT PERFORMANCE CHART OF {{ student.surname|upper }} {% if student.middle_name %} {{ student.middle_name|upper }} {% endif %} {{ student.last_name|upper }} FOR {{ session }} SESSION, {{ term|upper }}</h5>
+                <div id="columnChart"></div>
+                <script>
+                    document.addEventListener("DOMContentLoaded", () => {
+                      new ApexCharts(document.querySelector("#columnChart"), {
+                        series: [{
+                          name: 'Lowest in Class',
+                          data: lowest_list
+                        }, {
+                          name: 'Student Score',
+                          data: score_list
+                        }, {
+                          name: 'Highest in Class',
+                          data: highest_list
+                        }],
+                        chart: {
+                          type: 'bar',
+                          height: 350
+                        },
+                        plotOptions: {
+                          bar: {
+                            horizontal: false,
+                            columnWidth: '55%',
+                            endingShape: 'rounded'
+                          },
+                        },
+                        dataLabels: {
+                          enabled: false
+                        },
+                        stroke: {
+                          show: true,
+                          width: 2,
+                          colors: ['transparent']
+                        },
+                        xaxis: {
+                          categories: subject_list,
+                          title: {
+                            text: 'Subjects'
+                          }
+                        },
+                        yaxis: {
+                          title: {
+                            text: 'Mark Obtained'
+                          }
+                        },
+                        fill: {
+                          opacity: 1
+                        },
+                        tooltip: {
+                          y: {
+                            formatter: function(val) {
+                              return + val + " Marks"
+                            }
+                          }
+                        }
+                      }).render();
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">RESULT PERFORMANCE CHART OF {{ student.surname|upper }} {% if student.middle_name %} {{ student.middle_name|upper }} {% endif %} {{ student.last_name|upper }} FOR {{ session }} SESSION, {{ term|upper }}</h5>
+                <div id="barChart"></div>
+                <script>
+                    document.addEventListener("DOMContentLoaded", () => {
+                      new ApexCharts(document.querySelector("#barChart"), {
+                        series: [{
+                          data: score_list
+                        }],
+                        chart: {
+                          type: 'bar',
+                          height: 350
+                        },
+                        plotOptions: {
+                          bar: {
+                            borderRadius: 4,
+                            horizontal: true,
+                          }
+                        },
+                        dataLabels: {
+                          enabled: false
+                        },
+                        xaxis: {
+                          categories: subject_list,
+                        },
+
+                      }).render();
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">RESULT PERFORMANCE CHART OF {{ student.surname|upper }} {% if student.middle_name %} {{ student.middle_name|upper }} {% endif %} {{ student.last_name|upper }} FOR {{ session }} SESSION, {{ term|upper }}</h5>
+                <div id="columnChart2"></div>
+                <script>
+                    document.addEventListener("DOMContentLoaded", () => {
+                      new ApexCharts(document.querySelector("#columnChart2"), {
+                        series: [{
+                          name: 'Class Average',
+                          data: average_list
+                        }, {
+                          name: 'Mark Obtained',
+                          data: score_list
+                        }],
+                        chart: {
+                          type: 'bar',
+                          height: 350
+                        },
+                        plotOptions: {
+                          bar: {
+                            horizontal: false,
+                            columnWidth: '55%',
+                            endingShape: 'rounded'
+                          },
+                        },
+                        dataLabels: {
+                          enabled: false
+                        },
+                        stroke: {
+                          show: true,
+                          width: 2,
+                          colors: ['transparent']
+                        },
+                        xaxis: {
+                          categories: subject_list,
+                        },
+                        yaxis: {
+                          title: {
+                            text: 'Mark Obtained'
+                          }
+                        },
+                        fill: {
+                          opacity: 1
+                        },
+                        tooltip: {
+                          y: {
+                            formatter: function(val) {
+                              return val + " Marks"
+                            }
+                          }
+                        }
+                      }).render();
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,394 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block 'main' %}
+
+<div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Select Income Record
+            </h4>
+            <form>
+                <div class="row">
+                    <div class="col-4">
+                        <select name="session" required class="form-control">
+                            <option value="">-------------------</option>
+                            {% for session in session_list %}
+                            <option {% if session == current_session %} selected {% endif %} value="{{session.id}}">{{ session }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-4">
+                        <select name="term" required class="form-control">
+                            <option value="">-------------------</option>
+                            <option value="1st term" {% if term == '1st term' %} selected {% endif %}>1st Term</option>
+                            <option value="2nd term" {% if term == '2nd term' %} selected {% endif %}>2nd Term</option>
+                            <option value="3rd term" {% if term == '3rd term' %} selected {% endif %}>3rd Term</option>
+
+                        </select>
+                    </div>
+
+                    <div class="col-4">
+                        <input style="width:50%;margin-left:25%" type="submit" value="Proceed" class="btn btn-success">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<section class="section dashboard">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="row">
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card info-card sales-card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ academic_info.session }} <span>| {{ academic_info.term|upper }}</span></h5>
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-calendar2-fill"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>{{ session }} {{ term|title }}</h6>
+                                    <span class="text small pt-1 fw-bold">Term</span> <span class="text-muted small pt-2 ps-1"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card info-card revenue-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Fee <span>| Total Expected Fee</span></h5>
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-cash"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>N{{ total_expected_fee|intcomma }}</h6>
+                                    <span class="text-grey small pt-1 fw-bold">Total Fee</span> <span class="text-muted small pt-2 ps-1"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card info-card revenue-card">
+                        <div class="card-body">
+                            <h5 class="card-title"> Fee <span>| Total Paid Fee</span></h5>
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-cash"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>N{{ fee_paid|intcomma }}</h6>
+                                    <span class="text-grey small pt-1 fw-bold">Fee Paid</span> <span class="text-muted small pt-2 ps-1"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card info-card revenue-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Fee <span>| Balance</span></h5>
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-cash"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>N{{ fee_balance|intcomma }}</h6>
+                                    <span class="text-grey small pt-1 fw-bold">Fee Balance</span> <span class="text-muted small pt-2 ps-1"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Payment Distribution by Fees </h5>
+                            <div id="barChart"></div>
+                            <script>
+                                document.addEventListener("DOMContentLoaded", () => {
+                                  new ApexCharts(document.querySelector("#barChart"), {
+                                    series: [{
+                                      data: [
+                                      {% for fee, payment in fee_payment_list.items %}
+                                      {{payment}}{% if forloop.counter < fee_payment_list.items|length %},{% endif %}
+                                      {% endfor %}
+                                      ]
+                                    }],
+                                    chart: {
+                                      type: 'bar',
+                                      height: 350
+                                    },
+                                    plotOptions: {
+                                      bar: {
+                                        borderRadius: 4,
+                                        horizontal: true,
+                                      }
+                                    },
+                                    dataLabels: {
+                                      enabled: false
+                                    },
+                                    xaxis: {
+                                      categories: [
+                                      {% for fee, payment in fee_payment_list.items %}
+                                      '{{fee}}'{% if forloop.counter < fee_payment_list.items|length %},{% endif %}
+                                      {% endfor %}
+                                      ],
+                                    }
+                                  }).render();
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Fee Payment Trend <span>/ 7 Days </span></h5>
+                            <div id="reportsChart"></div>
+                            <input type="hidden" value='["2018-09-19T00:00:00.000Z", "2018-09-19T01:30:00.000Z", "2018-09-19T02:30:00.000Z", "2018-09-19T03:30:00.000Z", "2018-09-19T04:30:00.000Z", "2018-09-19T05:30:00.000Z", "2018-09-19T06:30:00.000Z"]' id="date_list">
+                            <script src="{% static 'admin_dashboard/scripts/jquery.js' %}"></script>
+                            <script>
+                                  var date_list = {{date_list|safe}}
+                                  var transaction_list = {{transaction_list|safe}}
+
+
+                                    document.addEventListener("DOMContentLoaded", () => {
+                                      new ApexCharts(document.querySelector("#reportsChart"), {
+                                        series: [{
+                                          name: 'Transactions Amount',
+                                          data: transaction_list,
+                                        }],
+                                        chart: {
+                                          height: 350,
+                                          type: 'area',
+                                          toolbar: {
+                                            show: false
+                                          },
+                                        },
+                                        markers: {
+                                          size: 4
+                                        },
+                                        colors: ['#4154f1', '#2eca6a', '#ff771d'],
+                                        fill: {
+                                          type: "gradient",
+                                          gradient: {
+                                            shadeIntensity: 1,
+                                            opacityFrom: 0.3,
+                                            opacityTo: 0.4,
+                                            stops: [0, 90, 100]
+                                          }
+                                        },
+                                        dataLabels: {
+                                          enabled: false
+                                        },
+                                        stroke: {
+                                          curve: 'smooth',
+                                          width: 2
+                                        },
+                                        xaxis: {
+                                          type: 'datetime',
+
+                                          categories: date_list
+                                        },
+                                        tooltip: {
+                                          x: {
+                                            format: 'dd/MM/yy HH:mm'
+                                          },
+                                        }
+                                      }).render();
+                                    });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body pb-0">
+                            <h5 class="card-title">Fee Payment by class <span>| {{term}} {{ session }}</span></h5>
+                            <div id="trafficChart" style="min-height: 400px;" class="echart"></div>
+                            <script>
+                                document.addEventListener("DOMContentLoaded", () => {
+                                  echarts.init(document.querySelector("#trafficChart")).setOption({
+                                    tooltip: {
+                                      trigger: 'item'
+                                    },
+                                    legend: {
+                                      top: '5%',
+                                      left: 'center'
+                                    },
+                                    series: [{
+                                      name: 'Fee Paid',
+                                      type: 'pie',
+                                      radius: ['40%', '70%'],
+                                      avoidLabelOverlap: false,
+                                      label: {
+                                        show: false,
+                                        position: 'center'
+                                      },
+                                      emphasis: {
+                                        label: {
+                                          show: true,
+                                          fontSize: '18',
+                                          fontWeight: 'bold'
+                                        }
+                                      },
+                                      labelLine: {
+                                        show: false
+                                      },
+                                      data: [
+
+                                      {% for student_class, total_paid in class_fee_payment_list.items %}
+                                      {
+                                          value: {{total_paid}},
+                                          name: '{{student_class}}'
+                                        }{% if forloop.counter < class_fee_payment_list.items|length %}, {% endif %}
+                                      {% endfor %}
+
+                                      ]
+                                    }]
+                                  });
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+
+                {% if fee_record %}
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Fee Payment Distribution Record by Class</h5>
+                            <div id="columnChart"></div>
+                            <script>
+                                document.addEventListener("DOMContentLoaded", () => {
+                                  new ApexCharts(document.querySelector("#columnChart"), {
+                                    series: [{
+                                      name: 'Total Fee',
+                                      data: [
+                                      {% for student_class, total_payable in fee_record.class_fee_record.total_payable.items %}
+                                      {{total_payable}}{% if forloop.counter < fee_record.class_fee_record.total_payable.items|length %}, {% endif %}
+                                      {% endfor %}]
+                                    }, {
+                                      name: 'Amount Paid',
+                                      data: [
+                                      {% for student_class, total_paid in fee_record.class_fee_record.total_paid.items %}
+                                      {{total_paid}}{% if forloop.counter < fee_record.class_fee_record.total_paid.items|length %}, {% endif %}
+                                      {% endfor %}
+                                      ]
+                                    }, {
+                                      name: 'Balance',
+                                      data: [
+                                      {% for student_class, total_balance in fee_record.class_fee_record.total_balance.items %}
+                                      {{total_balance}}{% if forloop.counter < fee_record.class_fee_record.total_balance.items|length %}, {% endif %}
+                                      {% endfor %}
+                                      ]
+                                    }],
+                                    chart: {
+                                      type: 'bar',
+                                      height: 350
+                                    },
+                                    plotOptions: {
+                                      bar: {
+                                        horizontal: false,
+                                        columnWidth: '55%',
+                                        endingShape: 'rounded'
+                                      },
+                                    },
+                                    dataLabels: {
+                                      enabled: false
+                                    },
+                                    stroke: {
+                                      show: true,
+                                      width: 2,
+                                      colors: ['transparent']
+                                    },
+                                    xaxis: {
+                                      categories: [
+                                      {% for student_class, total_payable in fee_record.class_fee_record.total_payable.items %}
+                                      '{{ student_class}}'{% if forloop.counter < fee_record.class_fee_record.total_payable.items|length %}, {% endif %}
+                                      {% endfor %}
+                                      ],
+                                    },
+                                    yaxis: {
+                                      title: {
+                                        text: '$ (Amount in Naira)'
+                                      }
+                                    },
+                                    fill: {
+                                      opacity: 1
+                                    },
+                                    tooltip: {
+                                      y: {
+                                        formatter: function(val) {
+                                          return "N" + val
+                                        }
+                                      }
+                                    }
+                                  }).render();
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+            <!-- Recent Sales -->
+            <div class="col-12">
+              <div class="card recent-sales overflow-auto">
+
+                  {% if fee_record_list %}
+                    <div class="card-body">
+                        <h5 class="card-title">Previous Fee Payment History <span>| Last 5 years</span></h5>
+
+                  <table class="table table-borderless datatable">
+                    <thead>
+                      <tr>
+                        <th scope="col">Session</th>
+                        <th scope="col">Term</th>
+                        <th scope="col">Total Fee</th>
+                        <th scope="col">Amount Paid</th>
+                        <th scope="col">Discount</th>
+                        <th scope="col">Penalty</th>
+                        <th scope="col">Balance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {% for fee_record in fee_record_list %}
+                      <tr>
+                        <th scope="row">{{ fee_record.session }}</th>
+                        <td>{{ fee_record.term }}</td>
+                        <td>{{ fee_record.total_payable|intcomma }}</td>
+                        <td>{{ fee_record.total_paid|intcomma }}</td>
+                        <td>{{ fee_record.total_discount|intcomma }}</td>
+                        <td>{{ fee_record.total_penalty|intcomma }}</td>
+                        <td>{{ fee_record.total_balance|intcomma }}</td>
+
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+
+                </div>
+                {% endif %}
+              </div>
+            </div><!-- End Recent Sales -->
+          </div>
+        </div><!-- End Left side columns -->
+
+      </div>
+    </section>
+{% endblock %}

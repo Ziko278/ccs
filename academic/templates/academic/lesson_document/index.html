@@ -1,0 +1,66 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="col-12">
+    <div class="card recent-sales overflow-auto">
+        <div class="filter">
+            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                <li class="dropdown-header text-start">
+                    <h6>Action</h6>
+                </li>
+
+                <li><a class="dropdown-item" href="#">
+                    <a href="{% url 'lesson_document_create' %}" class="btn btn-primary" style="width:100%">Add Document</a>
+                </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body">
+            <h5 class="card-title">List of Lesson Documents</h5>
+
+            <table class="table table-borderless datatable">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Subject</th>
+                    <th scope="col">Title</th>
+                    {% if user.is_superuser %}
+                    <th  class="text-center" scope="col">Staff</th>
+                    {% if school_info.school_type|lower == 'mix' and not school_info.separate_school_section %} <th scope="col">Category</th> {% endif %}
+                    {% endif %}
+                    <th scope="col" class="text-center">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if lesson_document_list %}
+                {% for document in lesson_document_list %}
+                <tr>
+                    <th scope="row"><a href="#">{{ forloop.counter }}</a></th>
+
+                    <td>{{ document.subject|title }}</td>
+                    <td>{{ document.title }}</td>
+                    <th class="text-center">{% if note.user.is_superuser %} Superadmin {% else %} <a href="{% url 'staff_detail' note.user.profile.staff.id %}">{{ note.user.profile.staff|title }}</a> {% endif %}</th>
+
+                    <td class="text-center">
+                        <a title="Edit Note" href="% url 'lesson_note_edit' note.id %}" class="btn btn-warning"><i class="bi bi-pencil-square"></i></a>
+                        <a title="View Note Detail" href="% url 'lesson_note_detail' note.id %}" class="btn btn-primary"><i class="bi bi-eye"></i></a>
+                        <a title="Delete Note" href="% url 'lesson_note_delete' note.id %}" class="btn btn-danger"><i class="bi bi-trash"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+
+
+                </tbody>
+            </table>
+            {% if not lesson_document_list %}
+                <h3 class="text-center">No Lesson Document Uploaded Yet</h3>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

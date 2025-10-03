@@ -1,0 +1,364 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block 'main' %}
+<div class="card">
+    <div class="card-body ">
+        <h5 class="card-title">Actions</h5>
+            <a title="Edit Fee Discount" href="{% url 'fee_discount_group_edit' fee_discount_group.id %}" class="btn btn-warning" href=""><i class="bi bi-pencil-square"></i></a>
+            <a title="Delete Fee Discount" href="{% url 'fee_discount_group_delete' fee_discount_group.id %}" class="btn btn-danger"><i class="bi bi-trash"></i></a>
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3">
+                <ul class="nav nav-tabs nav-tabs-bordered">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Overview</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Beneficiaries</button>
+                    </li>
+
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#add-bene">Add Benefactor</button>
+                    </li>
+
+
+                </ul>
+
+                <div class="tab-content pt-2">
+                    <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                        <h5 class="card-title">DISCOUNT GROUP: {{ fee_discount_group|upper }}</h5>
+
+                        <div class="row">
+                            <div class="col-xxl-4 col-md-6">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-people"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ fee_discount_group.students.all|length }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">No of Students</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-xxl-4 col-md-6">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-flag"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6><span class="text-center {% if fee_discount_group.status|lower == 'active' %} text-success {% else %} text-danger {% endif %}"> {{fee_discount_group.status|upper}} </span></h6>
+                                                <span class="text-muted small pt-2 ps-1">Status</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <div class="row">
+                            <div class="card col-md-12">
+                                <div class="card-body">
+                                    {% if fee_discount_group.discounts.all %}
+                                    <h5 class="card-title">Discounts in this Group</h5>
+                                    <ul class="list-group">
+                                        {% for discount in fee_discount_group.discounts.all %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                  {{ discount|upper }} - {% if discount.method == 'amount' %} N{{ discount.amount|intcomma }} {% else %} {{ discount.percentage }}% {% endif %}
+
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                        <h5 class="card-title text-center">No Discount in Group</h5>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
+                        <div class="card-body">
+                            <h4 class="card-title text-center">List of Student Beneficiaries</h4>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover table-borderless datatable">
+                                    <thead>
+                                        <tr>
+                                            <th> S/N </th>
+                                            <th> Fullname </th>
+                                            <th class="text-center"> Registration No </th>
+                                            <th class="text-center"> Class </th>
+                                            <th> Action </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% if fee_discount_group.students.all %}
+                                    {% for student in fee_discount_group.students.all %}
+                                        <tr>
+                                            <td> <image class="rounded-circle" style="width:50px;height:50px" {% if student.image %} src="/media/{{ student.image }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %}/>
+                                            <td> {{ student|title }} </td>
+                                            <td class="text-center">{{ student.registration_number|upper }} </td>
+                                            <th class="text-center"> {% if student.student_class %} {{ student.student_class|upper }} {% endif %} {% if student.class_section %} {{ student.class_section|upper }} {% endif %} </th>
+                                            <td>
+                                                <a title="View Student Details" class="btn btn-primary" href="{% url 'student_detail' student.id %}"><i class="bi bi-eye"></i></a>
+                                                <a title="Remove {{student|title}} from discount" class="btn btn-danger" href="{% url 'fee_discount_group_remove_benefactor' fee_discount_group.id student.id %}"><i class="bi bi-x"></i></a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    {% else %}
+                                    <tr><td colspan="5"><h3 class="text-center">No Current Beneficiary</h3></td></tr>
+
+                                    {% endif %}
+                                    </tbody>
+                                </table>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade profile-edit pt-3" id="add-bene">
+                        <input type="hidden" id="student_list" value="{{ student_list }}">
+                        <div class="card">
+                            <div class="card-body ">
+                                <h5 class="card-title">Search Student  </h5>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-floating">
+                                            <select class="form-control" id="id_student_class" >
+                                                <option value="" section="<option value=''>----------</option>">-------------</option>
+                                                {% for class in class_list %}
+                                                <option value="{{class.id}}" section="<option value=''>----------</option>
+                                                {% for section in class.section.all %}
+                                                <option value='{{section.id}}'>{{section.name|upper}}</option>
+                                                {% endfor %}
+                                                ">
+                                                    {{class.name|upper}}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+
+                                            <label for="floatingName">Select Class </label>
+                                            <br />
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="form-floating">
+                                            <select name="class_section" class="form-control" id="id_class_section" required>
+                                                <option value="">----------</option>
+                                            </select>
+
+                                            <label for="floatingName">Select Section </label>
+                                            <br />
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="form-floating">
+                                            <input type="search" id="id_student_name" class="form-control" />
+                                            <label for="floatingName">Student Name </label>
+                                            <br />
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="form-floating">
+                                            <input type="search" id="id_student_number" class="form-control" />
+                                            <label for="floatingName">Student Reg Number </label>
+                                            <br />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body ">
+                                <h5 class="card-title">Select Student: <span id="search_query"></span></h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <ul id="student_search_result">
+
+                                      </ul>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div id="student_detail_div" class="">
+                                            <p class="card-description"> STUDENT INFORMATION </p>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <p id="student_image"></p>
+                                                    <img id="default_image" style='width:100px;height:100px;border-radius:5px;' src='{% static "admin_dashboard/images/default_image.jpg" %}' />
+                                                </div>
+                                                <div class="col-md-8">
+                                                  <p id="student_fullname"></p>
+                                                  <p id="student_reg_no"></p>
+                                                  <p id="student_class"></p>
+                                                  <p id="student_gender"></p>
+                                                  <p><a id="proceed_button" class="btn btn-primary" href="" />Proceed</a></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <script src="{% static 'admin_dashboard/scripts/jquery.js' %}"></script>
+                        <script>
+                        $(document).ready(function(){
+                            $('#id_student_class').change(function(){
+                                section = $('option:selected', this).attr('section')
+                                $('#id_class_section').html(section)
+                            })
+                            $('#student_detail_div').hide()
+                            $('#id_class_section').change(function(){
+                                student_class_pk = $('#id_student_class').val()
+                                class_section_pk = $(this).val()
+                                student_class = $('option:selected', '#id_student_class').text()
+                                class_section = $('option:selected', this).text()
+
+                                if(student_class_pk != '' & class_section_pk != ''){
+                                    $.ajax({
+                                        url: "{% url 'fee_get_class_students' %}",
+                                        data: {
+                                            'class_pk': student_class_pk,
+                                            'section_pk': class_section_pk
+                                        },
+                                        success: function(data){
+                                            $('#search_query').text(student_class + ' ' + class_section)
+                                            $('#student_search_result').html(data)
+
+                                        }
+                                    })
+                                }
+                            })
+
+                            $('#id_student_number').keyup(function(){
+                                reg_no = $(this).val()
+                                if(reg_no.trim().length > 2 & reg_no.trim() != ''){
+                                    $.ajax({
+                                        url: "{% url 'fee_get_class_students_by_reg_number' %}",
+                                        data: {
+                                            'reg_no': reg_no.trim()
+                                        },
+                                        success: function(data){
+                                            $('#search_query').text(reg_no)
+                                            $('#student_search_result').html(data)
+
+                                        }
+                                    })
+                                }
+                            })
+
+                            student_list = $('#student_list').val()
+                            student_list = JSON.parse(student_list)
+                            student_name_list = {}
+                            for(const key in student_list){
+                                if(student_list[key]['fields']['middle_name'] == null){
+                                    student_name_list[student_list[key]['pk']] = student_list[key]['fields']['surname'] + " " + student_list[key]['fields']['last_name']
+                                    student_name_list[student_list[key]['pk']] = student_name_list[student_list[key]['pk']].toLowerCase()
+                                }else{
+                                    student_name_list[student_list[key]['pk']] = student_list[key]['fields']['surname'] + " " + student_list[key]['fields']['middle_name'] + " " + student_list[key]['fields']['last_name']
+                                    student_name_list[student_list[key]['pk']] = student_name_list[student_list[key]['pk']].toLowerCase()
+                                }
+                            }
+
+                            $('#id_student_name').keyup(function(){
+
+                                student_detail_list = ''
+                                search_value = $(this).val().toLowerCase()
+                                search_value_array = search_value.split(" ")
+
+                                if(search_value==''){
+                                    $('#student_detail_div').fadeOut()
+                                }else{
+                                    for(const key in student_name_list){
+                                        student_search_result = true
+
+                                        for(const search_key in search_value_array){
+                                            if(!student_name_list[key].includes(search_value_array[search_key])){
+                                                student_search_result = false
+                                            }
+                                        }
+                                        if(student_search_result==true){
+                                            student_detail_list += "<li student_id='"+key+"' class='list-group-item d-flex justify-content-between align-items-center select_student'>" +
+                                            student_name_list[key].toUpperCase() + "</li>"
+                                        }
+                                    }
+
+                                    if(student_detail_list == ''){
+                                        student_detail_list += "<li class='list-group-item d-flex justify-content-between align-items-center bg-danger text-white'> No Student in for Search Query</li>"
+                                    }
+                                }
+                                $('#search_query').text(search_value)
+                                $('#student_search_result').html(student_detail_list)
+
+                            })
+
+
+                            $(document).on('click','.select_student', function(){
+                                student_id = $(this).attr('student_id')
+                                student_fullname = student_name_list[student_id]
+                                $('#student_fullname').text(student_fullname.toUpperCase())
+
+                                for(const key in student_list){
+                                    if(student_list[key]['pk'] == student_id){
+                                        student_full_detail = student_list[key]['fields']
+                                    }
+                                }
+                                student_reg_no = student_full_detail['registration_number']
+                                $('#student_reg_no').text(student_reg_no)
+
+                                student_gender = student_full_detail['gender']
+                                $('#student_gender').text(student_gender)
+
+                                student_image = student_full_detail['image']
+                                student_image_src = '/media/' + student_image
+                                if(student_image == null || student_image==''){
+                                    $('#student_image').hide()
+                                    $('#default_image').show()
+                                }else{
+                                    student_image = "<img style='width:100px;height:100px;border-radius:5px;' src='"+student_image_src+"' />"
+                                    $('#student_image').html(student_image)
+                                    $('#student_image').show()
+                                    $('#default_image').hide()
+                                }
+
+                                proceed_button_href =  student_id + "/assign_benefactor"
+                                $('#proceed_button').attr('href', proceed_button_href)
+
+                                $('#student_detail_div').fadeIn()
+                            })
+                        })
+
+                        </script>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{%endblock %}

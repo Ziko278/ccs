@@ -1,0 +1,145 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block 'main' %}
+<div class="card">
+    <div class="card-body ">
+        <h5 class="card-title">Actions/h5>
+        <a title="Edit Income" href="{% url 'income_edit' income.id %}" class="btn btn-outline-warning"><i class="bi bi-pencil-square"></i></a>
+        <a title="Delete Income" href="{% url 'income_delete' income.id %}" class="btn btn-outline-danger"><i class="bi bi-trash"></i></a>
+        <a title="View All Incomes" href="{% url 'income_index' %}?session={{income.session.id}}&term={{income.term}}" class="btn btn-outline-primary"><i class="bi bi-menu-down"></i></a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3">
+                <ul class="nav nav-tabs nav-tabs-bordered">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Income Detail</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content pt-2">
+                    <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                        <h5 class="card-title">Income Details</h5>
+                        <div class="row">
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-cash-coin"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ income.amount|intcomma }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Amount</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="ri-code-box-line"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ income.category|title }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Category</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-hash"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6 style="font-size:18px">{{ income.invoice_number|upper }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Invoice Number</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-calendar2-week-fill"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ income.date|date }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Transaction Date</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-question-octagon"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ income.session|title }}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Academic Session</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-xxl-4 col-md-4">
+                                <div class="card info-card sales-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"></h5>
+                                        <div class="d-flex align-items-center">
+                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-question-circle"></i>
+                                            </div>
+                                            <div class="ps-3">
+                                                <h6>{{ income.term|title}}</h6>
+                                                <span class="text-muted small pt-2 ps-1">Term</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p><span class="card-title">Income Source:</span> <b>{{ income.source }}</b></p>
+                            <p><span class="card-title">Extra Info:</span> <b>{{ income.description }}</b></p>
+                            <p><span class="card-title">Proof of Fund:</span> <b>{% if income.income_proof %} <a href="{{ income.income_proof.url }}" target="_blank">View</a> {% endif %}</b></p>
+                            <p><i>This income was recorded by {{ income.user|lower }} at {{ income.created_at|date }} {% if income.updated_by %} and updated by {{ income.updated_by|lower }} at {{ income.updated_at|date }} {% endif %}</i></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{%endblock %}

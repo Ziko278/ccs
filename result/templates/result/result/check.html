@@ -1,0 +1,298 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="row">
+  <div class="col-12 grid-margin">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">CURRENT TERM SUBJECT RESULT</h4>
+        <form method="POST" class="form-sample" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Select a Class</label>
+
+                <div class="col-sm-8">
+                   <select name="student_class" class="form-control" id="id_student_class" required>
+                      <option value="">----------</option>
+                      {% for class in class_list %}
+                      <option value="{{class.id}}" section="<option value=''>----------</option>
+                      {% for section in class.section.all %}
+                      <option value='{{section.id}}'>{{section.name|upper}}</option>
+                      {% endfor %}
+                      ">
+
+                          {{class.name|upper}}</option>
+                        {% endfor %}
+                      </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Select Section</label>
+
+                <div class="col-sm-8">
+                   <select name="class_section" class="form-control" id="id_class_section" required>
+                        <option value="">----------</option>
+                   </select><br />
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Select a Subject</label>
+                <div class="col-sm-8">
+                  <select class="form-control" name="subject" required>
+                    <option value="">-------------------</option>
+                    {% if subject_list %}
+                      {% for subject in subject_list %}
+                        <option value="{{subject.id}}">{{subject}}</option>
+                      {% endfor %}
+                    {% endif %}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group row">
+                <div class="col-sm-12" style="float:right">
+                  <br />
+                  <button style="width:150px;margin:10px" class="btn btn-success btn-rounded">Proceed</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col-12 grid-margin">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">CURRENT TERM CLASS RESULT</h4>
+        <form method="POST" action="{% url 'result_class_list' %}" class="form-sample" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="division" value="{{division}}" />
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Select a Class</label>
+
+                <div class="col-sm-8">
+                   <select name="student_class" class="form-control" id="id_student_class_list" required>
+                      <option value="">----------</option>
+                      {% for class in class_list %}
+                      <option value="{{class.id}}" section="<option value=''>----------</option>
+                      {% for section in class.section.all %}
+                      <option value='{{section.id}}'>{{section.name|upper}}</option>
+                      {% endfor %}
+                      ">
+
+                          {{class.name|upper}}</option>
+                        {% endfor %}
+                      </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Select Section</label>
+
+                <div class="col-sm-8">
+                   <select name="class_section" class="form-control" id="id_class_section_list" required>
+                        <option value="">----------</option>
+                   </select><br />
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group row">
+                <div class="col-sm-12" style="float:right">
+                  <br />
+                  <button style="width:150px;margin:10px" class="btn btn-success btn-rounded">Proceed</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="row">
+  <div class="col-12 grid-margin">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">STUDENT RESULT ARCHIVE INFORMATION</h4>
+        <form method="POST"  class="form-sample" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="division" value="{{division}}" />
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Student ID</label>
+                <div class="col-sm-8">
+                  <input type="text" class="form-control" name="student_id" autocomplete="off" required placeholder="Enter student ID/Reg Number">
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group row">
+                <div class="col-sm-12" style="float:right">
+                  <button style="width:150px;margin:10px" class="btn btn-success btn-rounded">Proceed</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12 grid-margin">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">RESULT ARCHIVE SUBJECT INFORMATION</h4>
+        <form method="POST" action="{% url 'result_archive_check' %}" class="form-sample" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Select a Session</label>
+                <div class="col-sm-8">
+                  <select class="form-control" name="session_pk" required >
+                    <option value="">-------------------</option>
+                    {% if session_list %}
+                      {% for session in session_list %}
+                        <option value="{{session.id}}">{{session}}</option>
+                      {% endfor %}
+                    {% endif %}
+                  </select><br />
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Select a Term</label>
+                <div class="col-sm-8">
+                  <select class="form-control" name="term" required>
+                    <option value="">-------------------</option>
+                    <option value="1st term">1st Term</option>
+                    <option value="2nd term">2nd Term</option>
+                    <option value="3rd term">3rd Term</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Select a Class</label>
+
+                <div class="col-sm-8">
+                   <select name="student_class" class="form-control" id="id_student_class2" required>
+                      <option value="">--------------------</option>
+                      {% for class in class_list %}
+                      <option value="{{class.id}}" section="<option value=''>----------</option>
+                      {% for section in class.section.all %}
+                      <option value='{{section.id}}'>{{section.name|upper}}</option>
+                      {% endfor %}
+                      ">
+
+                          {{class.name|upper}}</option>
+                        {% endfor %}
+                      </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Select Section</label>
+
+                <div class="col-sm-8">
+                   <select name="class_section" class="form-control" id="id_class_section2" required>
+                        <option value="">----------------</option>
+                   </select><br />
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Select a Subject</label>
+                <div class="col-sm-8">
+                  <select class="form-control" name="subject" required>
+                    <option value="">-------------------</option>
+                    {% if subject_list %}
+                      {% for subject in subject_list %}
+                        <option value="{{subject.id}}">{{subject}}</option>
+                      {% endfor %}
+                    {% endif %}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group row">
+                <div class="col-sm-12" style="float:right">
+                  <button style="width:150px;margin:10px" class="btn btn-success btn-rounded">Proceed</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'admin_dashboard/scripts/jquery.js' %}"></script>
+<script>
+$(document).ready(function(){
+  $('#id_student_class').change(function(){
+    section = $('option:selected', this).attr('section')
+    $('#id_class_section').html(section)
+  })
+
+  $('#id_student_class2').change(function(){
+    section = $('option:selected', this).attr('section')
+    $('#id_class_section2').html(section)
+  })
+
+  $('#id_student_class_list').change(function(){
+    section = $('option:selected', this).attr('section')
+    $('#id_class_section_list').html(section)
+  })
+})
+
+</script>
+{% endblock %}

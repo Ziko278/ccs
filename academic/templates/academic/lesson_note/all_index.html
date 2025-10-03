@@ -1,0 +1,53 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="col-12">
+    <div class="card recent-sales overflow-auto">
+
+        <div class="card-body">
+            <h5 class="card-title">List of Lesson Notes</h5>
+
+            <table class="table table-borderless datatable">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Subject</th>
+                    <th scope="col">Title</th>
+                    <th>Status</th>
+                    <th  class="text-center" scope="col">Staff</th>
+                    {% if school_info.school_type|lower == 'mix' and not school_info.separate_school_section %} <th scope="col">Category</th> {% endif %}
+
+                    <th scope="col" class="text-center">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if lesson_note_list %}
+                {% for note in lesson_note_list %}
+                <tr>
+                    <th scope="row"><a href="#">{{ forloop.counter }}</a></th>
+
+                    <td>{{ note.subject|title }}</td>
+                    <td>{{ note.title }}</td>
+                    <td class="{% if note.status|lower == 'pending' %} text-warning {% elif note.status|lower == 'approved' %} text-success {% elif note.status|lower == 'declined' %} text-danger {% endif %}">{{ note.status|upper }}</td>
+
+                    <th class="text-center">{% if note.user.is_superuser %} Superadmin {% else %} <a href="{% url 'staff_detail' note.user.profile.staff.id %}">{{ note.user.profile.staff|title }}</a> {% endif %}</th>
+
+                    <td class="text-center">
+                        <a title="View Note Detail" href="{% url 'lesson_note_detail' note.id %}" class="btn btn-primary"><i class="bi bi-eye"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+
+
+                </tbody>
+            </table>
+            {% if not lesson_note_list %}
+                <h3 class="text-center">No Lesson Note Added Yet</h3>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

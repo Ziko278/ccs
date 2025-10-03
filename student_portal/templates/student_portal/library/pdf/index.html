@@ -1,0 +1,49 @@
+{% extends 'student_portal/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="col-12">
+    <div class="card recent-sales overflow-auto">
+
+        <div class="card-body">
+            <h5 class="card-title">List of Available PDFs
+            </h5>
+            {% if form.errors %}
+                <h5 class="text-danger">{{form.errors}}</h5>
+            {% endif %}
+            <table class="table table-borderless datatable">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Books</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Action</th>
+
+                </tr>
+                </thead>
+                <tbody>
+                {% if pdf_book_list %}
+                {% for book in pdf_book_list %}
+                <tr>
+                    <th scope="row"><a href="#">{{ forloop.counter }}</a></th>
+                    <td title="">{{ book.name|upper }}</td>
+                    <td>{{ book.category|upper }}</td>
+                    <td>
+                        <a title="View PDF" href="{% url 'student_pdf_detail' book.id %}" class="btn btn-primary"><i class="bi bi-eye"></i></a>
+                    </td>
+
+                </tr>
+                {% endfor %}
+                {% endif %}
+
+
+                </tbody>
+            </table>
+            {% if not pdf_book_list %}
+                <h3 class="text-center">No Available PDF</h3>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

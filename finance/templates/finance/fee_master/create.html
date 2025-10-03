@@ -1,0 +1,138 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="col-12">
+    <div class="card recent-sales overflow-auto">
+
+        <div class="card-body">
+            <h5 class="card-title">Add Fee Grouping</h5>
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="moda" id="verticalycentered" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Add Fee Grouping</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <input type="hidden" name="type" value="{{ user.profile.type }}" />
+                            <input type="hidden" name="user" value="{{ user.id }}" />
+                            <div class="modal-body row">
+                                <div class="form-floating col-md-6">
+                                    {{ form.group }}
+                                    <label for="floatingName">Fee Group <span style="color:red"><b>*</b></span></label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6">
+                                    <select name="fee" required id="fees" class="form-control">
+                                        <option value="" fee_type="">------------</option>
+                                        {% for fee in fee_list %}
+                                            <option value="{{fee.id}}" fee_type="{{fee.fee_occurrence}}">{{ fee|upper }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="floatingName">Fee <span style="color:red"><b>*</b></span></label>
+                                    <br />
+                                </div><br />
+
+                                <div class="col-md-6">
+                                    <h4 class="card-title" style="margin-top:-20px">Select Classes </h4>
+                                    {{ form.student_class }}
+                                </div><br />
+
+                                <div class="col-md-6">
+                                    <h4 class="card-title" style="margin-top:-20px">Select Sections </h4>
+                                    {{ form.class_section }}<br />
+                                </div><br />
+
+                                <div class="form-floating col-md-6" id="amount-div">
+                                    {{ form.amount }}
+                                    <label for="floatingName">Amount </label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6">
+                                    {{ form.is_new }}
+                                    <label for="floatingName">New Student </label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6 d-none" id="payment_term_div">
+                                    <select class="form-control" name="same_termly_price" id="payment_term">
+                                        <option value="">--------------</option>
+                                        <option value="true">YES</option>
+                                        <option value="false">NO</option>
+                                    </select><br />
+                                    <label for="floatingName">Same Termly Payment <span style="color:red"><b>*</b></span></label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6 d-none term-amount-div">
+                                    <input type="number" step="any" class="form-control term-amount" name="first_term_amount">
+                                    <br />
+                                    <label for="floatingName">First Term Amount <span style="color:red"><b>*</b></span></label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6 d-none term-amount-div">
+                                    <input type="number" step="any" class="form-control term-amount" name="second_term_amount">
+                                    <label for="floatingName">Second Term Amount <span style="color:red"><b>*</b></span></label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6 d-none term-amount-div">
+                                    <input type="number" step="any" class="form-control term-amount" name="third_term_amount">
+                                    <label for="floatingName">Third Term Amount <span style="color:red"><b>*</b></span></label>
+                                </div><br />
+
+                            </div>
+                            <div class="modal-footer">
+                                <a href="{% url 'fee_master_index' %}" class="btn btn-danger">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Save changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+
+        </div>
+    </div>
+</div>
+
+
+
+
+<script src="{% static 'admin_dashboard/scripts/jquery.js' %}"></script>
+<script>
+$(document).ready(function(){
+    $('#fees').change(function(){
+        $('#amount-div').removeClass('d-none')
+        $('.term-amount-div').addClass('d-none')
+        $('#payment_term').val('')
+        fee_type = $('option:selected', this).attr('fee_type')
+        if(fee_type == 'termly'){
+            $('#payment_term_div').removeClass('d-none')
+            $('#payment_term').attr('required', true)
+        }else{
+            $('#payment_term_div').addClass('d-none')
+            $('#payment_term').removeAttr('required')
+        }
+
+    })
+
+    $('#payment_term').change(function(){
+        same_payment = $(this).val()
+        if(same_payment == 'true'){
+            $('#amount-div').removeClass('d-none')
+            $('.term-amount-div').addClass('d-none')
+            $('.term-amount').removeAttr('required')
+        } else{
+            $('#amount-div').addClass('d-none')
+            $('.term-amount-div').removeClass('d-none')
+            $('.term-amount').attr('required', true)
+        }
+
+    })
+
+})
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="row">
+  <div class="col-12 grid-margin">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">STUDENT REGISTRATION INFORMATION
+          <a title="Add Parent" style="float:right" href="{% url 'student_parent_create' %}" class="btn btn-primary"><i class="ri-user-add-fill"></i></a>
+          <a title="View Parent List" style="float:right;margin-right:5px;" href="{% url 'parent_index' %}" class="btn btn-primary"><i class="bi bi-card-list"></i></a></h4>
+          <p>Enter the parent name if he is already registered, else click on register parent to first register the parent </p>
+        <form method="POST" class="form-sample" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <input type="hidden" id="parent_list" value="{{ parent_list }}">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="form-group row">
+                <label class="col-md-3 col-form-label">Enter Parent Detail</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" id="parent_search" placeholder="Enter Parent Surname Middle_name Last_name">
+                  <br />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <ul id="parent_detail_list"></ul>
+            </div>
+            <div id="parent_detail_div" class="col-md-6">
+              <p class="card-description"> PARENT INFORMATION </p>
+              <div class="row">
+                <div class="col-md-4">
+                  <p id="parent_image"></p>
+                  <img id="default_image" style='width:100px;height:100px;border-radius:5px;' src='{% static "admin_dashboard/images/default_image.jpg" %}' />
+                </div>
+                <div class="col-md-8">
+                  <p id="parent_fullname"></p>
+                  <p id="parent_mobile"></p>
+                  <p id="parent_email"></p>
+                  <p id="parent_address"></p>
+                  <p><a id="proceed_button" class="btn btn-primary" href="" />Proceed</a></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{% static 'admin_dashboard/scripts/jquery.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin_dashboard/scripts/custom/student.js' %}"></script>
+{%endblock %}

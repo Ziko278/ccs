@@ -1,0 +1,156 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% block 'main' %}
+{% load static %}
+
+<div class="col-12">
+    <div class="card recent-sales overflow-auto">
+
+        <div class="card-body">
+            <h5 class="card-title">Edit Fee Penalty - {{ fee_penalty|upper }} </h5>
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="moda" id="verticalycentered" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Edit Fee Penalty</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <input type="hidden" name="updated_by" value="{{ user.id }}" />
+                            <div class="modal-body row">
+                                <input type="hidden" name="type" value="{{ user.profile.type }}" />
+                                <input type="hidden" name="user" value="{{ user.id }}" />
+                                <div class="form-floating col-md-6">
+                                    {{ form.fee_master }}<br>
+                                    <label for="floatingName">Fee <span style="color:red"><b>*</b></span></label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6">
+                                    <select class="form-control" required name="method" id="fee_method">
+                                        <option {% if fee_penalty.method == 'amount' %} selected {% endif %} value="amount">FIXED AMOUNT</option>
+                                        <option {% if fee_penalty.method == 'percentage' %} selected {% endif %}  value="percentage">PERCENTAGE</option>
+                                    </select>
+                                    <label for="floatingName">Penalty Type <span style="color:red"><b>*</b></span></label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6">
+                                    <input type="number" style="any" class="form-control" id="fee_amount" name="amount" value="{{fee_penalty.amount}}" {% if fee_penalty.method == 'percentage' %} readonly {% endif %} ><br />
+                                    <label for="floatingName">Amount <span style="color:red" id="amount_required"></span></label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6">
+                                    <input type="number" style="any" class="form-control" id="fee_percentage" name="percentage" value="{{fee_penalty.percentage}}" {% if fee_penalty.method == 'amount' %} readonly {% endif %} >
+                                    <label for="floatingName">Percentage <span style="color:red" id="percentage_required"></span></label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6">
+                                    <select class="form-control" required name="date_reference" id="date_reference">
+                                        <option value="">------------------</option>
+                                        <option {% if fee_penalty.date_reference == 'days' %} selected {% endif %} value="days">DAYS FROM RESUMPTION</option>
+                                        <option {% if fee_penalty.date_reference == 'date' %} selected {% endif %} value="date">SELECTED DATE</option>
+                                    </select>
+                                    <label for="floatingName">Penalty Date Type <span style="color:red"><b>*</b></span></label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6">
+                                    <input type="number" step="any" class="form-control" value="{{fee_penalty.days_from_resumption}}" id="fee_days" name="days_from_resumption" {% if fee_penalty.date_reference == 'date' %} readonly {% endif %}><br />
+                                    <label for="floatingName">No of Days From Resumption <span style="color:red" id="days_required"></span></label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6">
+                                    <input type="date" class="form-control" id="fee_date" value="{{fee_penalty.due_date|date:'Y-m-d'}}"  name="due_date" {% if fee_penalty.date_reference == 'days' %} readonly {% endif %}>
+                                    <label for="floatingName">Penalty Due Date <span style="color:red" id="date_required"></span></label>
+                                </div><br />
+
+                                <div class="form-floating col-md-6">
+                                    {{ form.status }}
+                                    <label for="floatingName">Status <span style="color:red"></span></label>
+                                </div><br />
+
+                            </div>
+                            <div class="modal-footer">
+                                <a href="{% url 'fee_index' %}" class="btn btn-danger">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Save changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'admin_dashboard/scripts/jquery.js' %}"></script>
+<script>
+$(document).ready(function(){
+    $('#fee_method').change(function(){
+        method = $(this).val()
+        if(method == 'amount'){
+            $('#amount_required').text('*')
+            $('#percentage_required').text('')
+            $('#fee_amount').attr('required', true)
+            $('#fee_amount').removeAttr('readonly')
+            $('#fee_percentage').attr('required', false)
+            $('#fee_percentage').val('')
+            $('#fee_percentage').attr('readonly', true)
+        } else if(method == 'percentage'){
+            $('#amount_required').text('')
+            $('#percentage_required').text('*')
+            $('#fee_amount').attr('required', false)
+            $('#fee_percentage').attr('required', true)
+            $('#fee_percentage').removeAttr('readonly')
+            $('#fee_amount').attr('readonly', true)
+            $('#fee_amount').val('')
+        }else {
+            $('#fee_amount').attr('required', false)
+            $('#fee_percentage').attr('required', false)
+            $('#amount_required').text('')
+            $('#percentage_required').text('')
+            $('#fee_amount').attr('readonly', true)
+            $('#fee_percentage').attr('readonly', true)
+            $('#fee_percentage').val('')
+            $('#fee_amount').val('')
+        }
+    })
+
+
+    $('#date_reference').change(function(){
+        method = $(this).val()
+        if(method == 'days'){
+            $('#days_required').text('*')
+            $('#date_required').text('')
+            $('#fee_days').attr('required', true)
+            $('#fee_days').removeAttr('readonly')
+            $('#fee_date').attr('required', false)
+            $('#fee_date').val('')
+            $('#fee_date').attr('readonly', true)
+        } else if(method == 'date'){
+            $('#days_required').text('')
+            $('#date_required').text('*')
+            $('#fee_date').attr('required', true)
+            $('#fee_date').removeAttr('readonly')
+            $('#fee_days').attr('readonly', true)
+            $('#fee_days').attr('required', false)
+            $('#fee_days').val('')
+        }else {
+            $('#days_required').text('')
+            $('#date_required').text('')
+            $('#fee_date').val('')
+            $('#fee_date').attr('required', false)
+            $('#fee_date').attr('readonly', true)
+            $('#fee_days').attr('required', false)
+            $('#fee_days').attr('readonly', true)
+            $('#fee_days').val('')
+
+        }
+    })
+
+})
+
+</script>
+
+
+{% endblock %}

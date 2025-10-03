@@ -1,0 +1,39 @@
+{% extends 'student_portal/layout.html' %}
+{% load static %}
+{% block 'main' %}
+<div class="card">
+    <div class="card-body ">
+        <h5 class="card-title">Title: {{ e_book|title }} <i>({{e_book.category|title}})</i></h5>
+        {% if e_book.description %} <p>Description: <i> {{ e_book.description }} {% endif %}</i></p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body pt-3">
+                <ul class="nav nav-tabs nav-tabs-bordered">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">E-Book Detail</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content pt-2">
+                    <div class="tab-pane fade show active profile-overview" id="profile-overview">
+                        <div class="row">
+                            <div style="padding:20px">
+                                {{ e_book_content|safe }}
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{%endblock %}

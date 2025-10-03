@@ -1,0 +1,223 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% load humanize %}
+{% block 'main' %}
+<div class="row">
+
+    <div class="col-md-12">
+        <div class="card info-card customers-card">
+            <div class="card-body">
+                {% if academic_info.term == '3rd term' %}
+                <h5 class="card-title">CHANGE OF SESSION FROM {{ academic_info.session }}, 3rd TERM TO {{ academic_info.session.start_year|add:1 }}-{{ academic_info.session.end_year|add:1 }} 1st TERM</h5>
+                {% else %}
+                <h5 class="card-title">CHANGE OF TERM FROM {{ academic_info.session }}, {{ academic_info.term|upper }} TO {{ academic_info.session }} {% if academic_info.term == '1st term' %} 2ND {% else %} 3rd {% endif %} TERM</h5>
+                {% endif %}
+                <p class="card-description"><b>PLEASE DO NOT TURN OFF INTERNET CONNECTION</b></p>
+
+                <ol class="list-group" id="task_list" style="display:none">
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="spinner-border text-primary" id="spinner1" style="display:none" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Confirming Everything Checks Fine</div>
+                        </div>
+                         <span class="" style="display:none" id="tick1"><i style="font-size:20px;font-weight:bold;" class="text-success bi bi-check2-all"></i> </span>
+                    </li>
+
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="spinner-border text-primary" id="spinner2" style="display:none"  role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Saving Student Academic Record For The Term</div>
+                        </div>
+                         <span class="" style="display:none" id="tick2"><i style="font-size:20px;font-weight:bold" class="text-success bi bi-check2-all"></i> </span>
+                    </li>
+
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="spinner-border text-primary" id="spinner3" style="display:none" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Saving Student Attendance Record For The Term</div>
+                        </div>
+                         <span class="" style="display:none" id="tick3"><i style="font-size:20px;font-weight:bold" class="text-success bi bi-check2-all"></i> </span>
+                    </li>
+
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="spinner-border text-primary" id="spinner4" style="display:none" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Saving Student Outstanding Fee and Finance Record For The Term</div>
+                        </div>
+                         <span class="" style="display:none" id="tick4"><i style="font-size:20px;font-weight:bold" class="text-success bi bi-check2-all"></i> </span>
+                    </li>
+
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="spinner-border text-primary" id="spinner5" style="display:none" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Updating Student's Classes</div>
+                        </div>
+                         <span class="" style="display:none" id="tick5"><i style="font-size:20px;font-weight:bold" class="text-success bi bi-check2-all"></i> </span>
+                    </li>
+
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="spinner-border text-primary" id="spinner6" style="display:none" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Updating Term And Cleaning Up</div>
+                        </div>
+                         <span class="" style="display:none" id="tick6"><i style="font-size:20px;font-weight:bold" class="text-success bi bi-check2-all"></i> </span>
+                    </li>
+                </ol>
+                <br />
+                <p class="card-description text-danger text-center" id="error-mess"><b></b></p>
+                <p class="card-description text-success text-center" style="display:none" id="success-mess"><b>
+                    SUCCESSFULLY UPDATED SESSION AND TERM
+                </b></p>
+                <p class="text-center" id="success-button" style="display:none"><a href="{% url 'admin_dashboard' %}" class="btn btn-success btn-lg">GO TO DASHBOARD</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'admin_dashboard/scripts/jquery.js' %}"></script>
+<script>
+$(document).ready(function(){
+    setTimeout(function(){
+        $('#task_list').slideDown()
+           setTimeout(function(){
+                $('#spinner1').fadeIn()
+           }, 1000)
+    }, 2000)
+
+    setTimeout(function(){
+        $.ajax({
+            url: "{% url 'check_setting_is_okay' %}",
+            success: function(data){
+                if(data == 'True'){
+                    setTimeout(function(){
+                        $('#tick1').fadeIn()
+                        $('#spinner1').fadeOut()
+                        $('#spinner2').fadeIn()
+                        set_student_academic_record()
+                    }, 1000)
+                }else{
+                    setTimeout(function(){
+                        $('#error-mess').html(data)
+                    }, 1000)
+                }
+            }
+        })
+    }, 3200)
+})
+
+function set_student_academic_record(){
+    $.ajax({
+        url: "{% url 'save_student_academic_record' %}",
+        success: function(data){
+            if(data == 'True'){
+                setTimeout(function(){
+                    $('#tick2').fadeIn()
+                    $('#spinner2').fadeOut()
+                    $('#spinner3').fadeIn()
+                    set_student_attendance_record()
+                }, 1000)
+            }else{
+                setTimeout(function(){
+                    $('#error-mess').html(data)
+                }, 1000)
+            }
+        }
+    })
+}
+
+function set_student_attendance_record(){
+    $.ajax({
+        url: "{% url 'save_student_academic_record' %}",
+        success: function(data){
+            if(data == 'True'){
+                setTimeout(function(){
+                    $('#tick3').fadeIn()
+                    $('#spinner3').fadeOut()
+                    $('#spinner4').fadeIn()
+                    set_student_fee_record()
+                }, 1000)
+            }else{
+                setTimeout(function(){
+                    $('#error-mess').html(data)
+                }, 1000)
+            }
+        }
+    })
+}
+
+
+function set_student_fee_record(){
+    $.ajax({
+        url: "{% url 'save_student_fee_record' %}",
+        success: function(data){
+            if(data == 'True'){
+                setTimeout(function(){
+                    $('#tick4').fadeIn()
+                    $('#spinner4').fadeOut()
+                    $('#spinner5').fadeIn()
+                    update_student_class()
+                }, 1000)
+            }else{
+                setTimeout(function(){
+                    $('#error-mess').html(data)
+                }, 1000)
+            }
+        }
+    })
+}
+
+function update_student_class(){
+    $.ajax({
+        url: "{% url 'update_student_class' %}",
+        success: function(data){
+            if(data == 'True'){
+                setTimeout(function(){
+                    $('#tick5').fadeIn()
+                    $('#spinner5').fadeOut()
+                    $('#spinner6').fadeIn()
+                    update_and_clean_up()
+                }, 1000)
+            }else{
+                setTimeout(function(){
+                    $('#error-mess').html(data)
+                }, 1000)
+            }
+        }
+    })
+}
+
+
+function update_and_clean_up(){
+    $.ajax({
+        url: "{% url 'update_and_clean_up' %}",
+        success: function(data){
+            if(data == 'True'){
+                setTimeout(function(){
+                    $('#tick6').fadeIn()
+                    $('#spinner6').fadeOut()
+                    $('#success-mess').fadeIn()
+                    $('#success-button').fadeIn()
+                }, 1000)
+            }else{
+                setTimeout(function(){
+                    $('#error-mess').html(data)
+                }, 1000)
+            }
+        }
+    })
+}
+</script>
+
+{% endblock %}

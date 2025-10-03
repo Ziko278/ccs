@@ -1,0 +1,141 @@
+{% extends 'admin_dashboard/layout.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block 'main' %}
+<style>
+    .school-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #f1f5f9;
+        padding: 10px 20px;
+        border-bottom: 2px solid #000;
+        margin-bottom: 20px;
+    }
+
+    .school-logo {
+        height: 80px;
+    }
+
+    .school-info {
+        flex-grow: 1;
+        text-align: center;
+    }
+
+    .school-info h2 {
+        margin: 5px 0;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .school-info p {
+        margin: 2px 0;
+    }
+
+    .broadsheet-title {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .broadsheet-title h3 {
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .broadsheet-title p {
+        font-size: 15px;
+    }
+
+    .table thead th {
+        background-color: #002D62;
+        color: white;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .table tbody td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    @media print {
+        .no-print {
+            display: none;
+        }
+        body {
+            -webkit-print-color-adjust: exact;
+        }
+    }
+</style>
+
+<div class="school-header">
+    {% if site_info.logo %}
+        <img src="{{ site_info.logo.url }}" alt="School Logo" class="school-logo">
+    {% endif %}
+    <div class="school-info">
+        <h2>{{ site_info.name|upper }}</h2>
+        <p><strong>Address:</strong> {{ site_info.address }}</p>
+        <p><strong>Email:</strong> {{ site_info.email }} | <strong>Phone:</strong> {{ site_info.mobile_1 }}</p>
+    </div>
+</div>
+
+<div class="broadsheet-title">
+    <h3>Class Broadsheet - {{ student_class.name|upper }}</h3>
+    <p>
+        Session: {{ session }} | Term: {{ term|title }}
+        {% if section_selected %}| Section: {{ class_section.name|upper }}{% endif %}
+    </p>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                <th>S/N</th>
+                <th>Admission No</th>
+                <th>Student Name</th>
+                {% if not section_selected %}
+                    <th>Section</th>
+                {% endif %}
+                {% for subject in subject_list %}
+                    <th>{{ subject.code|upper }}</th>
+                {% endfor %}
+                <th>Total</th>
+                <th>Average</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in result_list %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ result.student.registration_number|upper }}</td>
+                    <td>{{ result.student|title }}</td>
+                    {% if not section_selected %}
+                        <td>{{ result.class_section.name }}</td>
+                    {% endif %}
+                    {% for subject in subject_list %}
+                        {% with subject_id=subject.id|stringformat:"s" %}
+                            {% with subject_data=result.result|get_item:subject_id %}
+                                {% if subject_data %}
+                                    <td>{{ subject_data|get_item:'total'|default:"--" }}</td>
+                                {% else %}
+                                    <td>--</td>
+                                {% endif %}
+                            {% endwith %}
+                        {% endwith %}
+                    {% endfor %}
+                    <td>{{ result.total_score }}</td>
+                    <td>{{ result.student_average }}%</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="100%">No results found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="text-center mt-3 no-print">
+    <button onclick="window.print()" class="btn btn-primary">Download / Print</button>
+</div>
+{% endblock %}
