@@ -209,7 +209,7 @@ class StudentsModel(models.Model):
                 # Loop to ensure unique registration number
                 while True:
                     gen_id = student_id
-                    prefix = 'tbt'
+                    prefix = 'ccs'
                     registration_number = f"{prefix}/{session}/{gen_id.rjust(4, '0')}"
                     if not StudentsModel.objects.filter(registration_number=registration_number).exists():
                         break
