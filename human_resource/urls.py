@@ -24,5 +24,7 @@ urlpatterns = [
     path('setting', HRSettingView.as_view(), name='hr_info'),
     path('setting/create', HRSettingCreateView.as_view(), name='hr_info_create'),
     path('setting/<int:pk>/update', HRSettingUpdateView.as_view(), name='hr_info_update'),
+
+    path('export/all-staff/', export_all_staff_view, name='export_all_staff'),
 ]
 

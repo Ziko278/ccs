@@ -7,7 +7,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core import serializers
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import ListView
@@ -20,6 +20,7 @@ from human_resource.forms import *
 from school_setting.models import *
 from django.db.models import Sum
 from admin_dashboard.utility import state_list
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class DepartmentCreateView(LoginRequiredMixin, PermissionRequiredMixin, SuccessMessageMixin, CreateView):
@@ -426,4 +427,79 @@ class HRSettingUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             kwargs.update({'type': self.request.user.profile.type})
         kwargs.update({'type': self.request.user.profile.type})
         return kwargs
+
+
+
+@login_required
+@permission_required("human_resource.view_staffmodel", raise_exception=True)
+def export_all_staff_view(request):
+    """
+    Exports a list of all staff with their login credentials (excluding current password) to an Excel file.
+    """
+    staff_list = StaffModel.objects.all()
+
+
+    if not staff_list.exists():
+        messages.warning(request, "No staff members found to export.")
+        return redirect(request.META.get('HTTP_REFERER', 'some_default_url_name'))
+
+    output = io.BytesIO()
+    workbook = Workbook(output, {'in_memory': True})
+    worksheet = workbook.add_worksheet("Staff List")
+
+    # ADDED 'Default Password' to the headers
+    headers = ['Staff ID', 'Full Name', 'Username', 'Default Password', 'Role(s)', 'Email', 'Mobile']
+    header_format = workbook.add_format({'bold': True, 'bg_color': '#D3D3D3'})
+    for col_num, header in enumerate(headers):
+        worksheet.write(0, col_num, header, header_format)
+
+    # Write data rows
+    for row_num, staff in enumerate(staff_list, 1):
+        # Initialize variables with default values from the StaffModel
+        full_name = f"{staff.surname} {staff.last_name}"
+        username = 'N/A'
+        default_password = 'N/A' # Initialize password field
+        roles = 'N/A'
+        email = staff.email or 'N/A'
+
+        # Try to get more accurate data from the linked User and Profile
+        try:
+            profile = staff.account
+            user = profile.user
+
+            full_name = staff.__str__().title()
+            username = user.username
+            email = user.email
+            roles = ', '.join([group.name for group in user.groups.all()])
+
+            # FETCH THE SAVED DEFAULT PASSWORD
+            default_password = profile.default_password
+
+        except ObjectDoesNotExist:
+            # This block runs if a staff member exists but has no user account linked yet.
+            # The initial default values will be used.
+            pass
+
+        worksheet.write(row_num, 0, staff.staff_id)
+        worksheet.write(row_num, 1, full_name)
+        worksheet.write(row_num, 2, username)
+        # WRITE THE PASSWORD TO THE NEW COLUMN
+        worksheet.write(row_num, 3, default_password)
+        worksheet.write(row_num, 4, roles)
+        worksheet.write(row_num, 5, email)
+        worksheet.write(row_num, 6, staff.mobile or 'N/A')
+
+    # Auto-fit columns for better readability
+    worksheet.autofit()
+
+    workbook.close()
+    output.seek(0)
+
+    filename = "All-Staff-Credentials.xlsx"
+    response = HttpResponse(
+        output.read(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response['Content-Disposition'] = f"attachment; filename={filename}"
+    return response
 
