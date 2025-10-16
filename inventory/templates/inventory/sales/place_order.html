@@ -1,4 +1,4 @@
-{% extends 'admin_site/layout.html' %}
+{% extends 'admin_dashboard/layout.html' %}
 {% load static humanize %}
 
 {% block 'main' %}
@@ -54,7 +54,7 @@
 </div>
                 </div>
                 <div class="col-md-3 text-end">
-                    <img id="student-image" class="img-fluid rounded border" src="{% static 'admin_site/images/default_image.jpg' %}" style="max-height:80px; width: 80px; object-fit: cover;" alt="Student Image">
+                    <img id="student-image" class="img-fluid rounded border" src="{% static 'admin_dashboard/images/default_image.jpg' %}" style="max-height:80px; width: 80px; object-fit: cover;" alt="Student Image">
                 </div>
             </div>
 
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const itemSearchUrl = "{% url 'api_item_search' %}";
     const barcodeLookupUrl = "{% url 'api_barcode_lookup' %}";
     const maxDebt = {{ settings.max_student_debt|default:0 }};
-    const defaultImage = "{% static 'admin_site/images/default_image.jpg' %}";
+    const defaultImage = "{% static 'admin_dashboard/images/default_image.jpg' %}";
 
     // --- DOM ELEMENTS ---
     const orderForm = document.getElementById('order-form');

@@ -1,4 +1,4 @@
-{% extends 'admin_site/layout.html' %}
+{% extends 'admin_dashboard/layout.html' %}
 {% block 'main' %}
 {% load static %}
 <textarea id="student_list_data" style="display: none;">{{ student_list_json }}</textarea>
@@ -54,7 +54,7 @@
                     <p class="card-description text-center">STUDENT INFORMATION</p>
                     <div class="row align-items-center">
                         <div class="col-md-4 text-center">
-                            <img id="student-image" style="width:100px; height:100px; border-radius:50%; object-fit: cover;" src="{% static 'admin_site/img/default-avatar.png' %}">
+                            <img id="student-image" style="width:100px; height:100px; border-radius:50%; object-fit: cover;" src="{% static 'admin_dashboard/img/default-avatar.png' %}">
                         </div>
                         <div class="col-md-8">
                           <h6 id="student-fullname" class="mb-1"></h6>
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (student.image) {
             studentImage.src = `/media/${student.image}`;
         } else {
-            studentImage.src = "{% static 'admin_site/images/default_image.jpg' %}";
+            studentImage.src = "{% static 'admin_dashboard/images/default_image.jpg' %}";
         }
         
         // IMPORTANT: Update this URL once the student financial dashboard view is created

@@ -1,4 +1,4 @@
-{% extends 'admin_site/layout.html' %}
+{% extends 'admin_dashboard/layout.html' %}
 {% block 'main' %}
 {% load static %}
 {% load humanize %}
@@ -525,8 +525,8 @@
     </div>
 
 </section>
-  <script src="{% static 'admin_site/vendor/apexcharts/apexcharts.min.js' %}"></script>
-  <script src="{% static 'admin_site/vendor/echarts/echarts.min.js' %}"></script>
+  <script src="{% static 'admin_dashboard/vendor/apexcharts/apexcharts.min.js' %}"></script>
+  <script src="{% static 'admin_dashboard/vendor/echarts/echarts.min.js' %}"></script>
 <!-- Chart Scripts -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
