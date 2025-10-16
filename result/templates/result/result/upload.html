@@ -46,7 +46,7 @@
                             <td  class="text-center"> {{ value.student.registration_number|upper }} </td>
 
                              {% for field in result_field_list %}
-                             <td><input {% if not field in result_setting.current_result_upload.all %} readonly {% endif %}  {% for inner_field, inner_value in value.result.items %} {% if inner_field|lower == field|lower %} value="{{ inner_value }}" {% endif %} {% endfor %} style="width:70px" type="number" max="{{field.max_mark}}" min="0" {% if value.result.exam %} value="{{ value.result.exam}}" {% endif %}  step=".01" name="{{field.name}}[]" class="form-control"> </td>
+                             <td><input {% if not field in result_setting.current_result_upload.all %}  {% endif %}  {% for inner_field, inner_value in value.result.items %} {% if inner_field|lower == field|lower %} value="{{ inner_value }}" {% endif %} {% endfor %} style="width:70px" type="number" max="{{field.max_mark}}" min="0" {% if value.result.exam %} value="{{ value.result.exam}}" {% endif %}  step=".01" name="{{field.name}}[]" class="form-control"> </td>
                             {% endfor %}
 
                         </tr>
