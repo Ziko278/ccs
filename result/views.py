@@ -16,7 +16,7 @@ from django.contrib.auth.decorators import login_required
 from result.models import *
 from django.db.models import Q
 from result.forms import *
-from school_setting.models import SchoolAcademicInfoModel
+from school_setting.models import SchoolAcademicInfoModel, TermModel, SchoolGeneralInfoModel, SessionModel
 
 
 class ResultFieldCreateView(LoginRequiredMixin, PermissionRequiredMixin, SuccessMessageMixin, CreateView):
@@ -41,7 +41,8 @@ class ResultFieldCreateView(LoginRequiredMixin, PermissionRequiredMixin, Success
             context['result_field_list'] = ResultFieldModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
         else:
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix')).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix')).order_by(
+                'name')
 
             context['class_section_list'] = ClassSectionModel.objects.all().order_by('name')
             context['result_field_list'] = ResultFieldModel.objects.all().order_by('name')
@@ -82,7 +83,8 @@ class ResultFieldListView(LoginRequiredMixin, PermissionRequiredMixin, ListView)
 
             form_kwargs['type'] = self.request.user.profile.type
         else:
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix')).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix')).order_by(
+                'name')
             context['class_section_list'] = ClassSectionModel.objects.all().order_by('name')
         context['form'] = ResultFieldForm(**form_kwargs)
 
@@ -114,7 +116,8 @@ class ResultFieldUpdateView(LoginRequiredMixin, PermissionRequiredMixin, Success
             form_kwargs['type'] = self.request.user.profile.type
         else:
             context['class_section_list'] = ClassSectionModel.objects.all().order_by('name')
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix')).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix')).order_by(
+                'name')
 
             context['result_field_list'] = ResultFieldModel.objects.all().order_by('name')
         context['form'] = ResultFieldForm(**form_kwargs)
@@ -151,13 +154,15 @@ class ResultGradeCreateView(LoginRequiredMixin, PermissionRequiredMixin, Success
         context = super().get_context_data(**kwargs)
         school_setting = SchoolGeneralInfoModel.objects.first()
         if school_setting.separate_school_section:
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix'), type=self.request.user.profile.type).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix'),
+                                                                type=self.request.user.profile.type).order_by('name')
             context['class_section_list'] = ClassSectionModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
             context['result_grade_list'] = ResultGradeModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
         else:
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix'),).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(
+                Q(result_type='score') | Q(result_type='mix'), ).order_by('name')
             context['class_section_list'] = ClassSectionModel.objects.all().order_by('name')
             context['result_grade_list'] = ResultGradeModel.objects.all().order_by('name')
         return context
@@ -192,13 +197,15 @@ class ResultGradeListView(LoginRequiredMixin, PermissionRequiredMixin, ListView)
         if school_setting.separate_school_section:
             context['class_section_list'] = ClassSectionModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix'), type=self.request.user.profile.type).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix'),
+                                                                type=self.request.user.profile.type).order_by('name')
             context['result_grade_list'] = ResultGradeModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
             form_kwargs['type'] = self.request.user.profile.type
         else:
             context['class_section_list'] = ClassSectionModel.objects.all().order_by('name')
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix'),).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(
+                Q(result_type='score') | Q(result_type='mix'), ).order_by('name')
             context['result_grade_list'] = ResultGradeModel.objects.all().order_by('name')
         context['form'] = ResultGradeForm(**form_kwargs)
 
@@ -222,13 +229,15 @@ class ResultGradeUpdateView(LoginRequiredMixin, PermissionRequiredMixin, Success
         if school_setting.separate_school_section:
             context['class_section_list'] = ClassSectionModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix'), type=self.request.user.profile.type).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix'),
+                                                                type=self.request.user.profile.type).order_by('name')
             context['result_grade_list'] = ResultGradeModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
             form_kwargs['type'] = self.request.user.profile.type
         else:
             context['class_section_list'] = ClassSectionModel.objects.all().order_by('name')
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix'),).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(
+                Q(result_type='score') | Q(result_type='mix'), ).order_by('name')
             context['result_grade_list'] = ResultGradeModel.objects.all().order_by('name')
         context['form'] = ResultGradeForm(**form_kwargs)
         return context
@@ -264,7 +273,8 @@ class MidResultGradeCreateView(LoginRequiredMixin, PermissionRequiredMixin, Succ
         context = super().get_context_data(**kwargs)
         school_setting = SchoolGeneralInfoModel.objects.first()
         if school_setting.separate_school_section:
-            context['class_list'] = ClassesModel.objects.filter(type=self.request.user.profile.type, result_type='score').order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(type=self.request.user.profile.type,
+                                                                result_type='score').order_by('name')
             context['class_section_list'] = ClassSectionModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
             context['result_grade_list'] = MidResultGradeModel.objects.filter(
@@ -305,7 +315,8 @@ class MidResultGradeListView(LoginRequiredMixin, PermissionRequiredMixin, ListVi
         if school_setting.separate_school_section:
             context['class_section_list'] = ClassSectionModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
-            context['class_list'] = ClassesModel.objects.filter(type=self.request.user.profile.type, result_type='score').order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(type=self.request.user.profile.type,
+                                                                result_type='score').order_by('name')
             context['result_grade_list'] = MidResultGradeModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
             form_kwargs['type'] = self.request.user.profile.type
@@ -335,7 +346,8 @@ class MidResultGradeUpdateView(LoginRequiredMixin, PermissionRequiredMixin, Succ
         if school_setting.separate_school_section:
             context['class_section_list'] = ClassSectionModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
-            context['class_list'] = ClassesModel.objects.filter(type=self.request.user.profile.type, result_type='score').order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(type=self.request.user.profile.type,
+                                                                result_type='score').order_by('name')
             context['result_grade_list'] = MidResultGradeModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
             form_kwargs['type'] = self.request.user.profile.type
@@ -574,109 +586,73 @@ def result_create_view(request):
             result_setting = ResultSettingModel.objects.filter(type=request.user.profile.type).first()
         else:
             result_setting = ResultSettingModel.objects.first()
+
         is_allowed = False
-        if result_setting.allowed_user != 'any':
+        message = 'Access Denied'
+        if result_setting and result_setting.allowed_user != 'any':
             current_user = request.user.profile.staff
             if current_user:
-                if result_setting.allowed_user == 'form teacher':
-                    student_class = ClassSectionInfoModel.objects.filter(student_class=student_class_pk,
-                                                                         section=class_section_pk).first()
-                    if student_class:
-                        if student_class.form_teacher == current_user or student_class.assistant_form_teacher == current_user:
-                            is_allowed = True
-                        else:
-                            message = 'RESULT UPLOAD ALLOWED FOR ONLY FORM TEACHER OF THE CLASS'
-                    else:
-                        # if the class don't have a form teacher assigned
-                        message = 'CLASS HAS NO FORM TEACHER, AND ONLY FORM TEACHERS CAN UPLOAD RESULTS'
-                elif result_setting.allowed_user == 'subject teacher':
-                    subject_info = ClassSectionSubjectTeacherModel.objects.filter(subject=subject_pk,
-                                                                                  student_class__in=[student_class_pk],
-                                                                                  class_section__in=[
-                                                                                      class_section_pk]).first()
-                    if subject_info:
-                        if current_user in subject_info.teachers.all():
-                            is_allowed = True
-                        else:
-                            message = 'RESULT UPLOAD ALLOWED FOR ONLY SUBJECT TEACHERS'
-                    else:
-                        # if the subject don't have teachers assigned
-                        message = 'SUBJECT HAS NO ASSIGNED TEACHER, ONLY SUBJECT TEACHERS CAN UPLOAD RESULTS'
+                is_form_teacher = ClassSectionInfoModel.objects.filter(
+                    student_class_id=student_class_pk, section_id=class_section_pk
+                ).filter(
+                    Q(form_teacher=current_user) | Q(assistant_form_teacher=current_user)
+                ).exists()
 
-                elif result_setting.allowed_user == 'both':
-                    student_class = ClassSectionInfoModel.objects.filter(student_class=student_class_pk,
-                                                                         section=class_section_pk).first()
-                    if student_class:
-                        if student_class.form_teacher == current_user or student_class.assistant_form_teacher == current_user:
-                            is_allowed = True
+                is_subject_teacher = ClassSectionSubjectTeacherModel.objects.filter(
+                    subject_id=subject_pk, student_class__id=student_class_pk, class_section__id=class_section_pk,
+                    teachers=current_user
+                ).exists()
 
-                    subject_info = ClassSectionSubjectTeacherModel.objects.filter(subject=subject_pk,
-                                                                                  student_class__in=[student_class_pk],
-                                                                                  class_section__in=[
-                                                                                      class_section_pk]).first()
-                    if subject_info:
-                        if current_user in subject_info.teachers.all():
-                            is_allowed = True
-                    if not is_allowed:
-                        message = 'ONLY FORM TEACHER OR SUBJECT TEACHERS CAN UPLOAD RESULTS'
-
-                else:
-                    message = 'ADMINISTRATIVE DATA ERROR, CONTACT TECH TEAM'
-            else:
-                message = 'USER IDENTITY NOT KNOWN, ACCESS DENIED'
+                if result_setting.allowed_user == 'form teacher' and is_form_teacher:
+                    is_allowed = True
+                elif result_setting.allowed_user == 'subject teacher' and is_subject_teacher:
+                    is_allowed = True
+                elif result_setting.allowed_user == 'both' and (is_form_teacher or is_subject_teacher):
+                    is_allowed = True
         else:
             is_allowed = True
 
-        if not is_allowed:
+        if not is_allowed and not request.user.is_superuser:
             messages.error(request, message)
             return redirect(reverse('result_create'))
 
         request.session['student_class'] = student_class_pk
         request.session['class_section'] = class_section_pk
         request.session['subject'] = subject_pk
-        is_update = 'update' in request.POST
-        if is_update:
-            request.session['is_update'] = request.POST['is_update']
+        if 'update' in request.POST:
+            request.session['is_update'] = True
             request.session['session_pk'] = request.POST['session_pk']
-            request.session['term'] = request.POST['term']
+            request.session['term_pk'] = request.POST['term_pk']
         return redirect(reverse('result_upload'))
 
-    if school_setting.separate_school_section:
-        class_list = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix'), type=request.user.profile.type).order_by('name')
-        text_class_list = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix'), type=request.user.profile.type).order_by('name')
-        subject_list = SubjectsModel.objects.filter(type=request.user.profile.type).order_by('name')
-    else:
-        class_list = ClassesModel.objects.filter(Q(result_type='score') | Q(result_type='mix')).order_by('name')
-        text_class_list = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix')).order_by('name')
-        subject_list = SubjectsModel.objects.all().order_by('name')
+    user_type = request.user.profile.type
+    q_filter = Q(type=user_type) if school_setting.separate_school_section else Q()
 
     context = {
-        'class_list': class_list,
-        'text_class_list': text_class_list,
-        'subject_list': subject_list,
-        'session_list': SessionModel.objects.filter(type=request.user.profile.type)
+        'class_list': ClassesModel.objects.filter(q_filter, Q(result_type='score') | Q(result_type='mix')).order_by(
+            'name'),
+        'text_class_list': ClassesModel.objects.filter(q_filter, Q(result_type='text') | Q(result_type='mix')).order_by(
+            'name'),
+        'subject_list': SubjectsModel.objects.filter(q_filter).order_by('name'),
+        'session_list': SessionModel.objects.filter(q_filter),
+        'term_list': TermModel.objects.all().order_by('order')
     }
-    is_update = 'update' in request.GET
-    if is_update:
+
+    if 'update' in request.GET:
         return render(request, 'result/result/update.html', context=context)
     return render(request, 'result/result/create.html', context=context)
 
 
-# Create your views here.
 def result_upload_view(request):
     if request.method == 'POST':
         student_list = request.POST.getlist('students[]')
-        session_pk = request.POST['session']
-        session = SessionModel.objects.get(pk=session_pk)
-        term = request.POST['term']
-        subject_pk = request.POST['subject']
-        subject = SubjectsModel.objects.get(pk=subject_pk)
-        class_pk = request.POST['student_class']
-        student_class = ClassesModel.objects.get(pk=class_pk)
-        class_section_pk = request.POST['class_section']
-        class_section = ClassSectionModel.objects.get(pk=class_section_pk)
-        result_field_list = ResultFieldModel.objects.filter(student_class__in=[student_class]).filter(
-            class_section__in=[class_section]).order_by('order')
+        session = SessionModel.objects.get(pk=request.POST['session'])
+        term = TermModel.objects.get(pk=request.POST['term_pk'])
+        subject = SubjectsModel.objects.get(pk=request.POST['subject'])
+        student_class = ClassesModel.objects.get(pk=request.POST['student_class'])
+        class_section = ClassSectionModel.objects.get(pk=request.POST['class_section'])
+        result_field_list = ResultFieldModel.objects.filter(student_class=student_class,
+                                                            class_section=class_section).order_by('order')
 
         has_exam = False
         has_ca = False
@@ -685,268 +661,167 @@ def result_upload_view(request):
         position_dict = {}
         midterm_dict = {}
 
-        midterm_max = 0
-        for field in result_field_list:
-            if field.mid_term:
-                midterm_max += field.max_mark
+        midterm_max = sum(field.max_mark for field in result_field_list if field.mid_term)
 
         for num in range(len(student_list)):
+            student = StudentsModel.objects.get(pk=student_list[num])
             total_score, test_score, midterm_total = 0, 0, 0
             student_result = {}
-            for field in result_field_list:
-                if field.field_type == 'ca':
-                    student_result[field.name.upper()] = ''
-            student_result['TOTAL CA'] = ''
-            student_result['midterm_total'] = ''
-            for field in result_field_list:
-                if field.field_type == 'exam':
-                    student_result[field.name.upper()] = ''
 
             for field in result_field_list:
-                if '{}[]'.format(field.name) in request.POST:
-                    field_result_list = request.POST.getlist('{}[]'.format(field.name))
-                    field_result = field_result_list[num]
+                field_name_post = f'{field.name}[]'
+                if field_name_post in request.POST and num < len(request.POST.getlist(field_name_post)):
+                    field_result = request.POST.getlist(field_name_post)[num]
+                    student_result[field.name.upper()] = field_result
                     if field_result:
+                        score = float(field_result)
+                        total_score += score
                         if field.field_type == 'ca':
-                            test_score += float(field_result)
+                            test_score += score
                             has_ca = True
                         if field.mid_term:
-                            midterm_total += float(field_result)
+                            midterm_total += score
                         if field.field_type == 'exam':
                             has_exam = True
-                        total_score += float(field_result)
+                else:
+                    student_result[field.name.upper()] = ''
 
-                    student_result[field.name.upper()] = field_result
-            if not test_score:
-                test_score = ''
-            student_result['TOTAL CA'] = test_score
-            midterm_percent = round((midterm_total/midterm_max * 100), 1) if midterm_max else 0
+            student_result['TOTAL CA'] = test_score or ''
 
-            if total_score:
+            if total_score > 0:
                 out_of += 1
-
-            grade_list = ResultGradeModel.objects.filter(student_class__in=[student_class]).filter(
-            class_section__in=[class_section])
-
-            mid_grade_list = MidResultGradeModel.objects.filter(student_class__in=[student_class]).filter(
-            class_section__in=[class_section])
-
-            grade, remark, midterm_grade, midterm_remark = '', '', '', ''
-            for result_grade in grade_list:
-                if (total_score >= result_grade.min_mark) and total_score <= result_grade.max_mark:
-                    grade, remark = result_grade.name.upper(), result_grade.remark.upper()
-            for result_grade in mid_grade_list:
-                if (midterm_total >= result_grade.min_mark) and midterm_total <= result_grade.max_mark:
-                    midterm_grade, midterm_remark = result_grade.name.upper(), result_grade.remark.upper()
-            if total_score:
                 total_scores.append(total_score)
-            if midterm_total:
+                position_dict.setdefault(total_score, []).append(student)
+
+            if midterm_total > 0:
                 midterm_scores.append(midterm_total)
-            student = StudentsModel.objects.get(pk=student_list[num])
+                midterm_dict.setdefault(midterm_total, []).append(student)
 
-            if total_score in position_dict:
-                position_dict[total_score].append(student)
-            else:
-                if total_score > 0:
-                    position_dict[total_score] = [student]
+            grade_list = ResultGradeModel.objects.filter(student_class=student_class, class_section=class_section)
+            mid_grade_list = MidResultGradeModel.objects.filter(student_class=student_class,
+                                                                class_section=class_section)
 
-            if midterm_total in midterm_dict:
-                midterm_dict[midterm_total].append(student)
-            else:
-                midterm_dict[midterm_total] = [student]
-            student_complete_result = ResultModel.objects.filter(session=session, term=term, class_section=class_section,
-                                                                 student_class=student_class, student=student).first()
+            grade, remark = next(
+                ((g.name.upper(), g.remark.upper()) for g in grade_list if g.min_mark <= total_score <= g.max_mark),
+                ('', ''))
+            midterm_grade, midterm_remark = next(((g.name.upper(), g.remark.upper()) for g in mid_grade_list if
+                                                  g.min_mark <= midterm_total <= g.max_mark), ('', ''))
 
-            student_result['subject'] = SubjectsModel.objects.get(pk=subject_pk).name
-            student_result['subject_code'] = SubjectsModel.objects.get(pk=subject_pk).code
-            student_result['total'] = total_score
-            student_result['midterm_total'] = midterm_total
-            student_result['grade'] = grade
-            student_result['midterm_grade'] = midterm_grade
-            student_result['remark'] = remark
-            student_result['midterm_remark'] = midterm_remark
+            student_result.update({
+                'subject': subject.name, 'subject_code': subject.code, 'total': total_score,
+                'midterm_total': midterm_total, 'grade': grade, 'midterm_grade': midterm_grade,
+                'remark': remark, 'midterm_remark': midterm_remark
+            })
 
-            if student_complete_result:
-                student_complete_result.result[subject_pk] = student_result
-                student_complete_result.save()
-
-                #return HttpResponse(student_complete_result.result[subject_pk]['EXAM'])
-            else:
-                student_complete_result = {}
-                student_complete_result[subject_pk] = student_result
-                student_complete_result = ResultModel.objects.create(session=session, term=term,
-                                                                     student_class=student_class,
-                                                                     class_section=class_section, student=student,
-                                                                     result=student_complete_result, type=request.user.profile.type)
+            student_complete_result, created = ResultModel.objects.get_or_create(
+                session=session, term=term, student=student,
+                defaults={'student_class': student_class, 'class_section': class_section, 'result': {},
+                          'type': request.user.profile.type}
+            )
+            if not student_complete_result.result:
+                student_complete_result.result = {}
+            student_complete_result.result[subject.pk] = student_result
             student_complete_result.save()
 
         position = 1
-        prev_score = None
-        for score, students in sorted(position_dict.items(), key=lambda x: int(x[0]), reverse=True):
+        prev_score = -1
+        for score in sorted(position_dict.keys(), reverse=True):
+            students_at_score = position_dict[score]
             if score != prev_score:
-                for student in students:
-                    student_result = ResultModel.objects.filter(session=session, term=term,
-                                                                class_section=class_section,
-                                                                student_class=student_class,
-                                                                student=student).first()
-
-                    student_result.result[subject_pk]['position'] = position
+                current_position = position
+            for student in students_at_score:
+                student_result = ResultModel.objects.filter(session=session, term=term, student=student).first()
+                if student_result and student_result.result and subject.pk in student_result.result:
+                    student_result.result[subject.pk]['position'] = current_position
                     student_result.save()
-                position += len(students)
-                prev_score = score
+            position += len(students_at_score)
+            prev_score = score
 
         position = 1
-        prev_score = None
-        for score, students in sorted(midterm_dict.items(), key=lambda x: int(x[0]), reverse=True):
+        prev_score = -1
+        for score in sorted(midterm_dict.keys(), reverse=True):
+            students_at_score = midterm_dict[score]
             if score != prev_score:
-                for student in students:
-                    student_result = ResultModel.objects.filter(session=session, term=term,
-                                                                class_section=class_section,
-                                                                student_class=student_class,
-                                                                student=student).first()
-
-                    student_result.result[subject_pk]['midterm_position'] = position
+                current_position = position
+            for student in students_at_score:
+                student_result = ResultModel.objects.filter(session=session, term=term, student=student).first()
+                if student_result and student_result.result and subject.pk in student_result.result:
+                    student_result.result[subject.pk]['midterm_position'] = current_position
                     student_result.save()
-                position += len(students)
-                prev_score = score
+            position += len(students_at_score)
+            prev_score = score
 
-        if len(total_scores) > 0:
-            highest_in_class = max(total_scores)
-            lowest_in_class = min(total_scores)
-            total_mark_obtained = sum(total_scores)
+        highest_in_class = max(total_scores) if total_scores else 0
+        lowest_in_class = min(total_scores) if total_scores else 0
+        total_mark_obtained = sum(total_scores)
+        average_score = round(total_mark_obtained / out_of, 1) if out_of else 0
 
-            midterm_highest_in_class = max(midterm_scores) if midterm_scores else 0
-            midterm_lowest_in_class = min(midterm_scores) if midterm_scores else 0
-            midterm_total_mark_obtained = sum(midterm_scores) if midterm_scores else 0
-        else:
-            highest_in_class = 0
-            lowest_in_class = 0
-            total_mark_obtained = 0
+        midterm_highest_in_class = max(midterm_scores) if midterm_scores else 0
+        midterm_lowest_in_class = min(midterm_scores) if midterm_scores else 0
+        midterm_total_mark_obtained = sum(midterm_scores)
+        midterm_average_score = round(midterm_total_mark_obtained / out_of, 1) if out_of else 0
 
-            midterm_highest_in_class = 0
-            midterm_lowest_in_class = 0
-            midterm_total_mark_obtained = 0
+        uploaded_by = 'superadmin'
+        if not request.user.is_superuser:
+            uploaded_by = f"{request.user.profile.staff.surname.title()} {request.user.profile.staff.last_name.title()}"
 
-        number_of_students = len(student_list)
-
-        complete_result_stat = ResultStatisticModel.objects.filter(session=session, term=term, class_section=class_section,
-                                                                   student_class=student_class).first()
-        if request.user.is_superuser:
-            uploaded_by = 'superadmin'
-            uploaded_by_id = request.user.id
-        else:
-             uploaded_by = request.user.profile.staff.surname.title() + ' ' + request.user.profile.staff.last_name.title()
-             uploaded_by_id = request.user.profile.staff.id
-        if out_of:
-            midterm_average_score = round(midterm_total_mark_obtained/out_of, 1)
-            average_score = round(total_mark_obtained/out_of, 1)
-        else:
-            midterm_average_score = 0
-            average_score = 0
-
-        result_stat = {
-            'highest_in_class': highest_in_class,
-            'lowest_in_class': lowest_in_class,
-            'total_mark_obtained': total_mark_obtained,
-            'midterm_highest_in_class': midterm_highest_in_class,
-            'midterm_lowest_in_class': midterm_lowest_in_class,
-            'midterm_total_mark_obtained': midterm_total_mark_obtained,
-            'number_of_students': out_of,
-            'average_score': average_score,
-            'midterm_average_score': midterm_average_score,
-            'has_exam': has_exam,
-            'updated_at': datetime.now().strftime("%d %B %Y"),
-            'updated_by': uploaded_by,
-            'updated_by_id': uploaded_by_id
-
+        result_stat_data = {
+            'highest_in_class': highest_in_class, 'lowest_in_class': lowest_in_class,
+            'total_mark_obtained': total_mark_obtained, 'average_score': average_score,
+            'midterm_highest_in_class': midterm_highest_in_class, 'midterm_lowest_in_class': midterm_lowest_in_class,
+            'midterm_total_mark_obtained': midterm_total_mark_obtained, 'midterm_average_score': midterm_average_score,
+            'number_of_students': out_of, 'has_exam': has_exam,
+            'updated_at': datetime.now().strftime("%d %B %Y"), 'updated_by': uploaded_by
         }
 
-        if complete_result_stat:
-            complete_result_stat.result_statistic[subject_pk] = result_stat
-        else:
-            complete_result_stat = {}
-            complete_result_stat[subject_pk] = result_stat
-            complete_result_stat = ResultStatisticModel.objects.create(session=session, term=term,
-                                                                       student_class=student_class,
-                                                                       class_section=class_section,
-                                                                       result_statistic=complete_result_stat)
+        complete_result_stat, created = ResultStatisticModel.objects.get_or_create(
+            session=session, term=term, student_class=student_class, class_section=class_section,
+            defaults={'result_statistic': {}}
+        )
+        if not complete_result_stat.result_statistic:
+            complete_result_stat.result_statistic = {}
+        complete_result_stat.result_statistic[subject.pk] = result_stat_data
         complete_result_stat.save()
 
-        result_uploaded = ResultUploadedModel.objects.filter(session=session, term=term, subject=subject,
-                                            student_class=student_class, class_section=class_section).first()
-        if result_uploaded:
-            result_uploaded.user = request.user
-            result_uploaded.ca_uploaded = has_ca
-            result_uploaded.exam_uploaded = has_exam
-            result_uploaded.save()
-        else:
-            result_uploaded = ResultUploadedModel.objects.create(session=session, term=term, subject=subject,
-                                student_class=student_class, class_section=class_section, ca_uploaded=has_ca,
-                                exam_uploaded=has_exam, user=request.user, type=request.user.profile.type)
-            result_uploaded.save()
+        ResultUploadedModel.objects.update_or_create(
+            session=session, term=term, subject=subject, student_class=student_class, class_section=class_section,
+            defaults={'user': request.user, 'ca_uploaded': has_ca, 'exam_uploaded': has_exam,
+                      'type': request.user.profile.type}
+        )
 
-        if complete_result_stat.id:
-            request.session['student_class'] = class_pk
-            request.session['class_section'] = class_section_pk
-            request.session['subject'] = subject_pk
-
-            messages.success(request, 'Result Uploaded Successfully')
-            return redirect(reverse('result_index'))
+        messages.success(request, 'Result Uploaded Successfully')
         return redirect(reverse('result_create'))
 
     if 'student_class' not in request.session:
         return redirect(reverse('result_create'))
-    class_pk = request.session['student_class']
-    class_section_pk = request.session['class_section']
-    subject_pk = request.session['subject']
+
+    class_pk = request.session.pop('student_class')
+    class_section_pk = request.session.pop('class_section')
+    subject_pk = request.session.pop('subject')
 
     student_class = ClassesModel.objects.get(pk=class_pk)
     class_section = ClassSectionModel.objects.get(pk=class_section_pk)
     subject = SubjectsModel.objects.get(pk=subject_pk)
 
-    del request.session['student_class']
-    del request.session['class_section']
-    del request.session['subject']
-
-    is_update = 'is_update' in request.session
+    is_update = request.session.pop('is_update', False)
     if is_update:
-        session_pk = request.session['session_pk']
-        term = request.session['term']
-
-        del request.session['is_update']
-        del request.session['session_pk']
-        del request.session['term']
-
-    student_list = StudentsModel.objects.filter(student_class=student_class, class_section=class_section, status='active', subject_group__subjects=subject).order_by('surname')
-    sch_setting = SchoolGeneralInfoModel.objects.first()
-    if sch_setting.separate_school_section:
-        academic_setting = SchoolAcademicInfoModel.objects.filter(type=request.user.profile.type).first()
+        session = SessionModel.objects.get(pk=request.session.pop('session_pk'))
+        term = TermModel.objects.get(pk=request.session.pop('term_pk'))
     else:
-        academic_setting = SchoolAcademicInfoModel.objects.first()
-    session = academic_setting.session
-    term = academic_setting.term
+        sch_setting = SchoolGeneralInfoModel.objects.first()
+        academic_q = Q(type=request.user.profile.type) if sch_setting.separate_school_section else Q()
+        academic_setting = SchoolAcademicInfoModel.objects.filter(academic_q).first()
+        session = academic_setting.session
+        term = academic_setting.term
+
+    student_list = StudentsModel.objects.filter(student_class=student_class, class_section=class_section,
+                                                status='active').order_by('surname')
+
     full_list = {}
     for student in student_list:
-        student_result = ResultModel.objects.filter(session=session, term=term, class_section=class_section,
-                                                    student_class=student_class, student=student).first()
-        if student_result:
-            if student_result.result.get(subject_pk):
-                student_result = student_result.result[subject_pk]
-            else:
-                student_result = {}
-        else:
-            student_result = {}
-
-        full_list[student.id] = {
-            'student': student,
-            'result': student_result
-        }
-
-    school_setting = SchoolGeneralInfoModel.objects.first()
-    if school_setting.separate_school_section:
-        result_setting = ResultSettingModel.objects.filter(type=request.user.profile.type).first()
-    else:
-        result_setting = ResultSettingModel.objects.first()
+        result_obj = ResultModel.objects.filter(session=session, term=term, student=student).first()
+        student_result = result_obj.result.get(str(subject_pk)) if result_obj and result_obj.result else {}
+        full_list[student.id] = {'student': student, 'result': student_result}
 
     context = {
         'class': student_class,
@@ -954,40 +829,36 @@ def result_upload_view(request):
         'subject': subject,
         'is_update': is_update,
         'full_list': full_list,
-        'academic_setting': academic_setting,
-        'result_setting': result_setting,
-        'result_field_list': ResultFieldModel.objects.filter(student_class__in=[student_class]).filter(
-            class_section__in=[class_section]).order_by('order')
+        'academic_setting': {'session': session, 'term': term},
+        'result_field_list': ResultFieldModel.objects.filter(student_class=student_class,
+                                                             class_section=class_section).order_by('order')
     }
-
     if is_update:
-        context['session_pk'] = session_pk
-        context['term'] = term
+        context['session_pk'] = session.pk
+        context['term_pk'] = term.pk
 
     return render(request, 'result/result/upload.html', context=context)
 
 
 @login_required
 def uploaded_result(request):
-    if request.GET.get('subject') and request.GET.get('student_class') and request.GET.get('class_section'):
-        request.session['student_class'] = request.GET.get('student_class')
-        request.session['class_section'] = request.GET.get('class_section')
-        request.session['subject'] = request.GET.get('subject')
+    if all(k in request.GET for k in ['subject', 'student_class', 'class_section']):
+        request.session['student_class'] = request.GET['student_class']
+        request.session['class_section'] = request.GET['class_section']
+        request.session['subject'] = request.GET['subject']
         return redirect(reverse('result_index'))
+
     sch_setting = SchoolGeneralInfoModel.objects.first()
-    if sch_setting.separate_school_section:
-        academic_setting = SchoolAcademicInfoModel.objects.filter(type=request.user.profile.type).first()
+    academic_q = Q(type=request.user.profile.type) if sch_setting.separate_school_section else Q()
+    academic_setting = SchoolAcademicInfoModel.objects.filter(academic_q).first()
+
+    if academic_setting:
+        result_list = ResultUploadedModel.objects.filter(session=academic_setting.session,
+                                                         term=academic_setting.term).filter(academic_q)
     else:
-        academic_setting = SchoolAcademicInfoModel.objects.first()
-    session = academic_setting.session
-    term = academic_setting.term
-    if sch_setting.separate_school_section:
-        result_list = ResultUploadedModel.objects.filter(session=session, term=term, type=request.user.profile.type)
-    else:
-        result_list = ResultUploadedModel.objects.filter(session=session, term=term)
-    context = {
-        'result_list': result_list
-    }
+        result_list = ResultUploadedModel.objects.none()
+
+    context = {'result_list': result_list}
     return render(request, 'result/result/uploaded_result.html', context)
 
 
@@ -1044,8 +915,8 @@ def text_result_upload_view(request, student_pk):
             if '{}'.format(field.name) in request.POST:
                 field_result = {
                     'rating': request.POST.get('{}'.format(field.name)),
-                    'comment': request.POST.get('{}'.format(field.name+'_comment')),
-                    'tick': field.name+'_tick' in request.POST
+                    'comment': request.POST.get('{}'.format(field.name + '_comment')),
+                    'tick': field.name + '_tick' in request.POST
                 }
                 result_record[field.name.upper()] = field_result
 
@@ -1112,6 +983,7 @@ def text_result_upload_view(request, student_pk):
 
     return render(request, 'result/result/text_result_upload.html', context=context)
 
+
 def result_check_view(request):
     """  """
     school_setting = SchoolGeneralInfoModel.objects.first()
@@ -1158,7 +1030,8 @@ def result_check_view(request):
                         if current_user in subject_info.teachers.all():
                             is_allowed = True
                         else:
-                            message = 'ONLY {} TEACHERS FOR THE CLASS CAN VIEW SUBJECT RESULT'.format(subject.name.upper())
+                            message = 'ONLY {} TEACHERS FOR THE CLASS CAN VIEW SUBJECT RESULT'.format(
+                                subject.name.upper())
                     else:
                         # if the subject don't have teachers assigned
                         message = 'SUBJECT HAS NO ASSIGNED TEACHER, ONLY SUBJECT TEACHERS CAN VIEW RESULTS'
@@ -1220,14 +1093,12 @@ def result_check_view(request):
 
 
 def result_spreadsheet_check_view(request):
-
     school_setting = SchoolGeneralInfoModel.objects.first()
-
     if request.method == 'POST':
         student_class_pk = request.POST['student_class']
         student_class = ClassesModel.objects.get(pk=student_class_pk)
         session = SessionModel.objects.get(pk=request.POST['session_pk'])
-        term = request.POST['term']
+        term = TermModel.objects.get(pk=request.POST['term_pk'])
 
         result_list = ResultModel.objects.filter(term=term, session=session, student__student_class=student_class)
         result_stat_list = ResultStatisticModel.objects.filter(term=term, session=session, student_class=student_class)
@@ -1243,17 +1114,16 @@ def result_spreadsheet_check_view(request):
                 result_list = result_list.filter(class_section=class_section)
                 result_stat_list = result_stat_list.filter(class_section=class_section)
 
-        # Get subjects for the class/section
         if class_section:
             class_detail = ClassSectionInfoModel.objects.filter(student_class=student_class,
-                                                               section=class_section).first()
+                                                                section=class_section).first()
         else:
             class_detail = ClassSectionInfoModel.objects.filter(student_class=student_class).first()
 
         subject_list = class_detail.subjects.all() if class_detail and class_detail.subjects.exists() else SubjectsModel.objects.all()
 
-        # Sort result_list by calculated average (total_score/number_of_course) in descending order (highest first)
-        result_list = sorted(result_list, key=lambda x: (x.total_score / x.number_of_course) if (x.total_score and x.number_of_course and x.number_of_course > 0) else 0, reverse=True)
+        result_list = sorted(result_list, key=lambda x: (x.total_score / x.number_of_course) if (
+                    x.total_score and x.number_of_course and x.number_of_course > 0) else 0, reverse=True)
 
         context = {
             'session': session,
@@ -1269,7 +1139,6 @@ def result_spreadsheet_check_view(request):
 
         return render(request, 'result/result/spreadsheet_detail.html', context)
 
-    # GET request - form rendering
     if school_setting.separate_school_section:
         class_list = ClassesModel.objects.filter(type=request.user.profile.type).order_by('name')
         subject_list = SubjectsModel.objects.filter(type=request.user.profile.type).order_by('name')
@@ -1283,20 +1152,23 @@ def result_spreadsheet_check_view(request):
         'class_list': class_list,
         'subject_list': subject_list,
         'session_list': session_list,
+        'term_list': TermModel.objects.all().order_by('order'),
     }
     return render(request, 'result/result/spreadsheet.html', context)
+
 
 def result_archive_check_view(request):
     """  """
     school_setting = SchoolGeneralInfoModel.objects.first()
     if 'POST' == request.method:
         session_pk = request.POST['session_pk']
-        term = request.POST['term']
+        term_pk = request.POST['term_pk']
         student_class_pk = request.POST['student_class']
         class_section_pk = request.POST['class_section']
         subject_pk = request.POST['subject']
         subject = SubjectsModel.objects.get(pk=subject_pk)
         session = SessionModel.objects.get(pk=session_pk)
+        term = TermModel.objects.get(pk=term_pk)
         student_class = ClassesModel.objects.get(pk=student_class_pk)
         class_section = ClassSectionModel.objects.get(pk=class_section_pk)
 
@@ -1313,15 +1185,14 @@ def result_archive_check_view(request):
             current_user = request.user.profile.staff
             if current_user:
                 if result_setting.allowed_user == 'form teacher':
-                    student_class = ClassSectionInfoModel.objects.filter(student_class=student_class_pk,
-                                                                         section=class_section_pk).first()
-                    if student_class:
-                        if student_class.form_teacher == current_user or student_class.assistant_form_teacher == current_user:
+                    student_class_info = ClassSectionInfoModel.objects.filter(student_class=student_class_pk,
+                                                                              section=class_section_pk).first()
+                    if student_class_info:
+                        if student_class_info.form_teacher == current_user or student_class_info.assistant_form_teacher == current_user:
                             is_allowed = True
                         else:
                             message = 'ONLY CLASS FORM TEACHER CAN VIEW CLASS RESULT'
                     else:
-                        # if the class don't have a form teacher assigned
                         message = 'CLASS HAS NO FORM TEACHER, AND ONLY FORM TEACHERS CAN VIEW CLASS RESULTS'
                 elif result_setting.allowed_user == 'subject teacher':
                     subject_info = ClassSectionSubjectTeacherModel.objects.filter(subject=subject_pk,
@@ -1332,16 +1203,16 @@ def result_archive_check_view(request):
                         if current_user in subject_info.teachers.all():
                             is_allowed = True
                         else:
-                            message = 'ONLY {} TEACHERS FOR THE CLASS CAN VIEW SUBJECT RESULT'.format(subject.name.upper())
+                            message = 'ONLY {} TEACHERS FOR THE CLASS CAN VIEW SUBJECT RESULT'.format(
+                                subject.name.upper())
                     else:
-                        # if the subject don't have teachers assigned
                         message = 'SUBJECT HAS NO ASSIGNED TEACHER, ONLY SUBJECT TEACHERS CAN VIEW RESULTS'
 
                 elif result_setting.allowed_user == 'both':
-                    student_class = ClassSectionInfoModel.objects.filter(student_class=student_class_pk,
-                                                                         section=class_section_pk).first()
-                    if student_class:
-                        if student_class.form_teacher == current_user or student_class.assistant_form_teacher == current_user:
+                    student_class_info = ClassSectionInfoModel.objects.filter(student_class=student_class_pk,
+                                                                              section=class_section_pk).first()
+                    if student_class_info:
+                        if student_class_info.form_teacher == current_user or student_class_info.assistant_form_teacher == current_user:
                             is_allowed = True
 
                     subject_info = ClassSectionSubjectTeacherModel.objects.filter(subject=subject_pk,
@@ -1367,7 +1238,8 @@ def result_archive_check_view(request):
             messages.error(request, message)
             return redirect(reverse('result_check'))
 
-        result_list = ResultModel.objects.filter(student_class=student_class, class_section=class_section, term=term, session=session).order_by(
+        result_list = ResultModel.objects.filter(student_class=student_class, class_section=class_section, term=term,
+                                                 session=session).order_by(
             'student__surname')
         full_list = {}
         for result in result_list:
@@ -1422,7 +1294,8 @@ def result_index_view(request):
     del request.session['class_section']
     del request.session['subject']
 
-    student_list = StudentsModel.objects.filter(student_class=student_class, class_section=class_section, subject_group__subjects=subject).order_by('surname')
+    student_list = StudentsModel.objects.filter(student_class=student_class, class_section=class_section,
+                                                subject_group__subjects=subject).order_by('surname')
     full_list = {}
     for student in student_list:
         student_result = ResultModel.objects.filter(session=session, term=term, class_section=class_section,
@@ -1431,7 +1304,6 @@ def result_index_view(request):
         if student_result:
             if student_result.result.get(subject_pk):
                 student_result = student_result.result[subject_pk]
-                #student_result['number_of_student'] = result_stat.result_statistic[key]['number_of_students']
             else:
                 student_result = {}
         else:
@@ -1469,21 +1341,24 @@ def text_result_index_view(request, student_pk):
     session = academic_setting.session
     term = academic_setting.term
     student = StudentsModel.objects.get(pk=student_pk)
-    student_class = student.student_class
-    class_section = student.class_section
     result = TextBasedResultModel.objects.filter(term=term, session=session, student=student).first()
-    school_setting = SchoolGeneralInfoModel.objects.first()
+
     if school_setting.separate_school_section:
-        result_category_list = TextResultCategoryModel.objects.filter(term=term, student_class__in=[student.student_class.id],
-                                                           class_section__in=[student.class_section.id], session=session, type=request.user.profile.type).order_by(
+        result_category_list = TextResultCategoryModel.objects.filter(term=term,
+                                                                      student_class__in=[student.student_class.id],
+                                                                      class_section__in=[student.class_section.id],
+                                                                      session=session,
+                                                                      type=request.user.profile.type).order_by(
             'order')
         result_field_list = TextResultModel.objects.filter(type=request.user.profile.type,
                                                            student_class__in=[student.student_class.id],
                                                            class_section__in=[student.class_section.id]).order_by(
             'name')
     else:
-        result_category_list = TextResultCategoryModel.objects.filter(term=term, session=session, student_class__in=[student.student_class.id],
-                                                           class_section__in=[student.class_section.id]).order_by('order')
+        result_category_list = TextResultCategoryModel.objects.filter(term=term, session=session,
+                                                                      student_class__in=[student.student_class.id],
+                                                                      class_section__in=[
+                                                                          student.class_section.id]).order_by('order')
         result_field_list = TextResultModel.objects.filter(student_class__in=[student.student_class.id],
                                                            class_section__in=[student.class_section.id]).order_by(
             'name')
@@ -1513,15 +1388,14 @@ def result_class_list_view(request):
         if result_setting.allowed_user != 'any':
             current_user = request.user.profile.staff
             if current_user:
-                student_class = ClassSectionInfoModel.objects.filter(student_class=class_pk,
-                                                                     section=section_pk).first()
-                if student_class:
-                    if student_class.form_teacher == current_user or student_class.assistant_form_teacher == current_user:
+                student_class_info = ClassSectionInfoModel.objects.filter(student_class=class_pk,
+                                                                          section=section_pk).first()
+                if student_class_info:
+                    if student_class_info.form_teacher == current_user or student_class_info.assistant_form_teacher == current_user:
                         is_allowed = True
                     else:
                         message = 'ONLY CLASS FORM TEACHER CAN VIEW CLASS RESULT'
                 else:
-                    # if the class don't have a form teacher assigned
                     message = 'CLASS HAS NO FORM TEACHER, AND ONLY FORM TEACHERS CAN VIEW CLASS RESULTS'
             else:
                 message = 'USER IDENTITY NOT KNOWN, ACCESS DENIED'
@@ -1569,7 +1443,7 @@ def result_student_detail_view(request, pk):
         if session_result.session not in student_session_list:
             student_session_list.append(session_result.session)
     behaviour_result = ResultBehaviourComputeModel.objects.filter(term=term, session=session, student=student).first()
-    school_setting = SchoolGeneralInfoModel.objects.first()
+
     if school_setting.separate_school_section:
         behaviour_category_list = ResultBehaviourCategoryModel.objects.filter(type=request.user.profile.type).order_by(
             'name')
@@ -1584,7 +1458,8 @@ def result_student_detail_view(request, pk):
             'name')
     if student_class.result_type == 'text':
         if school_setting.separate_school_section:
-            result_category_list = TextResultCategoryModel.objects.filter(term=term, session=session, type=request.user.profile.type).order_by(
+            result_category_list = TextResultCategoryModel.objects.filter(term=term, session=session,
+                                                                          type=request.user.profile.type).order_by(
                 'order')
             result_field_list = TextResultModel.objects.filter(type=request.user.profile.type,
                                                                student_class__in=[student.student_class.id],
@@ -1615,10 +1490,9 @@ def result_student_detail_view(request, pk):
 
     if result:
         for key, student_result in result.result.items():
-            if result_stat:
-                if key in result_stat.result_statistic:
-                    student_result['highest_in_class'] = result_stat.result_statistic[key]['highest_in_class'] #if key in result_stat.result_statistic else ''
-                    student_result['lowest_in_class'] = result_stat.result_statistic[key]['lowest_in_class'] #if key in result_stat.result_statistic 
+            if result_stat and key in result_stat.result_statistic:
+                student_result['highest_in_class'] = result_stat.result_statistic[key]['highest_in_class']
+                student_result['lowest_in_class'] = result_stat.result_statistic[key]['lowest_in_class']
 
     context = {
         'student': student,
@@ -1665,21 +1539,14 @@ def result_affective_domain_view(request, pk):
         behaviour_record['total_attendance'] = request.POST['total_attendance'].strip()
         behaviour_record['present_attendance'] = request.POST['present_attendance'].strip()
 
-        result_stat = ResultBehaviourComputeModel.objects.filter(session=session, term=term,
-                                                                 student=student).first()
-        if result_stat:
-            result_stat.result_remark = behaviour_record
-        else:
-            result_stat = ResultBehaviourComputeModel.objects.create(session=session, term=term, student=student,
-                                                                     result_remark=behaviour_record,
-                                                                     user=request.user)
-        result_stat.save()
-
-        if result_stat.id:
+        result_stat, created = ResultBehaviourComputeModel.objects.update_or_create(
+            session=session, term=term, student=student,
+            defaults={'result_remark': behaviour_record, 'user': request.user}
+        )
+        if created or result_stat:
             messages.success(request, 'student behaviours  computed successfully')
         return redirect(reverse('result_student_detail', kwargs={'pk': student.pk}))
 
-    school_setting = SchoolGeneralInfoModel.objects.first()
     if school_setting.separate_school_section:
         behaviour_category_list = ResultBehaviourCategoryModel.objects.filter(type=request.user.profile.type).order_by(
             'name')
@@ -1719,9 +1586,7 @@ def result_student_sheet_view(request, pk):
     student = StudentsModel.objects.get(pk=pk)
     student_class = student.student_class
     class_section = student.class_section
-    school_setting = SchoolGeneralInfoModel.objects.first()
     result = ResultModel.objects.filter(term=term, session=session, student=student).first()
-    behaviour_category_list = ResultBehaviourCategoryModel.objects.all().order_by('name')
     behaviour_result = ResultBehaviourComputeModel.objects.filter(term=term, session=session,
                                                                   student=student).first()
 
@@ -1735,224 +1600,136 @@ def result_student_sheet_view(request, pk):
     average = 0
     total_lowest = 0
     class_minimum = 0
-    if result:
+    if result and result.result and result_stat and result_stat.result_statistic:
         for key, student_result in result.result.items():
-            student_result['highest_in_class'] = result_stat.result_statistic[key]['highest_in_class']
-            student_result['lowest_in_class'] = result_stat.result_statistic[key]['lowest_in_class']
-            total_lowest += result_stat.result_statistic[key]['lowest_in_class']
+            if key in result_stat.result_statistic:
+                student_result['highest_in_class'] = result_stat.result_statistic[key].get('highest_in_class', 0)
+                student_result['lowest_in_class'] = result_stat.result_statistic[key].get('lowest_in_class', 0)
+                total_lowest += student_result['lowest_in_class']
 
-        number_of_course = len(result.result.items())
+        number_of_course = len(result.result)
         class_minimum = round((total_lowest / (100 * number_of_course)) * 100) if number_of_course else 0
-    if result:
-        for key, value in result.result.items():
-            total_score += value['total']
+
+        total_score = sum(value.get('total', 0) for value in result.result.values())
         average = round((total_score / (100 * number_of_course)) * 100) if number_of_course else 0
 
-    if result:
         for key, student_result in result.result.items():
-            student_result['highest_in_class'] = result_stat.result_statistic[key].get('highest_in_class', '')
-            student_result['lowest_in_class'] = result_stat.result_statistic[key].get('lowest_in_class', '')
-            student_result['average_score'] = result_stat.result_statistic[key].get('average_score', '')
-            student_result['midterm_highest_in_class'] = result_stat.result_statistic[key].get(
-                'midterm_highest_in_class', '')
-            student_result['midterm_lowest_in_class'] = result_stat.result_statistic[key].get('midterm_lowest_in_class',
-                                                                                              '')
-            student_result['midterm_average_score'] = result_stat.result_statistic[key].get('midterm_average_score', '')
-            student_result['number_of_student'] = result_stat.result_statistic[key].get('number_of_students', '')
+            if key in result_stat.result_statistic:
+                stat_data = result_stat.result_statistic[key]
+                student_result.update({
+                    'average_score': stat_data.get('average_score', ''),
+                    'midterm_highest_in_class': stat_data.get('midterm_highest_in_class', ''),
+                    'midterm_lowest_in_class': stat_data.get('midterm_lowest_in_class', ''),
+                    'midterm_average_score': stat_data.get('midterm_average_score', ''),
+                    'number_of_student': stat_data.get('number_of_students', '')
+                })
 
     if school_setting.separate_school_section:
-        field_list = ResultFieldModel.objects.filter(student_class__in=[student_class]).filter(
-            class_section__in=[class_section], type=request.user.profile.type).order_by('order')
-        grade_list = ResultGradeModel.objects.filter(student_class__in=[student_class],
-            class_section__in=[class_section], type=request.user.profile.type).order_by('order')
+        field_list = ResultFieldModel.objects.filter(student_class=student_class,
+                                                     class_section=class_section,
+                                                     type=request.user.profile.type).order_by('order')
+        grade_list = ResultGradeModel.objects.filter(student_class=student_class,
+                                                     class_section=class_section,
+                                                     type=request.user.profile.type).order_by('order')
         behaviour_category_list = ResultBehaviourCategoryModel.objects.filter(type=request.user.profile.type).order_by(
             'name')
     else:
-        field_list = ResultFieldModel.objects.filter(student_class__in=[student_class]).filter(
-            class_section__in=[class_section]).order_by('order')
-        grade_list = ResultGradeModel.objects.filter(student_class__in=[student_class]).filter(
-            class_section__in=[class_section]).order_by('order')
-    class_detail = ClassSectionInfoModel.objects.filter(student_class=student_class, section=class_section).first()
+        field_list = ResultFieldModel.objects.filter(student_class=student_class,
+                                                     class_section=class_section).order_by('order')
+        grade_list = ResultGradeModel.objects.filter(student_class=student_class,
+                                                     class_section=class_section).order_by('order')
+        behaviour_category_list = ResultBehaviourCategoryModel.objects.all().order_by('name')
 
-    if student.subject_group:
-        subject_list = student.subject_group.subjects.all()
-    else:
-        class_detail = ClassSectionInfoModel.objects.filter(student_class=student_class, section=class_section).first()
-        if class_detail:
-            subject_list = class_detail.subjects
-        else:
-            subject_list = []
+    subject_list = student.subject_group.subjects.all() if student.subject_group else []
 
-    midterm_max = 0
-    for field in field_list:
-        if field.mid_term:
-            midterm_max += field.max_mark
+    midterm_max = sum(field.max_mark for field in field_list if field.mid_term)
     context = {}
-    if student_class.result_type == 'text' or student_class.result_type == 'mix':
+    if student_class.result_type in ['text', 'mix']:
         text_result = TextBasedResultModel.objects.filter(term=term, session=session, student=student).first()
-        if school_setting.separate_school_section:
-            result_category_list = TextResultCategoryModel.objects.filter(term=term,student_class__in=[student.student_class.id],
-                                                               class_section__in=[student.class_section.id], session=session, type=request.user.profile.type).order_by(
-                'order')
-            result_field_list = TextResultModel.objects.filter(type=request.user.profile.type,
-                                                               student_class__in=[student.student_class.id],
-                                                               class_section__in=[student.class_section.id]).order_by(
-                'order')
-        else:
-            result_category_list = TextResultCategoryModel.objects.filter(term=term, session=session, student_class__in=[student.student_class.id],
-                                                               class_section__in=[student.class_section.id]).order_by('order')
-            result_field_list = TextResultModel.objects.filter(student_class__in=[student.student_class.id],
-                                                               class_section__in=[student.class_section.id]).order_by(
-                'order')
-
+        q_filter = Q(type=request.user.profile.type) if school_setting.separate_school_section else Q()
+        result_category_list = TextResultCategoryModel.objects.filter(q_filter, term=term, session=session,
+                                                                      student_class=student.student_class,
+                                                                      class_section=student.class_section).order_by(
+            'order')
+        result_field_list = TextResultModel.objects.filter(q_filter, student_class=student.student_class,
+                                                           class_section=student.class_section).order_by('order')
         context.update({
             'result_list': text_result,
-            'result': result,
-            'academic_setting': academic_setting,
             'result_category_list': result_category_list,
             'result_field_list': result_field_list,
-            'general_setting': SchoolGeneralInfoModel.objects.first(),
-            'total_score': total_score,
-            'number_of_course': number_of_course,
-            'average_score': average,
-            'class_minimum': class_minimum,
-            'result_type': result_type,
-            'midterm_max': midterm_max,
         })
-        # return render(request, 'result/result/text_result/main_result_template.html', context=context)
 
     context.update({
-        'student': student,
-        'academic_setting': academic_setting,
-        'academic_info': academic_info,
-        'result': result,
-        'total_score': total_score,
-        'number_of_course': number_of_course,
-        'average_score': average,
-        'result_remark': result_remark,
-        'general_setting': SchoolGeneralInfoModel.objects.first(),
-        'subject_list': subject_list,
-        'field_list': field_list,
-        'grade_list': grade_list,
-        'behaviour_category_list': behaviour_category_list,
-        'behaviour_result': behaviour_result,
-        'class_minimum': class_minimum,
-        'result_type': result_type,
-        'midterm_max': midterm_max,
-
+        'student': student, 'academic_setting': academic_setting, 'academic_info': academic_info,
+        'result': result, 'total_score': total_score, 'number_of_course': number_of_course,
+        'average_score': average, 'result_remark': result_remark,
+        'general_setting': SchoolGeneralInfoModel.objects.first(), 'subject_list': subject_list,
+        'field_list': field_list, 'grade_list': grade_list,
+        'behaviour_category_list': behaviour_category_list, 'behaviour_result': behaviour_result,
+        'class_minimum': class_minimum, 'result_type': result_type, 'midterm_max': midterm_max,
     })
     return render(request, 'result/templates/main_result.html', context=context)
 
 
 def result_archive_student_sheet_view(request, pk):
-    session_pk = request.GET.get('session_pk')
-    session = SessionModel.objects.get(pk=session_pk)
-    term = request.GET.get('term')
-    academic_setting = {
-        'term': term,
-        'session': session
-    }
+    session = SessionModel.objects.get(pk=request.GET.get('session_pk'))
+    term = TermModel.objects.get(pk=request.GET.get('term_pk'))
+    academic_setting = {'term': term, 'session': session}
     student = StudentsModel.objects.get(pk=pk)
 
-    school_setting = SchoolGeneralInfoModel.objects.first()
-    result = ResultModel.objects.filter(term=term, session=session, student=student, class_section=student.class_section).first()
+    result = ResultModel.objects.filter(term=term, session=session, student=student).first()
     if not result:
-        result = ResultModel.objects.filter(term=term, session=session, student=student).first()
+        messages.error(request, "Result not found for the selected session and term.")
+        return redirect(reverse('result_student_detail', kwargs={'pk': pk}))
 
-    behaviour_category_list = ResultBehaviourCategoryModel.objects.all().order_by('name')
     student_class = result.student_class
     class_section = result.class_section
-    behaviour_result = ResultBehaviourComputeModel.objects.filter(term=term, session=session,
-                                                                  student=student).first()
+    behaviour_result = ResultBehaviourComputeModel.objects.filter(term=term, session=session, student=student).first()
+    result_stat = ResultStatisticModel.objects.filter(term=term, session=session, student_class=student_class,
+                                                      class_section=class_section).first()
+    result_remark = ResultRemarkModel.objects.filter(term=term, session=session, student=student).first()
+
+    school_setting = SchoolGeneralInfoModel.objects.first()
+    q_filter = Q(type=request.user.profile.type) if school_setting.separate_school_section else Q()
 
     if student_class.result_type == 'text':
-        if school_setting.separate_school_section:
-            result_category_list = TextResultCategoryModel.objects.filter(term=term, session=session, type=request.user.profile.type).order_by(
-                'order')
-            result_field_list = TextResultModel.objects.filter(type=request.user.profile.type,
-                                                               student_class__in=[student.student_class.id],
-                                                               class_section__in=[student.class_section.id]).order_by(
-                'name')
-        else:
-            result_category_list = TextResultCategoryModel.objects.filter(term=term, session=session).order_by('order')
-            result_field_list = TextResultModel.objects.filter(student_class__in=[student.student_class.id],
-                                                               class_section__in=[student.class_section.id]).order_by(
-                'name')
-
+        result_category_list = TextResultCategoryModel.objects.filter(q_filter, term=term, session=session).order_by(
+            'order')
+        result_field_list = TextResultModel.objects.filter(q_filter, student_class=student.student_class,
+                                                           class_section=student.class_section).order_by('name')
         context = {
-            'student': student,
-            'result_list': result,
-            'academic_setting': academic_setting,
-            'behaviour_category_list': behaviour_category_list,
-            'behaviour_result': behaviour_result,
-            'result_category_list': result_category_list,
-            'result_field_list': result_field_list,
-            'general_setting': SchoolGeneralInfoModel.objects.first(),
+            'student': student, 'result_list': result, 'academic_setting': academic_setting,
+            'behaviour_result': behaviour_result, 'result_category_list': result_category_list,
+            'result_field_list': result_field_list, 'general_setting': school_setting,
         }
         return render(request, 'result/result/text_result/main_result_template.html', context=context)
 
-    result_stat = ResultStatisticModel.objects.filter(term=term, session=session, student_class=student_class,
-                                                      class_section=class_section).first()
-
-    result_remark = ResultRemarkModel.objects.filter(term=term, session=session,
-                                                     student=student).first()
-    total_score = 0
-    number_of_course = 0
-    average = 0
-    total_lowest = 0
-    class_minimum = 0
-    if result:
+    total_score, number_of_course, average, total_lowest, class_minimum = 0, 0, 0, 0, 0
+    if result and result.result and result_stat and result_stat.result_statistic:
         for key, student_result in result.result.items():
-            student_result['highest_in_class'] = result_stat.result_statistic[key]['highest_in_class']
-            student_result['lowest_in_class'] = result_stat.result_statistic[key]['lowest_in_class']
-            total_lowest += result_stat.result_statistic[key]['lowest_in_class']
+            if key in result_stat.result_statistic:
+                stat = result_stat.result_statistic[key]
+                student_result['highest_in_class'] = stat.get('highest_in_class', 0)
+                student_result['lowest_in_class'] = stat.get('lowest_in_class', 0)
+                total_lowest += student_result['lowest_in_class']
 
-        number_of_course = len(result.result.items())
-        class_minimum = round((total_lowest / (100 * number_of_course)) * 100)
-    if result:
-        for key, value in result.result.items():
-            total_score += value['total']
-        average = round((total_score / (100 * number_of_course)) * 100)
+        number_of_course = len(result.result)
+        class_minimum = round((total_lowest / (100 * number_of_course)) * 100) if number_of_course else 0
+        total_score = sum(value.get('total', 0) for value in result.result.values())
+        average = round((total_score / (100 * number_of_course)) * 100) if number_of_course else 0
 
-    if result:
-        for key, student_result in result.result.items():
-            student_result['highest_in_class'] = result_stat.result_statistic[key].get('highest_in_class', '')
-            student_result['lowest_in_class'] = result_stat.result_statistic[key].get('lowest_in_class', '')
-            student_result['average_score'] = result_stat.result_statistic[key].get('average_score', '')
-            student_result['midterm_highest_in_class'] = result_stat.result_statistic[key].get('midterm_highest_in_class', '')
-            student_result['midterm_lowest_in_class'] = result_stat.result_statistic[key].get('midterm_lowest_in_class', '')
-            student_result['midterm_average_score'] = result_stat.result_statistic[key].get('midterm_average_score', '')
-            student_result['number_of_student'] = result_stat.result_statistic[key].get('number_of_students', '')
-            student_result['has_exam'] = result_stat.result_statistic[key].get('has_exam', '')
-
-    if school_setting.separate_school_section:
-        field_list = ResultFieldModel.objects.filter(student_class__in=[student_class]).filter(
-		class_section__in=[class_section]).filter(type=request.user.profile.type).order_by('order')
-        grade_list = ResultGradeModel.objects.filter(type=request.user.profile.type).order_by('order')
-        behaviour_category_list = ResultBehaviourCategoryModel.objects.filter(type=request.user.profile.type).order_by(
-            'name')
-    else:
-        field_list = ResultFieldModel.objects.filter(student_class__in=[student_class]).filter(
-		class_section__in=[class_section]).order_by('order')
-        grade_list = ResultGradeModel.objects.all().order_by('order')
-
-    result_keys = result.result.keys()
-    subject_list = SubjectsModel.objects.filter(id__in=result_keys)
+    field_list = ResultFieldModel.objects.filter(q_filter, student_class=student_class,
+                                                 class_section=class_section).order_by('order')
+    grade_list = ResultGradeModel.objects.filter(q_filter).order_by('order')
+    behaviour_category_list = ResultBehaviourCategoryModel.objects.filter(q_filter).order_by('name')
+    subject_list = SubjectsModel.objects.filter(id__in=result.result.keys())
 
     context = {
-        'student': student,
-        'academic_setting': academic_setting,
-        'result': result,
-        'total_score': total_score,
-        'number_of_course': number_of_course,
-        'average_score': average,
-        'result_remark': result_remark,
-        'general_setting': SchoolGeneralInfoModel.objects.first(),
-        'subject_list': subject_list,
-        'field_list': field_list,
-        'grade_list': grade_list,
-        'behaviour_category_list': behaviour_category_list,
-        'behaviour_result': behaviour_result,
+        'student': student, 'academic_setting': academic_setting, 'result': result,
+        'total_score': total_score, 'number_of_course': number_of_course, 'average_score': average,
+        'result_remark': result_remark, 'general_setting': school_setting, 'subject_list': subject_list,
+        'field_list': field_list, 'grade_list': grade_list,
+        'behaviour_category_list': behaviour_category_list, 'behaviour_result': behaviour_result,
         'class_minimum': class_minimum
     }
     return render(request, 'result/templates/main_result.html', context=context)
@@ -1967,133 +1744,94 @@ def select_result_cumulative_view(request):
         student_class = result.student_class
         class_section = result.class_section
         return redirect(reverse('result_cumulative_sheet', kwargs={'student_pk': student_pk, 'session_pk': session_pk,
-                                            'student_class': student_class.id, 'class_section': class_section.id}))
+                                                                   'student_class': student_class.id,
+                                                                   'class_section': class_section.id}))
     student = StudentsModel.objects.get(id=student_pk)
     student_class = student.student_class
     class_section = student.class_section
     return redirect(reverse('result_cumulative_sheet', kwargs={'student_pk': student_pk, 'session_pk': session_pk,
-                                        'student_class': student_class.id, 'class_section': class_section.id}))
+                                                               'student_class': student_class.id,
+                                                               'class_section': class_section.id}))
 
 
 def result_cumulative_sheet_view(request, student_pk, session_pk, student_class, class_section):
     session = SessionModel.objects.get(pk=session_pk)
     student = StudentsModel.objects.get(pk=student_pk)
-    student_class = ClassesModel.objects.filter(pk=student_class).first()
-    if student_class.result_type == 'text':
-        messages.error(request, 'Cumulative Not Available for This Class')
-        previous_url = request.META.get('HTTP_REFERER', reverse('admin_dashboard'))
-        return redirect(previous_url)
-    class_section = ClassSectionModel.objects.filter(pk=class_section).first()
+    student_class_obj = ClassesModel.objects.filter(pk=student_class).first()
 
-    general_setting = SchoolGeneralInfoModel.objects.first()
+    if not student_class_obj or student_class_obj.result_type == 'text':
+        messages.error(request, 'Cumulative results are not available for this class.')
+        return redirect(request.META.get('HTTP_REFERER', reverse('admin_dashboard')))
 
-    first_result = ResultModel.objects.filter(term='1st term', session=session, student=student,
-                                              student_class=student_class, class_section=class_section).first()
-    second_result = ResultModel.objects.filter(term='2nd term', session=session, student=student,
-                                               student_class=student_class, class_section=class_section).first()
-    third_result = ResultModel.objects.filter(term='3rd term', session=session, student=student,
-                                              student_class=student_class, class_section=class_section).first()
+    class_section_obj = ClassSectionModel.objects.filter(pk=class_section).first()
+
+    first_term = TermModel.objects.filter(order=1).first()
+    second_term = TermModel.objects.filter(order=2).first()
+    third_term = TermModel.objects.filter(order=3).first()
+
+    first_result = ResultModel.objects.filter(term=first_term, session=session, student=student,
+                                              student_class=student_class_obj,
+                                              class_section=class_section_obj).first() if first_term else None
+    second_result = ResultModel.objects.filter(term=second_term, session=session, student=student,
+                                               student_class=student_class_obj,
+                                               class_section=class_section_obj).first() if second_term else None
+    third_result = ResultModel.objects.filter(term=third_term, session=session, student=student,
+                                              student_class=student_class_obj,
+                                              class_section=class_section_obj).first() if third_term else None
 
     subject_list, cumulative_first, cumulative_second, cumulative_third, cumulative_total = {}, {}, {}, {}, {}
     cumulative_average, cumulative_grade, cumulative_remark = {}, {}, {}
-    grade_list = ResultGradeModel.objects.filter(student_class__in=[student_class]).filter(
-        class_section__in=[class_section])
+    grade_list = ResultGradeModel.objects.filter(student_class=student_class_obj, class_section=class_section_obj)
 
-    if first_result:
-        for key, value in first_result.result.items():
-            if key not in subject_list:
-                subject_list[key] = value['subject']
+    all_results = [first_result, second_result, third_result]
+    for res in all_results:
+        if res and res.result:
+            for key, value in res.result.items():
+                if key not in subject_list:
+                    subject_list[key] = value.get('subject', 'Unknown Subject')
 
-    if second_result:
-        for key, value in second_result.result.items():
-            if key not in subject_list:
-                subject_list[key] = value['subject']
-
-    if third_result:
-        for key, value in third_result.result.items():
-            if key not in subject_list:
-                subject_list[key] = value['subject']
-
-
-    first_total, second_total, third_total, course = 0, 0, 0, 0
+    first_total, second_total, third_total, course_count = 0, 0, 0, 0
     for key, value in subject_list.items():
-        subject_total, term = 0, 0
-        if first_result:
-            if key in first_result.result:
-                cumulative_first[key] = first_result.result[key]['total']
-                if first_result.result[key]['total']:
-                    subject_total += first_result.result[key]['total']
-                    first_total += first_result.result[key]['total']
-                    term += 1
-                    course += 1
-            else:
-                cumulative_first[key] = 0
+        subject_total, term_count = 0, 0
 
-        if second_result:
-            if key in second_result.result:
-                cumulative_second[key] = second_result.result[key]['total']
-                if second_result.result[key]['total']:
-                    subject_total += second_result.result[key]['total']
-                    second_total += second_result.result[key]['total']
-                    term += 1
-                    course += 1
-            else:
-                cumulative_second[key] = 0
+        first_term_score = first_result.result[key].get('total',
+                                                        0) if first_result and first_result.result and key in first_result.result else 0
+        cumulative_first[key] = first_term_score
+        if first_term_score > 0: subject_total += first_term_score; first_total += first_term_score; term_count += 1; course_count += 1
 
-        if third_result:
-            if key in third_result.result:
-                cumulative_third[key] = third_result.result[key]['total']
-                if third_result.result[key]['total']:
-                    subject_total += third_result.result[key]['total']
-                    third_total += third_result.result[key]['total']
-                    term += 1
-                    course += 1
-            else:
-                cumulative_third[key] = 0
+        second_term_score = second_result.result[key].get('total',
+                                                          0) if second_result and second_result.result and key in second_result.result else 0
+        cumulative_second[key] = second_term_score
+        if second_term_score > 0: subject_total += second_term_score; second_total += second_term_score; term_count += 1; course_count += 1
+
+        third_term_score = third_result.result[key].get('total',
+                                                        0) if third_result and third_result.result and key in third_result.result else 0
+        cumulative_third[key] = third_term_score
+        if third_term_score > 0: subject_total += third_term_score; third_total += third_term_score; term_count += 1; course_count += 1
 
         cumulative_total[key] = subject_total
-        if term:
-            subject_average = round(subject_total/term, 1)
-        else:
-            subject_average = 0
+        subject_average = round(subject_total / term_count, 1) if term_count else 0
         cumulative_average[key] = subject_average
 
-        grade, remark = '', ''
-        for result_grade in grade_list:
-            if (subject_average >= result_grade.min_mark) and subject_average < result_grade.max_mark:
-                grade, remark = result_grade.name.upper(), result_grade.remark.upper()
-                continue
-
+        grade, remark = next(
+            ((g.name.upper(), g.remark.upper()) for g in grade_list if g.min_mark <= subject_average <= g.max_mark),
+            ('', ''))
         cumulative_grade[key] = grade
         cumulative_remark[key] = remark
-    total_score = first_total + second_total + third_total
-    if course:
-        term_average = total_score/course
-    else:
-        term_average = 0
-    grade, remark = '', ''
-    for result_grade in grade_list:
-        if (term_average >= result_grade.min_mark) and term_average < result_grade.max_mark:
-            grade, remark = result_grade.name.upper(), result_grade.remark.upper()
-            continue
-    context = {
-        'student': student,
-        'subject_list': subject_list,
-        'cumulative_first': cumulative_first,
-        'cumulative_second': cumulative_second,
-        'cumulative_third': cumulative_third,
-        'cumulative_total': cumulative_total,
-        'cumulative_average': cumulative_average,
-        'cumulative_grade': cumulative_grade,
-        'cumulative_remark': cumulative_remark,
-        'general_setting': general_setting,
-        'grade_list': grade_list,
-        'total_score': total_score,
-        'term_average': round(term_average, 1),
-        'grade': grade,
-        'remark': remark,
-        'session': session
 
+    total_score = first_total + second_total + third_total
+    term_average = total_score / (len(subject_list) * 3) if subject_list else 0
+    grade, remark = next(
+        ((g.name.upper(), g.remark.upper()) for g in grade_list if g.min_mark <= term_average <= g.max_mark), ('', ''))
+
+    context = {
+        'student': student, 'subject_list': subject_list, 'cumulative_first': cumulative_first,
+        'cumulative_second': cumulative_second, 'cumulative_third': cumulative_third,
+        'cumulative_total': cumulative_total, 'cumulative_average': cumulative_average,
+        'cumulative_grade': cumulative_grade, 'cumulative_remark': cumulative_remark,
+        'general_setting': SchoolGeneralInfoModel.objects.first(), 'grade_list': grade_list,
+        'total_score': total_score, 'term_average': round(term_average, 1),
+        'grade': grade, 'remark': remark, 'session': session
     }
     return render(request, 'result/templates/cumulative_result.html', context=context)
 
@@ -2112,13 +1850,15 @@ class TextResultCategoryCreateView(LoginRequiredMixin, PermissionRequiredMixin, 
         context = super().get_context_data(**kwargs)
         school_setting = SchoolGeneralInfoModel.objects.first()
         if school_setting.separate_school_section:
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix'), type=self.request.user.profile.type).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix'),
+                                                                type=self.request.user.profile.type).order_by('name')
             context['class_section_list'] = ClassSectionModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
             context['text_result_category_list'] = TextResultCategoryModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
         else:
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix')).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix')).order_by(
+                'name')
             context['class_section_list'] = ClassSectionModel.objects.all().order_by('name')
             context['text_result_category_list'] = TextResultCategoryModel.objects.all().order_by('name')
         return context
@@ -2148,7 +1888,8 @@ class TextResultCategoryListView(LoginRequiredMixin, PermissionRequiredMixin, Li
         term = academic_setting.term
 
         if sch_setting.separate_school_section:
-            return TextResultCategoryModel.objects.filter(term=term, session=session, type=self.request.user.profile.type).order_by('name')
+            return TextResultCategoryModel.objects.filter(term=term, session=session,
+                                                          type=self.request.user.profile.type).order_by('name')
         else:
             return TextResultCategoryModel.objects.filter(term=term, session=session).order_by('name')
 
@@ -2159,12 +1900,15 @@ class TextResultCategoryListView(LoginRequiredMixin, PermissionRequiredMixin, Li
         if school_setting.separate_school_section:
             context['class_section_list'] = ClassSectionModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix'), type=self.request.user.profile.type).order_by('name')
-            context['staff_list'] = StaffModel.objects.filter(type=self.request.user.profile.type, can_teach=True).order_by('surname')
+            context['class_list'] = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix'),
+                                                                type=self.request.user.profile.type).order_by('name')
+            context['staff_list'] = StaffModel.objects.filter(type=self.request.user.profile.type,
+                                                              can_teach=True).order_by('surname')
             form_kwargs['type'] = self.request.user.profile.type
         else:
             context['class_section_list'] = ClassSectionModel.objects.all().order_by('name')
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix'),).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(
+                Q(result_type='text') | Q(result_type='mix'), ).order_by('name')
             context['staff_list'] = StaffModel.objects.filter(can_teach=True).order_by('surname')
 
         context['form'] = TextResultCategoryForm(**form_kwargs)
@@ -2189,13 +1933,15 @@ class TextResultCategoryUpdateView(LoginRequiredMixin, PermissionRequiredMixin, 
         if school_setting.separate_school_section:
             context['class_section_list'] = ClassSectionModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix'), type=self.request.user.profile.type).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix'),
+                                                                type=self.request.user.profile.type).order_by('name')
             context['text_result_category_list'] = TextResultCategoryModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
             form_kwargs['type'] = self.request.user.profile.type
         else:
             context['class_section_list'] = ClassSectionModel.objects.all().order_by('name')
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix'),).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(
+                Q(result_type='text') | Q(result_type='mix'), ).order_by('name')
             context['text_result_category_list'] = TextResultCategoryModel.objects.all().order_by('name')
         context['form'] = TextResultCategoryEditForm(**form_kwargs)
         return context
@@ -2259,7 +2005,8 @@ class TextResultCreateView(LoginRequiredMixin, PermissionRequiredMixin, SuccessM
         context = super().get_context_data(**kwargs)
         school_setting = SchoolGeneralInfoModel.objects.first()
         if school_setting.separate_school_section:
-            context['class_list'] = ClassesModel.objects.filter(type=self.request.user.profile.type, result_type='text').order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(type=self.request.user.profile.type,
+                                                                result_type='text').order_by('name')
             context['class_section_list'] = ClassSectionModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
             context['text_result_list'] = TextResultModel.objects.filter(
@@ -2294,7 +2041,8 @@ class TextResultListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         session = academic_setting.session
         term = academic_setting.term
         if school_setting.separate_school_section:
-            return TextResultModel.objects.filter(type=self.request.user.profile.type, category__session=session, category__term=term).order_by('name')
+            return TextResultModel.objects.filter(type=self.request.user.profile.type, category__session=session,
+                                                  category__term=term).order_by('name')
         else:
             return TextResultModel.objects.filter(category__session=session, category__term=term).order_by('name')
 
@@ -2311,17 +2059,21 @@ class TextResultListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         if school_setting.separate_school_section:
             context['class_section_list'] = ClassSectionModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix'), type=self.request.user.profile.type).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix'),
+                                                                type=self.request.user.profile.type).order_by('name')
             context['result_category_list'] = TextResultCategoryModel.objects.filter(
                 type=self.request.user.profile.type, term=term, session=session).order_by('name')
             form_kwargs['type'] = self.request.user.profile.type
         else:
             context['class_section_list'] = ClassSectionModel.objects.all().order_by('name')
-            context['class_list'] = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix')).order_by('name')
-            context['result_category_list'] = TextResultCategoryModel.objects.filter(term=term, session=session).order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(Q(result_type='text') | Q(result_type='mix')).order_by(
+                'name')
+            context['result_category_list'] = TextResultCategoryModel.objects.filter(term=term,
+                                                                                     session=session).order_by('name')
         context['form'] = TextResultForm(**form_kwargs)
 
         return context
+
 
 class TextResultUpdateView(LoginRequiredMixin, PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
     model = TextResultModel
@@ -2340,7 +2092,8 @@ class TextResultUpdateView(LoginRequiredMixin, PermissionRequiredMixin, SuccessM
         if school_setting.separate_school_section:
             context['class_section_list'] = ClassSectionModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
-            context['class_list'] = ClassesModel.objects.filter(type=self.request.user.profile.type, result_type='text').order_by('name')
+            context['class_list'] = ClassesModel.objects.filter(type=self.request.user.profile.type,
+                                                                result_type='text').order_by('name')
             context['text_result_list'] = TextResultModel.objects.filter(
                 type=self.request.user.profile.type).order_by('name')
             form_kwargs['type'] = self.request.user.profile.type
@@ -2677,7 +2430,7 @@ class ResultSettingCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateVie
         context = super().get_context_data(**kwargs)
         school_setting = SchoolGeneralInfoModel.objects.first()
         if school_setting.separate_school_section:
-           pass
+            pass
         else:
             pass
         return context
@@ -2716,3 +2469,4 @@ class ResultSettingUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateVie
             kwargs.update({'type': self.request.user.profile.type})
         kwargs.update({'type': self.request.user.profile.type})
         return kwargs
+

@@ -12,6 +12,7 @@ urlpatterns = [
     path('setting/', include('school_setting.urls')),
     path('site/', include('user_management.urls')),
     path('human_resource/', include('human_resource.urls')),
+    path('inventory/', include('inventory.urls')),
     path('academic/', include('academic.urls')),
     path('attendance/', include('attendance.urls')),
     path('finance/', include('finance.urls')),

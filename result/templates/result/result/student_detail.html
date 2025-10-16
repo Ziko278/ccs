@@ -11,7 +11,7 @@
                         <a class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">BIO DATA</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">{{academic_setting.term|upper}} RESULT</a>
+                        <a class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">{{ academic_setting.term.name|upper }} RESULT</a>
                     </li>
 
                     <li class="nav-item">
@@ -64,7 +64,7 @@
                     </div>
 
                     <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
-                        <h4 class="card-title">{{ academic_setting.session }} {{ academic_setting.term|upper }} STUDENT'S RESULT</h4>
+                        <h4 class="card-title">{{ academic_setting.session }} {{ academic_setting.term.name|upper }} STUDENT'S RESULT</h4>
                         <div class="col-lg-12 grid-margin stretch-card">
                             <div class="card">
                                 <div class="card-body">
@@ -72,7 +72,7 @@
                                         <a href="{% url 'result_student_sheet' student.id %}?type=midterm" title="Mid-Term Result Card" class="btn btn-outline-primary"><i class="bi bi-file-break-fill"></i></a>
                                         <a href="{% url 'result_student_sheet' student.id %}" title="Result Card" class="btn btn-outline-primary"><i class="bi bi-file-bar-graph-fill"></i></a>
                                         <a href="{% url 'result_affective_domain' student.id %}" title="Compute Behaviours" class="btn btn-outline-info"><i class="bi bi-app-indicator"></i></a>
-                                        {% if academic_info.term == '3rd term' %} <a href="{% url 'result_cumulative_sheet' student.id academic_setting.session.pk student.student_class.id student.class_section.id %}" title="Cumulative Result" class="btn btn-outline-primary"><i class="bi bi-clock-history"></i></a> {% endif %}
+                                        {% if academic_setting.term.is_promotion_term %} <a href="{% url 'select_result_cumulative_view' %}?student_pk={{ student.id }}&session_pk={{ academic_setting.session.pk }}" title="Cumulative Result" class="btn btn-outline-primary"><i class="bi bi-clock-history"></i></a> {% endif %}
                                     </h4>
                                 </div>
                             </div>
@@ -160,7 +160,7 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <h4 class="card-title">RESULT ARCHIVE SELECTION</h4>
-                                        <form method="" action="{% url 'result_archive_sheet' student.id %}" class="form-sample" enctype="multipart/form-data">
+                                        <form method="GET" action="{% url 'result_archive_sheet' student.id %}" class="form-sample" enctype="multipart/form-data">
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group row">
@@ -182,11 +182,11 @@
                                                     <div class="form-group row">
                                                         <label class="col-sm-4 col-form-label">Select a Term</label>
                                                         <div class="col-sm-8">
-                                                            <select class="form-control" name="term" required>
+                                                            <select class="form-control" name="term_pk" required>
                                                                 <option value="">-------------------</option>
-                                                                <option value="1st term">1st Term</option>
-                                                                <option value="2nd term">2nd Term</option>
-                                                                <option value="3rd term">3rd Term</option>
+                                                                {% for term in term_list %}
+                                                                    <option value="{{ term.id }}">{{ term.name }}</option>
+                                                                {% endfor %}
                                                             </select>
                                                         </div>
                                                     </div>
@@ -212,7 +212,7 @@
                             <div class="card">
                                 <div class="card-body">
                                     <h4 class="card-title">CUMULATIVE RESULT ARCHIVE SELECTION</h4>
-                                    <form method="" action="{% url 'select_result_cumulative_view' %}" class="form-sample" enctype="multipart/form-data">
+                                    <form method="GET" action="{% url 'select_result_cumulative_view' %}" class="form-sample" enctype="multipart/form-data">
                                         <input type="hidden" name="student_pk" value="{{student.id}}">
                                         <div class="row">
                                             <div class="col-md-6">
@@ -255,4 +255,3 @@
 </div>
 
 {% endblock %}
-

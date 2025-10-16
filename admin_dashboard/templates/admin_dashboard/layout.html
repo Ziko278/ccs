@@ -238,24 +238,6 @@
         </ul>
       </li>
 
-      <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#sb_att" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-alarm"></i><span>ATTENDANCE</span><i class="bi bi-chevron-down ms-auto"></i>
-        </a>
-        <ul id="sb_att" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-          <li>
-            <a href="{% url 'class_attendance_select_class' %}">
-              <i class="bi bi-circle"></i><span>Take Class Attendance</span>
-            </a>
-          </li>
-          <li>
-            <a href="{% url 'check_class_attendance_select_class' %}">
-              <i class="bi bi-circle"></i><span>Check Class Attendance</span>
-            </a>
-          </li>
-
-        </ul>
-      </li>
 
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#lnote" data-bs-toggle="collapse" href="#">
@@ -381,78 +363,313 @@
         </ul>
       </li>
 
-      <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#fee" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-cash-stack"></i><span>FEE COLLECTION</span><i class="bi bi-chevron-down ms-auto"></i>
-        </a>
-        <ul id="fee" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-          <li>
-            <a href="{% url 'fee_select_student' %}">
-              <i class="bi bi-circle"></i><span>Make Payment</span>
+      {% if 'inventory.view_itemmodel' in perms or 'inventory.view_stockinmodel' in perms or 'inventory.view_inventorycollectionmodel' in perms %}
+        <li class="nav-item">
+            <a class="nav-link collapsed" data-bs-target="#acad" data-bs-toggle="collapse" href="#">
+                <i class="ri-book-mark-fill"></i><span>Inventory</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
-          </li>
-          <li>
-            <a href="{% url 'fee_payment_index' %}?session={{academic_info.session.id}}&term={{academic_info.term}}">
-              <i class="bi bi-circle"></i><span>Paid Fees</span>
-            </a>
-          </li>
+            <ul class="nav-content collapse " data-bs-parent="#sidebar-nav" id="acad">
 
-          <li>
-            <a href="{% url 'fee_dashboard' %}?session={{academic_info.session.id}}&term={{academic_info.term}}">
-              <i class="bi bi-circle"></i><span>Fee Dashboard</span>
-            </a>
-          </li>
+                {% if 'inventory.view_itemmodel' in perms %}
+                <li>
+                    <a href="{% url 'inventory_item_list' %}">
+                        <i class="bi bi-circle"></i><span>Items</span>
+                    </a>
+                </li>
+                {% endif %}
 
-          <li>
-            <a href="{% url 'fee_index' %}">
-              <i class="bi bi-circle"></i><span>Fees</span>
+                {% if 'inventory.add_stockinmodel' in perms %}
+                <li>
+                    <a href="{% url 'inventory_manual_stock_in_create' %}">
+                        <i class="bi bi-circle"></i><span>Stock In</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'inventory_stock_transfer_list' %}">
+                        <i class="bi bi-circle"></i><span>Stock Transfers</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if 'inventory.view_stockinmodel' in perms %}
+                <li>
+                    <a href="{% url 'inventory_stock_in_list' %}">
+                        <i class="bi bi-circle"></i><span>View Stock In</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'inventory_stock_out_list' %}">
+                        <i class="bi bi-circle"></i><span>View Stock Outs</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if 'inventory.view_inventorycollectionmodel' in perms %}
+                <li>
+                    <a href="{% url 'inventory_po_list' %}">
+                        <i class="bi bi-circle"></i><span>Purchase Orders</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'inventory_advance_list' %}">
+                        <i class="bi bi-circle"></i><span>Purchase Advances</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if 'inventory.view_itemmodel' in perms %}
+                <li>
+                    <a href="{% url 'inventory_category_list' %}">
+                        <i class="bi bi-circle"></i><span>Category</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'inventory_supplier_list' %}">
+                        <i class="bi bi-circle"></i><span>Suppliers</span>
+                    </a>
+                </li>
+                {% endif %}
+
+            </ul>
+        </li>
+        {% endif %}
+
+        {% if 'inventory.view_itemmodel' in perms or 'inventory.view_stockinmodel' in perms or 'inventory.view_purchaseordermodel' in perms %}
+        <li class="nav-item">
+            <a class="nav-link collapsed" data-bs-target="#acad2" data-bs-toggle="collapse" href="#">
+                <i class="ri-book-mark-fill"></i><span>Inventory Collection</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
-          </li>
+            <ul class="nav-content collapse" data-bs-parent="#sidebar-nav" id="acad2">
+
+                <!-- Assignment Management -->
+                <li>
+                    <a href="{% url 'assignment_list' %}">
+                        <i class="bi bi-circle"></i><span>Manage Assignments</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{% url 'create_assignment' %}">
+                        <i class="bi bi-circle"></i><span>Create New Assignment</span>
+                    </a>
+                </li>
+
+                <!-- Student Collections -->
+                <li>
+                    <a href="{% url 'student_collection_search' %}">
+                        <i class="bi bi-circle"></i><span>Student Collections</span>
+                    </a>
+                </li>
 
 
-          <li>
-            <a href="{% url 'fee_group_index' %}">
-              <i class="bi bi-circle"></i><span>Fee Groups</span>
-            </a>
-          </li>
+            </ul>
+        </li>
+        {% endif %}
 
-          <li>
-            <a href="{% url 'fee_master_index' %}">
-              <i class="bi bi-circle"></i><span>Fee Master</span>
+         {% if 'finance.view_feemodel' in perms or 'finance.view_feepaymentmodel' in perms %}
+        <li class="nav-item">
+            <a class="nav-link collapsed" data-bs-target="#fees" data-bs-toggle="collapse" href="#">
+                <i class="bi bi-cash-stack"></i><span>Fees</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
-          </li>
+            <ul class="nav-content collapse " data-bs-parent="#sidebar-nav" id="fees">
 
-          <li>
-            <a href="{% url 'fee_discount_index' %}">
-              <i class="bi bi-circle"></i><span>Fee Discounts</span>
-            </a>
-          </li>
+                {% if 'finance.add_feepaymentmodel' in perms %}
+                <li>
+                    <a href="{% url 'finance_student_payment_search' %}">
+                        <i class="bi bi-circle"></i><span>Fee Payment</span>
+                    </a>
+                </li>
+                {% endif %}
 
-          <li>
-            <a href="{% url 'fee_discount_group_index' %}">
-              <i class="bi bi-circle"></i><span>Fee Discount Groups</span>
-            </a>
-          </li>
+                {% if 'finance.view_feepaymentmodel' in perms %}
+                <li>
+                    <a href="{% url 'finance_payment_index' %}">
+                        <i class="bi bi-circle"></i><span>Fee Payment History</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'finance_invoice_list' %}">
+                        <i class="bi bi-circle"></i><span>Fee Invoices</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'fee_dashboard' %}">
+                        <i class="bi bi-circle"></i><span>Fee Dashboard</span>
+                    </a>
+                </li>
+                {% endif %}
 
-          <li>
-            <a href="{% url 'fee_penalty_index' %}">
-              <i class="bi bi-circle"></i><span>Fee Penalties</span>
-            </a>
-          </li>
+                {% if 'finance.view_feemodel' in perms %}
+                <li>
+                    <a href="{% url 'finance_fee_master_list' %}">
+                        <i class="bi bi-circle"></i><span>Fee Structure</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'finance_fee_group_list' %}">
+                        <i class="bi bi-circle"></i><span>Fee Groups</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'finance_fee_list' %}">
+                        <i class="bi bi-circle"></i><span>Fees</span>
+                    </a>
+                </li>
+                {% endif %}
 
-          <li>
-            <a href="{% url 'online_payment_index' %}">
-              <i class="bi bi-circle"></i><span>Payment Methods</span>
-            </a>
-          </li>
+            </ul>
+        </li>
+        {% endif %}
 
-          <li>
-            <a href="{% url 'finance_info' %}">
-              <i class="bi bi-circle"></i><span>Finance Settings</span>
-            </a>
-          </li>
-        </ul>
-      </li>
+        {% if 'finance.add_studentfundingmodel' in perms or 'finance.view_studentfundingmodel' in perms or 'finance.view_expensemodel' in perms %}
+            <li class="nav-item">
+                <a class="nav-link collapsed" data-bs-target="#fee" data-bs-toggle="collapse" href="#">
+                    <i class="bi bi-cash-stack"></i><span>Finance</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul class="nav-content collapse " data-bs-parent="#sidebar-nav" id="fee">
+
+                    {% if 'finance.view_expensemodel' in perms or 'finance.view_studentfundingmodel' in perms %}
+                    <li>
+                        <a href="{% url 'finance_dashboard' %}">
+                            <i class="bi bi-circle"></i><span>Finance Dashboard</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if 'finance.add_studentfundingmodel' in perms %}
+                    <li>
+                        <a href="{% url 'deposit_select_student' %}">
+                            <i class="bi bi-circle"></i><span>Wallet Deposit</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if 'finance.view_studentfundingmodel' in perms %}
+                    <li>
+                        <a href="{% url 'deposit_index' %}?session={{academic_info.session.id}}&term={{academic_info.term}}">
+                            <i class="bi bi-circle"></i><span>Deposit History</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if 'finance.change_studentfundingmodel' in perms %}
+                    <li>
+                        <a href="{% url 'pending_deposit_index' %}?session={{academic_info.session.id}}&term={{academic_info.term.id}}">
+                            <i class="bi bi-circle"></i><span>Pending Deposit</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if 'finance.view_expensemodel' in perms %}
+                    <li>
+                        <a href="{% url 'finance_accounts_payable_list' %}">
+                            <i class="bi bi-circle"></i><span>Supplier Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_all_payments_list' %}">
+                            <i class="bi bi-circle"></i><span>Supplier Payments Log</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_advance_accounts_list' %}">
+                            <i class="bi bi-circle"></i><span>Advance Payments</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'expense_index' %}">
+                            <i class="bi bi-circle"></i><span>Expenses</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'income_index' %}">
+                            <i class="bi bi-circle"></i><span>Incomes</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if 'finance.add_expensemodel' in perms %}
+                    <li>
+                        <a href="{% url 'income_category_index' %}">
+                            <i class="bi bi-circle"></i><span>Income Category</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'expense_category_index' %}">
+                            <i class="bi bi-circle"></i><span>Expense Category</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if 'finance.change_financesettingmodel' in perms %}
+                    <li>
+                        <a href="{% url 'finance_setting_detail' %}">
+                            <i class="bi bi-circle"></i><span>Settings</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                </ul>
+            </li>
+            {% endif %}
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" data-bs-target="#sal" data-bs-toggle="collapse" href="#">
+                    <i class="bi bi-cash-stack"></i><span>Salary Management</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul class="nav-content collapse " data-bs-parent="#sidebar-nav" id="sal">
+
+                    {% if 'finance.add_salaryrecord' in perms %}
+                    <li>
+                        <a href="{% url 'finance_process_payroll' %}">
+                            <i class="bi bi-circle"></i><span>Process Salary</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if 'finance.view_salaryrecord' in perms %}
+                    <li>
+                        <a href="{% url 'finance_salary_advance_list' %}">
+                            <i class="bi bi-circle"></i><span>Salary Advance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_staff_loan_list' %}">
+                            <i class="bi bi-circle"></i><span>Staff Loans</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_staff_loan_debtors' %}">
+                            <i class="bi bi-circle"></i><span>Staff Loan Debtors</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_payroll_dashboard' %}">
+                            <i class="bi bi-circle"></i><span>Salary Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_salary_structure_list' %}">
+                            <i class="bi bi-circle"></i><span>Salary Structure</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_staff_bank_detail_list' %}">
+                            <i class="bi bi-circle"></i><span>Bank Accounts</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <li>
+                        <a href="{% url 'staff_salary_profile' %}">
+                            <i class="bi bi-circle"></i><span>My Salary Profile</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </li>
+
+
 
 
       <li class="nav-item">

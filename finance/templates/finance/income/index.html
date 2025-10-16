@@ -1,109 +1,172 @@
-{% extends 'admin_dashboard/layout.html' %}
-{% block 'main' %}
-{% load static %}
+{% extends 'admin_site/layout.html' %}
 {% load humanize %}
-<div class="col-lg-12 grid-margin stretch-card">
-    <div class="card">
-        <div class="card-body">
-            <h4 class="card-title">Select Income Record</h4>
-            <form>
-                <div class="row">
-                    <div class="col-4">
-                        <select name="session" required class="form-control">
-                            <option value="">-------------------</option>
-                            {% for session in session_list %}
-                            <option {% if session == current_session %} selected {% endif %} value="{{session.id}}">{{ session }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="col-4">
-                        <select name="term" required class="form-control">
-                            <option value="">-------------------</option>
-                            <option value="1st term" {% if term == '1st term' %} selected {% endif %}>1st Term</option>
-                            <option value="2nd term" {% if term == '2nd term' %} selected {% endif %}>2nd Term</option>
-                            <option value="3rd term" {% if term == '3rd term' %} selected {% endif %}>3rd Term</option>
-
-                        </select>
-                    </div>
-
-                    <div class="col-4">
-                        <input style="width:50%;margin-left:25%" type="submit" value="Proceed" class="btn btn-success">
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+{% block 'main' %}
 
 <div class="col-12">
     <div class="card recent-sales overflow-auto">
-        <div class="filter">
-            <a title="Add Income" class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+        <div class="filter px-2">
+            <a title="Actions" class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
             <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                 <li class="dropdown-header text-start">
                     <h6>Action</h6>
                 </li>
-
-                <li><a class="dropdown-item" href="#">
-                    <a title="Add Income"  href="{% url 'income_create' %}" class="btn btn-primary" style="width:100%">Add Income</a>
-                </a></li>
+                <li>
+                    <a class="dropdown-item" href="{% url 'income_create' %}">
+                        <button title="Add Income" type="button" style="width:100%" class="btn btn-sm btn-primary">
+                            Add New Income
+                        </button>
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#incomeHelperModal">Helper</a>
+                </li>
             </ul>
         </div>
 
         <div class="card-body">
-            <h5 class="card-title">List of Incomes
-                {% if school_info.separate_school_section and school_info.school_type == 'mix' %}
-                    {% if user.profile.type == 'pri' %}
-                        in Primary Division of the School
-                    {% elif user.profile.type == 'sec' %}
-                        in Secondary Division of the School
-                    {% elif user.profile.type == 'mix' %}
-                        in the School
-                    {% endif %}
-                {% endif %} {{ term|title }} {{ current_session|title }} Session
-            </h5>
-            {% if form.errors %}
-                <h5 class="text-danger">{{form.errors}}</h5>
-            {% endif %}
-            <table class="table table-borderless datatable">
-                <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Category</th>
-                    <th scope="col">Source</th>
-                    <th scope="col">Amount</th>
-                    <th scope="col">Invoice No.</th>
-                    <th scope="col">Date</th>
-                    {% if school_info.school_type|lower == 'mix' and not school_info.separate_school_section %} <th scope="col">Category</th> {% endif %}
-                    <th scope="col" class="text-center">Action</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% if income_list %}
-                {% for income in income_list %}
-                <tr>
-                    <th scope="row"><a href="#">{{ forloop.counter }}</a></th>
-                    <td>{{ income.category|upper }}</td>
-                    <td>{{ income.source|title }}</td>
-                    <td>{{ income.amount|intcomma }}</td>
-                    <td>{{ income.invoice_number|upper }}</td>
-                    <td>{{ income.date|date }}</td>
-                    {% if school_info.school_type|lower == 'mix' and not school_info.separate_school_section %}
-                    <td>{% if income.type|lower == 'pri' %} PRIMARY {% elif income.type|lower == 'sec' %} SECONDARY  {% endif %} </td>
-                    {% endif %}
-                    <td class="text-center">
-                        <a href="{% url 'income_detail' income.id %}" title="View Income Detail" class="btn btn-primary"><i class="bi bi-eye"></i></a>
-                    </td>
-                </tr>
-                {% endfor %}
-                {% endif %}
+            <h5 class="card-title">Income Records</h5>
 
-                </tbody>
-            </table>
-            {% if not income_list %}
-                <h3 class="text-center">No Income Recorded Yet</h3>
+            <!-- Filter Form -->
+            <div class="card mb-4" style="background-color: #f8f9fa;">
+                <div class="card-body py-3">
+                    <form method="get" class="row g-3 align-items-end">
+                        <div class="col-md-5">
+                            <label class="form-label small">Search</label>
+                            <input type="text" name="search" value="{{ request.GET.search|default:'' }}"
+                                   placeholder="Search description, reference or source..." class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small">Category</label>
+                            <select name="category" class="form-select">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ cat.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-funnel"></i> Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="alert alert-info">
+                <strong>Total Amount for Filtered Income: ₦{{ total_amount|intcomma }}</strong>
+            </div>
+
+            <!-- Income Table -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Source</th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Session</th>
+                            <th scope="col">Term</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for income in income_list %}
+                        <tr>
+                            <th scope="row">
+                                {% if page_obj %}{{ forloop.counter0|add:page_obj.start_index }}{% else %}{{ forloop.counter }}{% endif %}
+                            </th>
+
+                            <td>{{ income.category.name|title }}</td>
+                            <td>{{ income.description|default:"—"|truncatechars:60 }}</td>
+                            <td>{{ income.source|default:"—" }}</td>
+                            <td>₦{{ income.amount|intcomma }}</td>
+                            <td>{{ income.income_date|date:"d M Y" }}</td>
+                            <td>{% if income.session %}{{ income.session }}{% else %}—{% endif %}</td>
+                            <td>{% if income.term %}{{ income.term }}{% else %}—{% endif %}</td>
+
+
+                            <td>
+                                <a href="{% url 'income_detail' income.pk %}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'income_update' income.pk %}" class="btn btn-sm btn-outline-warning" title="Edit">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+
+
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                                    <h5 class="mt-3">No income records found</h5>
+                                    <p>Try adjusting your search filters or create a new income record.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1&{{ request.GET.urlencode }}" aria-label="First">&laquo; First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&{{ request.GET.urlencode }}" aria-label="Last">Last &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
             {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Income Helper Modal (shared) -->
+<div class="modal fade" id="incomeHelperModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Income Records - Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Use this screen to manage non-fee income records. Search filters check description, reference and source.</p>
+                <p>Prefer deactivating categories instead of deleting them to preserve historical data.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>

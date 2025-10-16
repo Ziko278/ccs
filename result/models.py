@@ -103,7 +103,8 @@ class ResultBehaviourCategoryModel(models.Model):
 
 
 class ResultBehaviourModel(models.Model):
-    category = models.ForeignKey(ResultBehaviourCategoryModel, on_delete=models.CASCADE, related_name='student_behaviour')
+    category = models.ForeignKey(ResultBehaviourCategoryModel, on_delete=models.CASCADE,
+                                 related_name='student_behaviour')
     name = models.CharField(max_length=100)
     max_mark = models.FloatField()
     order = models.IntegerField(null=True, blank=True)
@@ -208,10 +209,7 @@ class HeadTeacherResultCommentModel(models.Model):
 
 class ResultModel(models.Model):
     session = models.ForeignKey(SessionModel, on_delete=models.CASCADE)
-    TERM = (
-        ('1st term', '1st Term'), ('2nd term', '2ndTerm'), ('3rd term', '3rd Term')
-    )
-    term = models.CharField(max_length=20, choices=TERM)
+    term = models.ForeignKey(TermModel, on_delete=models.CASCADE, null=True)
     student_class = models.ForeignKey(ClassesModel, on_delete=models.CASCADE)
     class_section = models.ForeignKey(ClassSectionModel, on_delete=models.SET_NULL, null=True, blank=True)
     student = models.ForeignKey(StudentsModel, on_delete=models.CASCADE)
@@ -225,7 +223,7 @@ class ResultModel(models.Model):
     type = models.CharField(max_length=10, choices=TYPE, blank=True, null=True)
 
     def __str__(self):
-        return "{} - {} {}".format(self.student.__str__(), self.session.__str__(), self.term.title())
+        return "{} - {} {}".format(self.student.__str__(), self.session.__str__(), self.term.name.title())
 
     def save(self, *args, **kwargs):
         if self.result:
@@ -260,17 +258,18 @@ class ResultModel(models.Model):
         super(ResultModel, self).save(*args, **kwargs)
 
     def student_average(self):
-        if self.result:
+        if self.total_score and self.number_of_course:
             return round((self.total_score / (100 * self.number_of_course)) * 100)
         return 0
 
     def class_average(self):
-        total_score, total_course = 0, 0
-        result_list = ResultModel.objects.filter(session=self.session, term=self.term, student_class=self.student_class,
-                                                 class_section=self.class_section)
-        for result in result_list:
-            total_score += result.total_score
-            total_course += result.number_of_course
+        aggregates = ResultModel.objects.filter(
+            session=self.session, term=self.term, student_class=self.student_class,
+            class_section=self.class_section
+        ).aggregate(total_score=models.Sum('total_score'), total_course=models.Sum('number_of_course'))
+
+        total_score = aggregates.get('total_score') or 0
+        total_course = aggregates.get('total_course') or 0
 
         if total_course:
             return round((total_score / (100 * total_course) * 100))
@@ -280,14 +279,11 @@ class ResultModel(models.Model):
         class_detail = ClassSectionInfoModel.objects.filter(student_class=self.student_class,
                                                             section=self.class_section).first()
         if class_detail:
-            if class_detail.form_teacher:
-                return class_detail.form_teacher
-            elif class_detail.assistant_form_teacher:
-                return class_detail.assistant_form_teacher
-        return ''
+            return class_detail.form_teacher or class_detail.assistant_form_teacher
+        return None
 
     def head_teacher(self):
-        class_head = HeadTeacherModel.objects.filter(student_class__in=[self.student_class]).first()
+        class_head = HeadTeacherModel.objects.filter(student_class=self.student_class).first()
         if class_head:
             return class_head.head_teacher
 
@@ -297,56 +293,53 @@ class ResultModel(models.Model):
         else:
             academic_setting = AcademicSettingModel.objects.first()
         if academic_setting:
-            if academic_setting.head_teacher:
-                return academic_setting.head_teacher
-        return ''
+            return academic_setting.head_teacher
+        return None
 
     def head_teacher_title(self):
-        class_head = HeadTeacherModel.objects.filter(student_class__in=[self.student_class]).first()
+        class_head = HeadTeacherModel.objects.filter(student_class=self.student_class).first()
         if class_head:
             return class_head.name
+        return ''
 
+    def get_comment(self, is_head_teacher=False):
+        result_behaviour = ResultBehaviourComputeModel.objects.filter(student=self.student, session=self.session,
+                                                                      term=self.term).first()
+        comment_key = 'head_teacher_comment' if is_head_teacher else 'form_teacher_comment'
+
+        if result_behaviour and result_behaviour.result_remark.get(comment_key):
+            return result_behaviour.result_remark[comment_key]
+
+        average_score = self.student_average()
+
+        CommentModel = HeadTeacherResultCommentModel if is_head_teacher else TeacherResultCommentModel
+        filter_kwargs = {
+            'min_score__lte': average_score,
+            'max_score__gte': average_score
+        }
+        if is_head_teacher:
+            filter_kwargs['student_class'] = self.student_class
+            filter_kwargs['class_section'] = self.class_section
+        else:
+            filter_kwargs['student_class__student_class'] = self.student_class
+            filter_kwargs['student_class__section'] = self.class_section
+
+        comment_list = CommentModel.objects.filter(**filter_kwargs)
+
+        if comment_list:
+            return random.choice(comment_list).comment
         return ''
 
     def form_teacher_comment(self):
-        result_behaviour = ResultBehaviourComputeModel.objects.filter(student=self.student, session=self.session,
-                                                                      term=self.term).first()
-        if result_behaviour:
-            if result_behaviour.result_remark['form_teacher_comment']:
-                return result_behaviour.result_remark['form_teacher_comment']
-        average_score = round(self.total_score/self.number_of_course) if self.total_score and self.number_of_course else 0
-        comment_list = TeacherResultCommentModel.objects.filter(student_class__student_class=self.student_class,
-                                                                student_class__section=self.class_section,
-                                                                min_score__lt=average_score, max_score__gte=average_score)
-        if comment_list:
-            comment = random.sample(list(comment_list), 1)[0]
-            return comment.comment
-        return ''
+        return self.get_comment(is_head_teacher=False)
 
     def head_teacher_comment(self):
-        result_behaviour = ResultBehaviourComputeModel.objects.filter(student=self.student, session=self.session,
-                                                                      term=self.term).first()
-        if result_behaviour:
-            if result_behaviour.result_remark['head_teacher_comment']:
-                return result_behaviour.result_remark['head_teacher_comment']
-
-        average_score = round(self.total_score / self.number_of_course) if self.total_score and self.number_of_course else 0
-        comment_list = HeadTeacherResultCommentModel.objects.filter(student_class__in=[self.student_class],
-                                                                class_section__in=[self.class_section],
-                                                                min_score__lt=average_score,
-                                                                max_score__gte=average_score)
-        if comment_list:
-            comment = random.sample(list(comment_list), 1)[0]
-            return comment.comment
-        return ''
+        return self.get_comment(is_head_teacher=True)
 
 
 class ResultUploadedModel(models.Model):
     session = models.ForeignKey(SessionModel, on_delete=models.CASCADE)
-    TERM = (
-        ('1st term', '1st Term'), ('2nd term', '2nd Term'), ('3rd term', '3rd Term')
-    )
-    term = models.CharField(max_length=20, choices=TERM)
+    term = models.ForeignKey(TermModel, on_delete=models.CASCADE, null=True)
     student_class = models.ForeignKey(ClassesModel, on_delete=models.CASCADE)
     class_section = models.ForeignKey(ClassSectionModel, on_delete=models.SET_NULL, null=True, blank=True)
     subject = models.ForeignKey(SubjectsModel, on_delete=models.CASCADE)
@@ -362,10 +355,7 @@ class ResultUploadedModel(models.Model):
 
 class ResultStatisticModel(models.Model):
     session = models.ForeignKey(SessionModel, on_delete=models.CASCADE)
-    TERM = (
-        ('1st term', '1st Term'), ('2nd term', '2ndTerm'), ('3rd term', '3rd Term')
-    )
-    term = models.CharField(max_length=20, choices=TERM)
+    term = models.ForeignKey(TermModel, on_delete=models.CASCADE, null=True)
     student_class = models.ForeignKey(ClassesModel, on_delete=models.CASCADE)
     class_section = models.ForeignKey(ClassSectionModel, on_delete=models.SET_NULL, null=True, blank=True)
     result_statistic = models.JSONField()
@@ -374,10 +364,7 @@ class ResultStatisticModel(models.Model):
 
 class ResultBehaviourComputeModel(models.Model):
     session = models.ForeignKey(SessionModel, on_delete=models.CASCADE)
-    TERM = (
-        ('1st term', '1st Term'), ('2nd term', '2ndTerm'), ('3rd term', '3rd Term')
-    )
-    term = models.CharField(max_length=20, choices=TERM)
+    term = models.ForeignKey(TermModel, on_delete=models.CASCADE, null=True)
     student = models.ForeignKey(StudentsModel, on_delete=models.CASCADE)
     result_remark = models.JSONField()
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
@@ -388,10 +375,7 @@ class ResultBehaviourComputeModel(models.Model):
 
 class ResultRemarkModel(models.Model):
     session = models.ForeignKey(SessionModel, on_delete=models.CASCADE)
-    TERM = (
-        ('1st term', '1st Term'), ('2nd term', '2ndTerm'), ('3rd term', '3rd Term')
-    )
-    term = models.CharField(max_length=20, choices=TERM)
+    term = models.ForeignKey(TermModel, on_delete=models.CASCADE, null=True)
     student = models.ForeignKey(StudentsModel, on_delete=models.CASCADE)
     result_remark = models.JSONField()
 
@@ -404,10 +388,7 @@ class TextResultCategoryModel(models.Model):
     class_section = models.ManyToManyField(ClassSectionModel, blank=True)
     teachers = models.ManyToManyField(StaffModel, blank=True)
     session = models.ForeignKey(SessionModel, on_delete=models.CASCADE, blank=True, null=True)
-    TERM = (
-        ('1st term', '1st Term'), ('2nd term', '2ndTerm'), ('3rd term', '3rd Term')
-    )
-    term = models.CharField(max_length=20, choices=TERM, blank=True, null=True)
+    term = models.ForeignKey(TermModel, on_delete=models.CASCADE, blank=True, null=True)
     TYPE = (
         ('pri', 'PRIMARY'), ('sec', 'SECONDARY'), ('mix', 'GENERAL')
     )
@@ -419,20 +400,21 @@ class TextResultCategoryModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
 
     def __str__(self):
-        class_str = ''
-        for cls in self.student_class.all():
-            class_str += cls.__str__()
+        class_str = ', '.join([cls.name for cls in self.student_class.all()])
         return f"{self.name.upper()} - {class_str}"
 
     def save(self, *args, **kwargs):
         if not self.session or not self.term:
             school_setting = SchoolGeneralInfoModel.objects.first()
-            if school_setting.separate_school_section:
-                academic_setting = SchoolAcademicInfoModel.objects.filter(type=self.type).first()
+            academic_info_qs = SchoolAcademicInfoModel.objects
+            if school_setting.separate_school_section and self.type:
+                academic_setting = academic_info_qs.filter(type=self.type).first()
             else:
-                academic_setting = SchoolAcademicInfoModel.objects.first()
-            self.term = academic_setting.term
-            self.session = academic_setting.session
+                academic_setting = academic_info_qs.first()
+
+            if academic_setting:
+                self.term = academic_setting.term
+                self.session = academic_setting.session
 
         super(TextResultCategoryModel, self).save(*args, **kwargs)
 
@@ -459,10 +441,7 @@ class TextResultModel(models.Model):
 
 class TextBasedResultModel(models.Model):
     session = models.ForeignKey(SessionModel, on_delete=models.CASCADE)
-    TERM = (
-        ('1st term', '1st Term'), ('2nd term', '2ndTerm'), ('3rd term', '3rd Term')
-    )
-    term = models.CharField(max_length=20, choices=TERM)
+    term = models.ForeignKey(TermModel, on_delete=models.CASCADE, null=True)
     student_class = models.ForeignKey(ClassesModel, on_delete=models.CASCADE)
     class_section = models.ForeignKey(ClassSectionModel, on_delete=models.SET_NULL, null=True, blank=True)
     student = models.ForeignKey(StudentsModel, on_delete=models.CASCADE)
@@ -477,14 +456,11 @@ class TextBasedResultModel(models.Model):
         class_detail = ClassSectionInfoModel.objects.filter(student_class=self.student_class,
                                                             section=self.class_section).first()
         if class_detail:
-            if class_detail.form_teacher:
-                return class_detail.form_teacher
-            elif class_detail.assistant_form_teacher:
-                return class_detail.assistant_form_teacher
-        return ''
+            return class_detail.form_teacher or class_detail.assistant_form_teacher
+        return None
 
     def head_teacher(self):
-        class_head = HeadTeacherModel.objects.filter(student_class__in=[self.student_class]).first()
+        class_head = HeadTeacherModel.objects.filter(student_class=self.student_class).first()
         if class_head:
             return class_head.head_teacher
 
@@ -494,40 +470,41 @@ class TextBasedResultModel(models.Model):
         else:
             academic_setting = AcademicSettingModel.objects.first()
         if academic_setting:
-            if academic_setting.head_teacher:
-                return academic_setting.head_teacher
-        return ''
+            return academic_setting.head_teacher
+        return None
 
     def head_teacher_title(self):
         class_head = HeadTeacherModel.objects.filter(student_class__in=[self.student_class]).first()
         if class_head:
-            return class_head.head_teacher
+            return class_head.name
+        return ''
 
+    def get_comment(self, is_head_teacher=False):
+        result_behaviour = ResultBehaviourComputeModel.objects.filter(student=self.student, session=self.session,
+                                                                      term=self.term).first()
+        comment_key = 'head_teacher_comment' if is_head_teacher else 'form_teacher_comment'
+
+        if result_behaviour and result_behaviour.result_remark.get(comment_key):
+            return result_behaviour.result_remark[comment_key]
+
+        CommentModel = HeadTeacherResultCommentModel if is_head_teacher else TeacherResultCommentModel
+        filter_kwargs = {}
+        if is_head_teacher:
+            filter_kwargs['student_class'] = self.student_class
+            filter_kwargs['class_section'] = self.class_section
+        else:
+            filter_kwargs['student_class__student_class'] = self.student_class
+            filter_kwargs['student_class__section'] = self.class_section
+
+        comment_list = CommentModel.objects.filter(**filter_kwargs)
+
+        if comment_list:
+            return random.choice(comment_list).comment
         return ''
 
     def form_teacher_comment(self):
-        result_behaviour = ResultBehaviourComputeModel.objects.filter(student=self.student, session=self.session,
-                                                                      term=self.term).first()
-        if result_behaviour:
-            if result_behaviour.result_remark['form_teacher_comment']:
-                return result_behaviour.result_remark['form_teacher_comment']
-        comment_list = TeacherResultCommentModel.objects.filter(student_class__student_class=self.student_class,
-                                                                student_class__section=self.class_section)
-        if comment_list:
-            comment = random.sample(list(comment_list), 1)[0]
-            return comment.comment
-        return ''
+        return self.get_comment(is_head_teacher=False)
 
     def head_teacher_comment(self):
-        result_behaviour = ResultBehaviourComputeModel.objects.filter(student=self.student, session=self.session,
-                                                                      term=self.term).first()
-        if result_behaviour:
-            if result_behaviour.result_remark['head_teacher_comment']:
-                return result_behaviour.result_remark['head_teacher_comment']
+        return self.get_comment(is_head_teacher=True)
 
-        comment_list = HeadTeacherResultCommentModel.objects.filter(student_class__in=[self.student_class],
-                                                                class_section__in=[self.class_section])
-        if comment_list:
-            comment = random.sample(list(comment_list), 1)[0]
-            return comment.comment
-        return ''

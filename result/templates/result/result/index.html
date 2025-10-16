@@ -6,7 +6,7 @@
     <div class="card recent-sales overflow-auto">
 
         <div class="card-body">
-            <h5 class="card-title">RESULT VIEW: <i> {{ subject|upper }} RESULT FOR {{ student_class|upper }} {{ class_section|upper }} {{ session }} SESSION {{ term|upper }}</i></h5>
+            <h5 class="card-title">RESULT VIEW: <i> {{ subject|upper }} RESULT FOR {{ student_class|upper }} {{ class_section|upper }} {{ session }} SESSION {{ term.name|upper }}</i></h5>
             {% if full_list %}
             <table class="table table-borderless datatable">
                 <thead>

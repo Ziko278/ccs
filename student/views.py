@@ -22,6 +22,7 @@ from school_setting.models import *
 from django.apps import apps
 from student.models import *
 from student.forms import *
+from django.http import JsonResponse, HttpResponse
 
 
 @login_required
@@ -40,17 +41,20 @@ def disable_student_view(request, pk):
                 academic_setting = SchoolAcademicInfoModel.objects.filter(type=request.user.profile.type).first()
             else:
                 academic_setting = SchoolAcademicInfoModel.objects.first()
+
             session = academic_setting.session
+            # The 'term' is now an object from academic_setting
             term = academic_setting.term
+
             student_record.exit_mode = 'departure'
             student_record.session_of_departure = session
+            # This line is now correct, assigning the TermModel object
             student_record.term_of_departure = term
             student_record.save()
 
         messages.success(request, 'Student {} successfully disabled'.format(student.__str__()))
 
     return redirect(reverse('student_detail', kwargs={'pk': pk}))
-
 
 class ParentCreateView(LoginRequiredMixin, PermissionRequiredMixin, SuccessMessageMixin, CreateView):
     model = ParentsModel
@@ -467,3 +471,17 @@ class StudentSettingUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateVi
             kwargs.update({'type': self.request.user.profile.type})
         kwargs.update({'type': self.request.user.profile.type})
         return kwargs
+
+
+def identify_student_by_fingerprint(request):
+    """
+    Identify student by fingerprint scan
+    """
+    return JsonResponse({
+        'success': False,
+        'message': 'Fingerprint not recognized. Please try again.'
+    })
+
+
+
+

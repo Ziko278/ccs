@@ -1,21 +1,25 @@
-{% extends 'admin_dashboard/layout.html' %}
+{% extends 'admin_site/layout.html' %}
 {% block 'main' %}
-{% load static %}
-<div class="col-lg-12 grid-margin stretch-card">
+
+<div class="col-lg-8 offset-lg-2 col-md-12">
     <div class="card">
         <div class="card-body">
-            <h4 class="card-title">Delete Fee Group</h4>
-            <p>Fee Group: <i>{{fee_group.name|upper }}</i></p>
+            <h4 class="card-title">Confirm Deletion of Fee Group</h4>
+            
+            <p>You are about to permanently delete the following fee group:</p>
+            <h5 class="text-center my-3"><em>"{{ fee_group.name|title }}"</em></h5>
 
-            <p>The fee group will be permanently deleted.</p>
-            <p>Fees assigned to student under this group will be reversed.</p>
+            <div class="alert alert-danger">
+                <strong>Warning:</strong> This action cannot be undone. Deleting this will also remove it from any fee structures it is a part of, which could affect historical financial records.
+            </div>
+            
+            <p>Are you sure you want to proceed?</p>
 
             <form style="display:inline" method="post">
                 {% csrf_token %}
-
-                <button class="btn btn-success">Proceed</button>
+                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                <a class="btn btn-secondary" href="{% url 'finance_fee_group_list' %}">Cancel</a>
             </form>
-            <a class="btn btn-danger" href="{% url 'fee_group_index' %}"> Cancel</a>
         </div>
     </div>
 </div>

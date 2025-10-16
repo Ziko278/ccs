@@ -38,6 +38,8 @@ def create_parent_account(sender, instance, created, **kwargs):
 def create_student_account(sender, instance, created, **kwargs):
     if created:
         student = instance
+        wallet, created = StudentWalletModel.objects.get_or_create(student=student)
+
         email = student.email
         username = student.email if student.email else student.registration_number
         password = student.password if student.password else get_random_string(8)

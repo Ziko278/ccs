@@ -2,7 +2,8 @@ from django.db import models, transaction
 from academic.models import ClassesModel, ClassSectionModel, SubjectGroupModel
 from django.contrib.auth.models import User, Group
 from user_management.models import UserProfileModel
-from school_setting.models import SchoolSettingModel, SessionModel, SchoolAcademicInfoModel, SchoolGeneralInfoModel
+# --- UPDATED IMPORT TO GET THE NEW TERM MODEL ---
+from school_setting.models import SchoolSettingModel, SessionModel, SchoolAcademicInfoModel, SchoolGeneralInfoModel, TermModel
 import random
 from io import BytesIO
 from django.core.files.base import ContentFile
@@ -245,7 +246,8 @@ class StudentAcademicRecordModel(models.Model):
     entry_class = models.ForeignKey(ClassesModel, on_delete=models.SET_NULL, null=True)
     entry_class_section = models.ForeignKey(ClassSectionModel, on_delete=models.SET_NULL, null=True)
     entry_session = models.ForeignKey(SessionModel, on_delete=models.SET_NULL, null=True, related_name='entry_session')
-    entry_term = models.CharField(max_length=20)
+    # --- THIS FIELD HAS BEEN UPDATED ---
+    entry_term = models.ForeignKey(TermModel, on_delete=models.SET_NULL, null=True, related_name='entry_records')
     previous_classes = models.JSONField(null=True, blank=True)
     attendance_record = models.JSONField(null=True, blank=True)
     date_of_graduation = models.DateField(null=True)
@@ -253,7 +255,8 @@ class StudentAcademicRecordModel(models.Model):
     exit_mode = models.CharField(max_length=20, null=True)
     session_of_departure = models.ForeignKey(SessionModel, on_delete=models.SET_NULL, related_name='departure',
                                              null=True)
-    term_of_departure = models.CharField(max_length=20, null=True)
+    # --- THIS FIELD HAS BEEN UPDATED ---
+    term_of_departure = models.ForeignKey(TermModel, on_delete=models.SET_NULL, null=True, related_name='departure_records')
     entry_age = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
@@ -268,6 +271,16 @@ class StudentIDGeneratorModel(models.Model):
         ('pri', 'PRIMARY'), ('sec', 'SECONDARY')
     )
     type = models.CharField(max_length=10, choices=TYPE, blank=True)
+
+
+class StudentWalletModel(models.Model):
+    student = models.OneToOneField(StudentsModel, on_delete=models.CASCADE, related_name='student_wallet')
+    # Use DecimalField for financial accuracy
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    debt = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def __str__(self):
+        return f"{self.student}'s Wallet"
 
 
 class ParentIDGeneratorModel(models.Model):
@@ -285,3 +298,4 @@ class StudentSettingModel(models.Model):
     student_id_prefix = models.CharField(max_length=5, blank=True, null=True, default='')
     TYPE = (('pri', 'PRIMARY'), ('sec', 'SECONDARY'))
     type = models.CharField(max_length=10, choices=TYPE, blank=True)
+

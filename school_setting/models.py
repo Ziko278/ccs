@@ -21,12 +21,27 @@ class SessionModel(models.Model):
         return str(round(self.start_year)) + self.seperator + str(round(self.end_year))
 
 
+class TermModel(models.Model):
+    name = models.CharField(max_length=20, unique=True)
+    order = models.PositiveIntegerField(unique=True, help_text="Order for sorting terms (e.g., 1 for 1st Term).")
+    is_promotion_term = models.BooleanField(default=False, help_text="Set to True if this is the final term before promotion.")
+
+    class Meta:
+        ordering = ['order']
+        verbose_name = "Term"
+        verbose_name_plural = "Terms"
+
+    def __str__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+
 class SchoolAcademicInfoModel(models.Model):
     session = models.ForeignKey(SessionModel, on_delete=models.CASCADE)
-    TERM = (
-        ('1st term', '1st TERM'), ('2nd term', '2nd TERM'), ('3rd term', '3rd TERM')
-    )
-    term = models.CharField(max_length=10, choices=TERM)
+    # --- THIS FIELD HAS BEEN UPDATED ---
+    term = models.ForeignKey(TermModel, on_delete=models.SET_NULL, null=True)
     next_resumption_date = models.DateField(null=True, blank=True)
     closing_date = models.DateField(null=True, blank=True)
     current_resumption_date = models.DateField(null=True, blank=True)

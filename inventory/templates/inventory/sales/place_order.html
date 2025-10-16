@@ -1,0 +1,449 @@
+{% extends 'admin_site/layout.html' %}
+{% load static humanize %}
+
+{% block 'main' %}
+<style>
+    /* Suggestions dropdown styles */
+    .suggestions-container { position: relative; }
+    .suggestions-list {
+        position: absolute; z-index: 1050; width: 100%;
+        max-height: 250px; overflow-y: auto;
+        background: #fff; border: 1px solid #ddd;
+        border-radius: 0 0 0.25rem 0.25rem;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .suggestion-item { cursor: pointer; }
+    .suggestion-item:hover { background-color: #f8f9fa; }
+
+    /* Make the top items list look like clickable tags */
+    .top-item-badge {
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+    .top-item-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
+
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title text-center">POINT OF SALE</h3>
+
+        <form id="order-form" method="POST" action="{% url 'place_order' %}">
+            {% csrf_token %}
+
+            <div class="row mb-3 p-3 border rounded bg-light">
+                <div class="col-md-4 suggestions-container">
+                    <label for="student-search" class="form-label">Search Student (Optional)</label>
+                    <input autocomplete="off" class="form-control" id="student-search" placeholder="Name or Reg Number..." type="search">
+                    <input id="student-id" name="student_id" type="hidden">
+                    <div id="student-suggestions" class="suggestions-list list-group"></div>
+                </div>
+                <div class="col-md-5">
+                    <div class="student-info">
+    <p class="mb-1">
+        <strong>Student:</strong> <span id="student-name">—</span> <small id="student-reg" class="text-muted"></small>
+        <br>
+        <strong>Class:</strong> <span id="student-class" class="text-muted">—</span>
+    </p>
+    <p class="mb-0">
+        <strong>Wallet:</strong> <span id="wallet-balance" class="text-success fw-bold">₦0.00</span>
+        <strong class="ms-3">Debt:</strong> <span id="wallet-debt" class="text-danger fw-bold">₦0.00</span>
+    </p>
+</div>
+                </div>
+                <div class="col-md-3 text-end">
+                    <img id="student-image" class="img-fluid rounded border" src="{% static 'admin_site/images/default_image.jpg' %}" style="max-height:80px; width: 80px; object-fit: cover;" alt="Student Image">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <h6 class="text-muted"><i class="bi bi-star-fill text-warning"></i> Top Selling Items</h6>
+                <div id="top-items-container">
+                    {% for item in top_items %}
+                        <span class="badge bg-secondary top-item-badge m-1 p-2"
+                              data-item-id="{{ item.item__id }}"
+                              data-item-name="{{ item.item__name }}"
+                              data-item-price="{{ item.item__current_selling_price }}"
+                              data-item-qty="{{ item.item__shop_quantity }}">
+                            {{ item.item__name }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered" id="order-table">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 5%;">Action</th>
+                            <th style="width: 40%;">Item</th>
+                            <th style="width: 10%;">Available</th>
+                            <th style="width: 15%;">Unit Price (₦)</th>
+                            <th style="width: 15%;">Quantity</th>
+                            <th style="width: 15%;">Total (₦)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-end mb-3">
+                <button type="button" class="btn btn-sm btn-success" id="add-item-row">
+                    <i class="bi bi-plus-circle"></i> Add Item Row
+                </button>
+            </div>
+
+            <div class="row mt-3 justify-content-end">
+                <div class="col-md-6">
+                    <div class="row g-3">
+                        <div class="col-6"><label class="form-label">Subtotal</label><input class="form-control" id="subtotal" readonly></div>
+                        <div class="col-6"><label class="form-label">Discount</label><input class="form-control" id="discount" name="discount" type="number" min="0" step="0.01" value="0.00"></div>
+                        <div class="col-6"><label class="form-label">Payment Method</label><select name="payment_method" id="payment-method" class="form-select" required><option value="cash">Cash</option><option value="pos">POS</option><option value="student_wallet" disabled>Student Wallet</option></select></div>
+                        <div class="col-6"><label class="form-label">Grand Total</label><input class="form-control fs-5 fw-bold" id="grand-total" readonly></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button class="btn btn-primary btn-lg px-5" type="submit"><i class="bi bi-cart-check"></i> Place Order</button>
+                <button type="button" class="btn btn-outline-secondary btn-lg px-4 ms-2" id="clear-form-btn"><i class="bi bi-arrow-clockwise"></i> Clear Form</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<template id="order-row-template">
+    <tr class="order-row">
+        <td class="text-center align-middle"><button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="bi bi-x-lg"></i></button></td>
+        <td class="suggestions-container">
+            <input class="form-control item-search" placeholder="Search item or scan barcode..." type="text">
+            <input class="item-id" name="items[__INDEX__][item_id]" type="hidden">
+            <div class="suggestions-list item-suggestions list-group"></div>
+        </td>
+        <td class="text-center align-middle"><span class="qty-available badge bg-info">—</span></td>
+        <td class="text-center align-middle"><span class="unit-price">—</span></td>
+        <td><input class="form-control quantity-input text-center" min="0.01" step="0.01" name="items[__INDEX__][quantity]" type="number" value="1" disabled></td>
+        <td class="text-center align-middle"><strong class="total-price">—</strong></td>
+    </tr>
+</template>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // --- CONFIGURATION ---
+    const studentSearchUrl = "{% url 'api_student_search' %}";
+    const itemSearchUrl = "{% url 'api_item_search' %}";
+    const barcodeLookupUrl = "{% url 'api_barcode_lookup' %}";
+    const maxDebt = {{ settings.max_student_debt|default:0 }};
+    const defaultImage = "{% static 'admin_site/images/default_image.jpg' %}";
+
+    // --- DOM ELEMENTS ---
+    const orderForm = document.getElementById('order-form');
+    const studentSearchInput = document.getElementById('student-search');
+    const studentSuggestions = document.getElementById('student-suggestions');
+    const studentIdInput = document.getElementById('student-id');
+    const paymentMethodSelect = document.getElementById('payment-method');
+    const orderTableBody = document.querySelector('#order-table tbody');
+    const rowTemplate = document.getElementById('order-row-template');
+
+    let rowIndex = 0;
+
+    // --- STUDENT LOGIC ---
+    studentSearchInput.addEventListener('input', debounce(function() {
+        const query = this.value;
+        if (query.length < 2) { studentSuggestions.innerHTML = ''; return; }
+
+        fetch(`${studentSearchUrl}?q=${query}`)
+            .then(res => res.json())
+            .then(data => {
+                let html = '';
+                if (data.length) {
+                    data.forEach(s => {
+                        html += `<a href="#" class="list-group-item list-group-item-action suggestion-item student-option" data-student='${JSON.stringify(s)}'>${s.name} (${s.reg_number})</a>`;
+                    });
+                } else {
+                    html = '<div class="list-group-item">No students found.</div>';
+                }
+                studentSuggestions.innerHTML = html;
+            });
+    }, 300));
+
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('student-option')) {
+            e.preventDefault();
+            const studentData = JSON.parse(e.target.dataset.student);
+            populateStudent(studentData);
+        }
+        if (!e.target.closest('.suggestions-container')) {
+            document.querySelectorAll('.suggestions-list').forEach(el => el.innerHTML = '');
+        }
+    });
+
+    function populateStudent(student) {
+        studentIdInput.value = student.id;
+        document.getElementById('student-name').textContent = student.name;
+        document.getElementById('student-reg').textContent = `(${student.reg_number})`;
+        document.getElementById('student-class').textContent = student.student_class;
+        document.getElementById('wallet-balance').textContent = parseFloat(student.wallet_balance || 0).toFixed(2);
+        document.getElementById('wallet-debt').textContent = parseFloat(student.wallet_debt || 0).toFixed(2);
+        document.getElementById('student-image').src = student.image_url || defaultImage;
+        studentSearchInput.value = student.name;
+        studentSuggestions.innerHTML = '';
+
+        // Requirement #2: Set payment method
+        paymentMethodSelect.value = 'student_wallet';
+        paymentMethodSelect.querySelector('option[value="student_wallet"]').disabled = false;
+    }
+
+    function clearStudent() {
+        studentIdInput.value = '';
+        document.getElementById('student-name').textContent = '—';
+        document.getElementById('student-reg').textContent = '';
+        document.getElementById('student-class').textContent = '—';
+        document.getElementById('wallet-balance').textContent = '0.00';
+        document.getElementById('wallet-debt').textContent = '0.00';
+        document.getElementById('student-image').src = defaultImage;
+        studentSearchInput.value = '';
+
+        // Requirement #2: Set payment method
+        paymentMethodSelect.value = 'cash';
+        paymentMethodSelect.querySelector('option[value="student_wallet"]').disabled = true;
+    }
+
+    // --- ITEM & ROW LOGIC ---
+    function addNewRow() {
+        const newRow = rowTemplate.content.cloneNode(true);
+        const rowElement = newRow.querySelector('tr');
+
+        // Update name attributes with unique index
+        rowElement.innerHTML = rowElement.innerHTML.replace(/__INDEX__/g, rowIndex);
+
+        orderTableBody.appendChild(newRow);
+        rowIndex++;
+        bindRowEvents(orderTableBody.lastElementChild);
+        return orderTableBody.lastElementChild;
+    }
+
+    function bindRowEvents(row) {
+        row.querySelector('.remove-row').addEventListener('click', () => {
+            if (orderTableBody.querySelectorAll('tr').length > 1) {
+                row.remove();
+                updateTotals();
+            }
+        });
+
+        row.querySelector('.item-search').addEventListener('input', debounce(function() {
+            const input = this;
+            const query = input.value;
+            const suggestionsEl = row.querySelector('.item-suggestions');
+            if (query.length < 2) { suggestionsEl.innerHTML = ''; return; }
+
+            fetch(`${itemSearchUrl}?q=${query}`)
+                .then(res => res.json())
+                .then(data => {
+                    let html = '';
+                    if(data.length) {
+                        data.forEach(i => {
+                            html += `<a href="#" class="list-group-item list-group-item-action suggestion-item item-option" data-item='${JSON.stringify(i)}'>${i.name} (Av: ${i.qty_remaining})</a>`;
+                        });
+                    } else {
+                        html = '<div class="list-group-item">No items found.</div>';
+                    }
+                    suggestionsEl.innerHTML = html;
+                });
+        }, 300));
+
+        row.querySelector('.quantity-input').addEventListener('input', () => updateTotals());
+    }
+
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('item-option')) {
+            e.preventDefault();
+            const itemData = JSON.parse(e.target.dataset.item);
+            const row = e.target.closest('tr');
+            fillRowWithItem(row, itemData);
+        }
+    });
+
+    function fillRowWithItem(row, item) {
+        if (!row) return;
+
+        // Check for duplicates
+        let isDuplicate = false;
+        orderTableBody.querySelectorAll('.item-id').forEach(inputId => {
+            if (inputId.value == item.id) {
+                isDuplicate = true;
+            }
+        });
+        if (isDuplicate) {
+            alert(`Item "${item.name}" is already in the order.`);
+            return;
+        }
+
+        row.querySelector('.item-search').value = item.name;
+        row.querySelector('.item-id').value = item.id;
+        row.querySelector('.qty-available').textContent = item.qty_remaining;
+        row.querySelector('.unit-price').textContent = parseFloat(item.selling_price).toFixed(2);
+
+        const qtyInput = row.querySelector('.quantity-input');
+        qtyInput.disabled = false;
+        qtyInput.setAttribute('max', item.qty_remaining);
+
+        row.querySelector('.item-suggestions').innerHTML = '';
+        updateTotals();
+        ensureEmptyRow();
+        qtyInput.focus();
+        qtyInput.select();
+    }
+
+    function addItemToNextAvailableRow(itemData) {
+        let emptyRow = null;
+        orderTableBody.querySelectorAll('tr').forEach(row => {
+            if (!row.querySelector('.item-id').value && !emptyRow) {
+                emptyRow = row;
+            }
+        });
+
+        if (!emptyRow) {
+            emptyRow = addNewRow();
+        }
+        fillRowWithItem(emptyRow, itemData);
+    }
+
+    document.getElementById('top-items-container').addEventListener('click', function(e) {
+        if (e.target.classList.contains('top-item-badge')) {
+            const itemData = {
+                id: e.target.dataset.itemId,
+                name: e.target.dataset.itemName,
+                selling_price: e.target.dataset.itemPrice,
+                qty_remaining: e.target.dataset.itemQty
+            };
+            addItemToNextAvailableRow(itemData);
+        }
+    });
+
+    function ensureEmptyRow() {
+        let hasEmptyRow = false;
+        orderTableBody.querySelectorAll('tr').forEach(row => {
+            if (!row.querySelector('.item-id').value) {
+                hasEmptyRow = true;
+            }
+        });
+        if (!hasEmptyRow) {
+            addNewRow();
+        }
+    }
+
+    // --- BARCODE SCANNER ---
+    let barcodeBuffer = '';
+    let barcodeTimer;
+    document.addEventListener('keydown', function(e) {
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+            return; // Don't interfere with normal typing
+        }
+        if (e.key === 'Enter') {
+            if (barcodeBuffer.length > 3) {
+                handleBarcodeScanned(barcodeBuffer);
+            }
+            barcodeBuffer = '';
+            e.preventDefault();
+        } else if (e.key.length === 1) {
+            barcodeBuffer += e.key;
+        }
+
+        clearTimeout(barcodeTimer);
+        barcodeTimer = setTimeout(() => {
+            if (barcodeBuffer.length > 3) {
+                handleBarcodeScanned(barcodeBuffer);
+            }
+            barcodeBuffer = '';
+        }, 200);
+    });
+
+    function handleBarcodeScanned(barcode) {
+        fetch(`${barcodeLookupUrl}?barcode=${barcode}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.student) {
+                    populateStudent(data.student);
+                } else if (data.item) {
+                    addItemToNextAvailableRow(data.item);
+                } else {
+                    alert(`Barcode "${barcode}" not found.`);
+                }
+            });
+    }
+
+    // --- CALCULATIONS & FORM ---
+    document.getElementById('discount').addEventListener('input', () => updateTotals());
+    document.getElementById('add-item-row').addEventListener('click', () => addNewRow());
+    document.getElementById('clear-form-btn').addEventListener('click', () => {
+        if(confirm('Are you sure you want to clear this entire form?')) {
+            location.reload();
+        }
+    });
+
+    function updateTotals() {
+        let subtotal = 0;
+        orderTableBody.querySelectorAll('.order-row').forEach(row => {
+            const qty = parseFloat(row.querySelector('.quantity-input').value) || 0;
+            const price = parseFloat(row.querySelector('.unit-price').textContent) || 0;
+            const total = qty * price;
+            row.querySelector('.total-price').textContent = `₦${total.toFixed(2)}`;
+            subtotal += total;
+        });
+
+        const discount = parseFloat(document.getElementById('discount').value) || 0;
+        const grandTotal = Math.max(0, subtotal - discount);
+
+        document.getElementById('subtotal').value = `₦${subtotal.toFixed(2)}`;
+        document.getElementById('grand-total').value = `₦${grandTotal.toFixed(2)}`;
+    }
+
+    orderForm.addEventListener('submit', function(e) {
+        let hasItems = false;
+        orderTableBody.querySelectorAll('.order-row').forEach(row => {
+            if(row.querySelector('.item-id').value) { hasItems = true; }
+        });
+        if (!hasItems) {
+            e.preventDefault();
+            alert('Please add at least one item to the order.');
+            return;
+        }
+
+        if (paymentMethodSelect.value === 'student_wallet') {
+            if (!studentIdInput.value) {
+                e.preventDefault();
+                alert('Please select a student for wallet payment.');
+                return;
+            }
+            const grandTotal = parseFloat(document.getElementById('grand-total').value.replace('₦', '')) || 0;
+            const balance = parseFloat(document.getElementById('wallet-balance').textContent) || 0;
+            const debt = parseFloat(document.getElementById('wallet-debt').textContent) || 0;
+            const available = balance + (maxDebt - debt);
+
+            if (grandTotal > available) {
+                e.preventDefault();
+                alert(`Insufficient funds. Available: ₦${available.toFixed(2)}, Required: ₦${grandTotal.toFixed(2)}`);
+                return;
+            }
+        }
+    });
+
+    // --- INITIALIZATION ---
+    function debounce(func, delay) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
+    clearStudent();
+    addNewRow();
+    studentSearchInput.focus();
+});
+</script>
+{% endblock %}
