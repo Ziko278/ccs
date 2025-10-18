@@ -548,10 +548,12 @@ def _create_parent_account(
         UserProfileModel.objects.create(
             user=user,
             parent=parent,
-            default_password=password
+            default_password=password,
+            reference_id=parent.id
         )
 
     return parent
+
 
 @login_required
 def paste_create_parents_view(request):
