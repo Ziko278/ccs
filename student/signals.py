@@ -19,35 +19,35 @@ def assign_class_number(student_class, class_section):
     return number
 
 
-# @receiver(post_save, sender=ParentsModel)
-# def create_parent_account(sender, instance, created, **kwargs):
-#     if created:
-#         parent = instance
-#         username = parent.parent_id
-#         password = get_random_string(8)
-#         email = parent.email
-#
-#         user = User.objects.create_user(username=username, email=email, password=password)
-#         user_profile = UserProfileModel.objects.create(user=user, reference_id=parent.id, parent=parent,
-#                                                        reference='parent',
-#                                                        default_password=password)
-#         user_profile.save()
+@receiver(post_save, sender=ParentsModel)
+def create_parent_account(sender, instance, created, **kwargs):
+    if created:
+        parent = instance
+        username = parent.parent_id
+        password = get_random_string(8)
+        email = parent.email
+
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user_profile = UserProfileModel.objects.create(user=user, reference_id=parent.id, parent=parent,
+                                                       reference='parent',
+                                                       default_password=password)
+        user_profile.save()
 
 
 @receiver(post_save, sender=StudentsModel)
 def create_student_account(sender, instance, created, **kwargs):
     if created:
         student = instance
-        # wallet, created = StudentWalletModel.objects.get_or_create(student=student)
+        wallet, created = StudentWalletModel.objects.get_or_create(student=student)
 
-        # email = student.email
-        # username = student.email if student.email else student.registration_number
-        # password = student.password if student.password else get_random_string(8)
-        # user = User.objects.create_user(username=username, email=email, password=password)
-        # user_profile = UserProfileModel.objects.create(user=user, reference_id=student.id, student=student,
-        #                                                reference='student',
-        #                                                default_password=password, type=student.type)
-        # user_profile.save()
+        email = student.email
+        username = student.email if student.email else student.registration_number
+        password = student.password if student.password else get_random_string(8)
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user_profile = UserProfileModel.objects.create(user=user, reference_id=student.id, student=student,
+                                                       reference='student',
+                                                       default_password=password, type=student.type)
+        user_profile.save()
 
         student.class_number = assign_class_number(student.student_class, student.class_section)
         student.save()
