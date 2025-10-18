@@ -2239,7 +2239,7 @@ def decline_payment_view(request, payment_id):
 @login_required
 def fee_dashboard(request):
     # Get current session and term or allow filtering
-    current_setting = SchoolSettingModel.objects.first()
+    current_setting = SchoolAcademicInfoModel.objects.first()
     selected_session_id = request.GET.get('session',
                                           current_setting.session.id if current_setting and current_setting.session else None)
     selected_term_id = request.GET.get('term',
@@ -2454,7 +2454,7 @@ def fee_dashboard(request):
 @login_required
 def finance_dashboard(request):
     # Get current session and term or allow filtering
-    current_setting = SchoolSettingModel.objects.first()
+    current_setting = SchoolAcademicInfoModel.objects.first()
     selected_session_id = request.GET.get('session',
                                           current_setting.session.id if current_setting and current_setting.session else None)
     selected_term_id = request.GET.get('term',
