@@ -22,7 +22,7 @@ from django.views import View
 from django.views.generic import TemplateView, CreateView, UpdateView, ListView, DetailView, DeleteView, FormView
 from openpyxl.styles import Font
 # SUGGESTED NEW IMPORTS
-from school_setting.models import SessionModel, TermModel, SchoolSettingModel
+from school_setting.models import SessionModel, TermModel, SchoolSettingModel, SchoolAcademicInfoModel
 from academic.models import ClassesModel, ClassSectionModel # Added ClassSectionModel for completeness
 from human_resource.models import StaffModel
 from student.models import StudentsModel, StudentWalletModel
@@ -276,7 +276,7 @@ class AllSupplierPaymentsListView(LoginRequiredMixin, PermissionRequiredMixin, L
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        school_setting = SchoolSettingModel.objects.first()
+        school_setting = SchoolAcademicInfoModel.objects.first()
 
         # Add filter options and selections to the context
         context['sessions'] = SessionModel.objects.all().order_by('-start_year')
@@ -728,7 +728,7 @@ class InvoiceListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         to remember the user's current selections.
         """
         context = super().get_context_data(**kwargs)
-        school_setting = SchoolSettingModel.objects.first()
+        school_setting = SchoolAcademicInfoModel.objects.first()
 
         # Data for the filter dropdowns
         context['sessions'] = SessionModel.objects.all().order_by('-start_year')
@@ -821,7 +821,7 @@ class StudentFeeSearchView(LoginRequiredMixin, PermissionRequiredMixin, Template
             student_data.append({
                 'pk': student.id,
                 'fields': {
-                    'first_name': student.first_name,
+                    'first_name': student.surname,
                     'last_name': student.last_name,
                     'registration_number': student.registration_number,
                     'gender': student.gender,
@@ -2017,7 +2017,7 @@ def deposit_get_class_students(request):
     student_list = StudentsModel.objects.filter(student_class=class_pk, class_section=section_pk)
     result = ''
     for student in student_list:
-        full_name = "{} {}".format(student.first_name.title(), student.last_name.title())
+        full_name = "{} {}".format(student.surname.title(), student.last_name.title())
         result += """<li class='list-group-item select_student d-flex justify-content-between align-items-center' student_id='{}'>
         {} </li>""".format(student.id, full_name)
     if result == '':
@@ -2033,7 +2033,7 @@ def deposit_get_class_students_by_reg_number(request):
     student_list = StudentsModel.objects.filter(registration_number__contains=reg_no)
     result = ''
     for student in student_list:
-        full_name = "{} {}".format(student.first_name.title(), student.last_name.title())
+        full_name = "{} {}".format(student.surname.title(), student.last_name.title())
         result += """<li class='list-group-item select_student d-flex justify-content-between align-items-center' student_id={}>
         {} </li>""".format(student.id, full_name)
     if result == '':
@@ -2198,7 +2198,7 @@ def confirm_payment_view(request, payment_id):
         payment.balance = student_wallet.balance - student_wallet.debt
         payment.save() # Save the updated payment record
 
-        messages.success(request, f"Payment of ₦{payment.amount} for {student.first_name} {student.last_name} confirmed successfully.")
+        messages.success(request, f"Payment of ₦{payment.amount} for {student.surname} {student.last_name} confirmed successfully.")
         return redirect(reverse('deposit_index')) # Replace with your actual URL name
 
     else:
@@ -2227,7 +2227,7 @@ def decline_payment_view(request, payment_id):
         payment.status = 'declined'
         payment.save()
 
-        messages.success(request, f"Payment of ₦{payment.amount} for {student.first_name} {student.last_name} has been declined.")
+        messages.success(request, f"Payment of ₦{payment.amount} for {student.surname} {student.last_name} has been declined.")
         return redirect(reverse('deposit_index'))  # Replace with your actual URL name
     else:
         # For GET requests to this URL, you might want to display a confirmation prompt
