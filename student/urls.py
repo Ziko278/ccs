@@ -26,4 +26,28 @@ urlpatterns = [
     path('student-info', StudentSettingView.as_view(), name='student_info'),
     path('student-info/create', StudentSettingCreateView.as_view(), name='student_info_create'),
     path('student-info/<int:pk>/update', StudentSettingUpdateView.as_view(), name='student_info_update'),
+
+ path(
+        'paste-create-parents/',
+        paste_create_parents_view,
+        name='paste_create_parents'
+    ),
+
+    # The URL that the JavaScript will call to create each parent (the AJAX endpoint)
+    path(
+        'ajax/create-parent/',
+        ajax_create_parent_view,
+        name='ajax_create_parent'
+    ),
+
+path(
+        'paste-create-students/',
+        paste_create_students_view,
+        name='paste_create_students'
+    ),
+    path(
+        'ajax/create-student/',
+        ajax_create_student_view,
+        name='ajax_create_student'
+    ),
 ]

@@ -21,6 +21,7 @@ class ParentsModel(models.Model):
     surname = models.CharField(max_length=50)
     middle_name = models.CharField(max_length=50, null=True, blank=True)
     last_name = models.CharField(max_length=50)
+    excel_pid = models.IntegerField(blank=True, null=True)
 
     image = models.FileField(blank=True, null=True, storage=MediaStorage(), upload_to='images/parent_images')
     residential_address = models.CharField(max_length=200, null=True, blank=True)

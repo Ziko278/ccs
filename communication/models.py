@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from human_resource.models import StaffModel
 from student.models import StudentsModel, ParentsModel
-from school_setting.models import SchoolGeneralInfoModel, SessionModel, SchoolAcademicInfoModel
+from school_setting.models import SchoolGeneralInfoModel, SessionModel, SchoolAcademicInfoModel, TermModel
 
 
 class RecentActivityModel(models.Model):
@@ -11,10 +11,7 @@ class RecentActivityModel(models.Model):
     reference_id = models.IntegerField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     session = models.ForeignKey(SessionModel, on_delete=models.CASCADE, blank=True)
-    TERM = (
-        ('1st term', '1st Term'), ('2nd term', '2nd Term'), ('3rd term', '3rd Term')
-    )
-    term = models.CharField(max_length=20, choices=TERM, blank=True)
+    term = models.ForeignKey(TermModel, on_delete=models.CASCADE, null=True)
     TYPE = (
         ('pri', 'PRIMARY'), ('sec', 'SECONDARY'), ('mix', 'GENERAL')
     )

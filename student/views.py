@@ -1,4 +1,6 @@
 import io
+import logging
+import secrets
 
 from django.contrib.messages.views import messages
 from django.http import HttpResponse
@@ -11,6 +13,7 @@ from django.core import serializers
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import ListView
@@ -24,6 +27,8 @@ from student.models import *
 from student.forms import *
 from django.http import JsonResponse, HttpResponse
 
+
+logger = logging.getLogger(__name__)
 
 @login_required
 def disable_student_view(request, pk):
@@ -483,5 +488,198 @@ def identify_student_by_fingerprint(request):
     })
 
 
+def _create_parent_account(
+    surname,
+    last_name,
+    email=None,
+    mobile=None,
+    title='MR',
+    gender='MALE',
+    marital_status='married',
+    type='pri',
+    excel_pid=None
+):
+    """
+    Creates a ParentsModel record, user account, and user profile.
+    Now matches the updated ParentsModel fields and supports excel_pid mapping.
+    """
+    # --- 1. Basic validation ---
+    if not surname or not last_name:
+        raise ValueError("Both surname and last_name are required to create a parent.")
+
+    if email and User.objects.filter(email__iexact=email).exists():
+        raise ValueError(f"An account with the email '{email}' already exists.")
+
+    # --- 2. Atomic operation to keep data consistent ---
+    with transaction.atomic():
+        # Create Parent record
+        parent = ParentsModel.objects.create(
+            title=title.upper() if title else 'MR',
+            surname=surname.strip().title(),
+            last_name=last_name.strip().title(),
+            email=email,
+            mobile=mobile,
+            gender=gender.upper() if gender else 'MALE',
+            marital_status=marital_status.lower() if marital_status else 'married',
+            type=type.lower() if type else 'pri',
+            excel_pid=excel_pid,  # ✅ store PID for linkage
+        )
+
+        # Ensure parent_id is generated
+        if not parent.parent_id:
+            parent.save()
+
+        username = parent.parent_id
+
+        # --- 3. Generate secure random password ---
+        alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+        password = ''.join(secrets.choice(alphabet) for _ in range(10))
+
+        # --- 4. Create linked User account ---
+        user = User.objects.create_user(
+            username=username,
+            password=password,
+            email=email,
+            first_name=parent.surname,
+            last_name=parent.last_name
+        )
+
+        # --- 5. Create profile link ---
+        UserProfileModel.objects.create(
+            user=user,
+            parent=parent,
+            default_password=password
+        )
+
+    return parent
+
+@login_required
+def paste_create_parents_view(request):
+    """
+    Renders the HTML page with the textarea for pasting parent JSON.
+    """
+    return render(request, 'student/paste_create_parents.html')
 
 
+@login_required
+@require_POST
+def ajax_create_parent_view(request):
+    """
+    AJAX endpoint to create one parent record.
+    Accepts excel_pid for future student-parent mapping.
+    """
+    try:
+        data = json.loads(request.body)
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+        email = data.get('email') or None
+        mobile = data.get('mobile') or None
+        excel_pid = data.get('excel_pid')  # ✅ new field
+
+        if not first_name:
+            return JsonResponse({'status': 'error', 'message': 'First Name is required.'}, status=400)
+
+        parent = _create_parent_account(first_name, last_name, email, mobile)
+
+        # ✅ Store Excel PID for future mapping
+        if excel_pid:
+            parent.excel_pid = excel_pid
+            parent.save(update_fields=['excel_pid'])
+
+        return JsonResponse({
+            'status': 'success',
+            'message': (
+                f"Successfully created parent '{parent.first_name} {parent.last_name}' "
+                f"(Parent ID: {parent.parent_id}, Excel PID: {parent.excel_pid})."
+            )
+        })
+
+    except ValueError as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    except Exception as e:
+        logger.error("Error in ajax_create_parent_view: %s", e, exc_info=True)
+        return JsonResponse({'status': 'error', 'message': 'A critical server error occurred. Check logs.'}, status=500)
+
+
+@login_required
+@require_POST
+@transaction.atomic
+def ajax_create_student_view(request):
+    """
+    AJAX endpoint to create one student and their wallet.
+    Uses excel_pid to find and link the parent.
+    """
+    try:
+        data = json.loads(request.body)
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+        gender_raw = data.get('gender')
+        class_code = data.get('class_code')
+        class_section_name = data.get('class_section_name')
+        excel_pid = data.get('excel_pid')  # ✅ required now
+
+        # --- 1. Validate ---
+        if not all([first_name, last_name, gender_raw, class_code, class_section_name, excel_pid]):
+            return JsonResponse({'status': 'error', 'message': 'Missing required fields.'}, status=400)
+
+        # --- 2. Find Parent ---
+        parent = ParentsModel.objects.filter(excel_pid=excel_pid).first()
+        if not parent:
+            raise ValueError(f"No parent found with excel_pid={excel_pid}.")
+
+        # --- 3. Find Class and Section ---
+        try:
+            student_class = ClassesModel.objects.get(code__iexact=class_code)
+        except ClassesModel.DoesNotExist:
+            raise ValueError(f"Class with code '{class_code}' does not exist.")
+
+        class_section, _ = ClassSectionModel.objects.get_or_create(
+            name__iexact=class_section_name,
+            defaults={'name': class_section_name}
+        )
+
+        # --- 4. Map Gender ---
+        gender = None
+        if gender_raw.upper().startswith('F'):
+            gender = StudentsModel.GENDER[1][0]
+        elif gender_raw.upper().startswith('M'):
+            gender = StudentsModel.GENDER[0][0]
+        else:
+            raise ValueError(f"Invalid gender value: '{gender_raw}'. Use 'M' or 'F'.")
+
+        # --- 5. Create Student ---
+        student = StudentsModel.objects.create(
+            surname=last_name,
+            last_name=first_name,  # adjust if your name order differs
+            gender=gender,
+            parent=parent,
+            student_class=student_class,
+            class_section=class_section,
+            type='pri',  # or 'sec' depending on your data
+            relationship_with_parent='father',  # default; can update later
+        )
+
+        # --- 6. Create Wallet ---
+        StudentWalletModel.objects.create(student=student)
+
+        return JsonResponse({
+            'status': 'success',
+            'message': (
+                f"Student '{student.first_name} {student.last_name}' "
+                f"({student.registration_number}) created and linked to parent '{parent}'."
+            )
+        })
+
+    except ValueError as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    except Exception as e:
+        logger.error("Critical error in ajax_create_student_view: %s", e, exc_info=True)
+        return JsonResponse({'status': 'error', 'message': 'A critical server error occurred. Check logs.'}, status=500)
+
+
+@login_required
+def paste_create_students_view(request):
+    """
+    Renders the HTML page with the textarea for pasting student JSON.
+    """
+    return render(request, 'student/paste_create_students.html')
