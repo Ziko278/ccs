@@ -38,7 +38,7 @@ def assign_class_number(student_class, class_section):
 def create_student_account(sender, instance, created, **kwargs):
     if created:
         student = instance
-        wallet, created = StudentWalletModel.objects.get_or_create(student=student)
+        # wallet, created = StudentWalletModel.objects.get_or_create(student=student)
 
         # email = student.email
         # username = student.email if student.email else student.registration_number

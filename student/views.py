@@ -667,7 +667,7 @@ def ajax_create_student_view(request):
         return JsonResponse({
             'status': 'success',
             'message': (
-                f"Student '{student.first_name} {student.last_name}' "
+                f"Student '{student.surname} {student.last_name}' "
                 f"({student.registration_number}) created and linked to parent '{parent}'."
             )
         })
