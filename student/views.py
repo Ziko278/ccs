@@ -591,7 +591,7 @@ def ajax_create_parent_view(request):
         return JsonResponse({
             'status': 'success',
             'message': (
-                f"Successfully created parent '{parent.first_name} {parent.last_name}' "
+                f"Successfully created parent '{parent.surname} {parent.last_name}' "
                 f"(Parent ID: {parent.parent_id}, Excel PID: {parent.excel_pid})."
             )
         })
