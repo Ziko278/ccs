@@ -1,3 +1,4 @@
+import secrets
 from datetime import date, timedelta
 
 from django.core.mail import send_mail
@@ -17,6 +18,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from communication.models import RecentActivityModel
 from finance.models import FeePaymentModel, FeeModel
+from human_resource.models import StaffModel
 from result.models import ResultModel, TextResultModel
 from student.models import StudentsModel
 from school_setting.models import SchoolGeneralInfoModel, SchoolAcademicInfoModel
@@ -29,6 +31,25 @@ def setup_test():
     if info:
         return True
     return False
+
+
+def fix(request):
+    staff_list = StaffModel.objects.all()
+    alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+    for staff in staff_list:
+        password = ''.join(secrets.choice(alphabet) for _ in range(8))
+
+        user = User.objects.create(username=staff.staff_id.lower(), password=password)
+        user.save()
+
+        user_profile = UserProfileModel.objects.create(
+            user=user,
+            staff=staff,
+            reference_id=staff.id,
+            default_password=password,
+            type='pri'
+        )
+        user_profile.save()
 
 
 class AdminDashboardView(LoginRequiredMixin, TemplateView):
