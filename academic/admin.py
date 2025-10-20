@@ -7,3 +7,4 @@ admin.site.register(ClassesModel)
 admin.site.register(DaysModel)
 admin.site.register(AcademicSettingModel)
 admin.site.register(ClassSectionInfoModel)
+

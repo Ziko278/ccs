@@ -34,23 +34,7 @@ def create_parent_account(sender, instance, created, **kwargs):
         user_profile.save()
 
 
-@receiver(post_save, sender=StudentsModel)
-def create_student_account(sender, instance, created, **kwargs):
-    if created:
-        student = instance
-        wallet, created = StudentWalletModel.objects.get_or_create(student=student)
-
-        email = student.email
-        username = student.email if student.email else student.registration_number
-        password = student.password if student.password else get_random_string(8)
-        user = User.objects.create_user(username=username, email=email, password=password)
-        user_profile = UserProfileModel.objects.create(user=user, reference_id=student.id, student=student,
-                                                       reference='student',
-                                                       default_password=password, type=student.type)
-        user_profile.save()
-
-        student.class_number = assign_class_number(student.student_class, student.class_section)
-        student.save()
+# 
 
 
 @receiver(post_save, sender=StudentsModel)
