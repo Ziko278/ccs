@@ -35,7 +35,7 @@ def setup_test():
 
 def fix(request):
     alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-    staff_list = StaffModel.objects.filter(gender='MALE')
+    staff_list = StaffModel.objects.filter(gender='FEMALE')
 
     for staff in staff_list:
         username = staff.staff_id.lower()
