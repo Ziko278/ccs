@@ -87,7 +87,7 @@
                     Average Score: <b>{{ stat.average_score }}</b>
                     Total Mark: <b>{{ stat.total_mark_obtained }}</b>
                     Number of Students: <b>{{ stat.number_of_students }}</b>
-                    Uploaded: <b>{{ stat.updated_at }}</b>  <b> {% if stat.updated_by == 'superadmin' %}  {% else %} by  <a href="{% url 'staff_detail' stat.updated_by_id %}"> {{ stat.updated_by }}</a> {% endif %}</b>
+<!--                    Uploaded: <b>{{ stat.updated_at }}</b>  <b> {% if stat.updated_by == 'superadmin' %}  {% else %} by  <a href="{% url 'staff_detail' stat.updated_by_id %}"> {{ stat.updated_by }}</a> {% endif %}</b>-->
                 {% endif %}
             {% endfor %}
 
