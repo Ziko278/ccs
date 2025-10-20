@@ -9,7 +9,7 @@
           {% if is_update %}
           <h4 class="card-title">RESULT UPDATE: <i> {{ subject|upper }} FOR {{ class|upper }} {{ section|upper }} ( {{ academic_setting.session }} session, {{ academic_setting.term|upper }} ) <span style="float:right">{% now "" %}</span> </i></h4>
           {% else %}
-              <h4 class="card-title">RESULT UPLOAD: <i> {{ subject|upper }} FOR {{ class|upper }} {{ section|upper }} ( {{ academic_setting.session }} session, {{ academic_setting.term|upper }} ) <span style="float:right">{% now "" %}</span> </i></h4>
+              <h4 class="card-title">RESULT UPLOAD: {{academic_setting.term.id}}p <i> {{ subject|upper }} FOR {{ class|upper }} {{ section|upper }} ( {{ academic_setting.session }} session, {{ academic_setting.term|upper }} ) <span style="float:right">{% now "" %}</span> </i></h4>
           {% endif %}
           <form method="POST" class="form-sample" enctype="multipart/form-data">
           {% csrf_token %}
@@ -22,7 +22,7 @@
               <input type="hidden" name="term" value="{{term_pk}}" />
               {% else %}
               <input type="hidden" name="session" value="{{academic_setting.session.id}}" />
-              <input type="hidden" name="term" value="{{academic_setting.term}}" />
+              <input type="hidden" name="term" value="{{academic_setting.term.id}}" />
               {% endif %}
           {% if full_list %}
 
