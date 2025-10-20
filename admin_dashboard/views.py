@@ -22,7 +22,7 @@ from human_resource.models import StaffModel
 from result.models import ResultModel, TextResultModel
 from student.models import StudentsModel
 from school_setting.models import SchoolGeneralInfoModel, SchoolAcademicInfoModel
-from academic.models import ClassSectionInfoModel, ClassesModel, ClassSectionModel
+from academic.models import ClassSectionInfoModel, ClassesModel, ClassSectionModel, SubjectGroupModel
 from user_management.models import UserProfileModel
 
 
@@ -31,6 +31,19 @@ def setup_test():
     if info:
         return True
     return False
+
+
+def fix(request):
+    student_list = StudentsModel.objects.all()
+    for student in student_list:
+        if student.student_class.name.lower() == 'js 2':
+            if student.class_section == 'blue':
+                student.class_section = 'white'
+            if student.class_section == 'white':
+                student.class_section = 'blue'
+
+        student.subject_group = SubjectGroupModel.objects.filter(student_class=student.student_class)
+        student.save()
 
 
 class AdminDashboardView(LoginRequiredMixin, TemplateView):
