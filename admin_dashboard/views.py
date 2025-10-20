@@ -35,15 +35,26 @@ def setup_test():
 
 def fix(request):
     student_list = StudentsModel.objects.all()
+    blue = ClassSectionModel.objects.get(name='blue')
+    white = ClassSectionModel.objects.get(name='white')
+
     for student in student_list:
         if student.student_class.name.lower() == 'js 2':
-            if student.class_section == 'blue':
-                student.class_section = 'white'
-            if student.class_section == 'white':
-                student.class_section = 'blue'
+            if student.class_section.name == 'blue':
+                student.class_section = white
+            if student.class_section.name == 'white':
+                student.class_section = blue
+            student.save()
 
-        student.subject_group = SubjectGroupModel.objects.filter(student_class=student.student_class).first()
-        student.save()
+
+    class_info_list = ClassSectionInfoModel.objects.all()
+
+    for class_info in class_info_list:
+        if class_info.section.name == 'blue':
+            class_info.section = white
+        if class_info.section.name == 'white':
+            class_info.section = blue
+            class_info.save()
 
 
 class AdminDashboardView(LoginRequiredMixin, TemplateView):
