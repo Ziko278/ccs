@@ -18,7 +18,6 @@ from django.db.models import Q
 from result.forms import *
 from school_setting.models import SchoolAcademicInfoModel, TermModel, SchoolGeneralInfoModel, SessionModel
 
-
 class ResultFieldCreateView(LoginRequiredMixin, PermissionRequiredMixin, SuccessMessageMixin, CreateView):
     model = ResultFieldModel
     permission_required = 'result.add_resultfieldmodel'
@@ -647,7 +646,7 @@ def result_upload_view(request):
     if request.method == 'POST':
         student_list = request.POST.getlist('students[]')
         session = SessionModel.objects.get(pk=request.POST['session'])
-        term = TermModel.objects.get(pk=request.POST['term_pk'])
+        term = TermModel.objects.get(pk=request.POST['term'])
         subject = SubjectsModel.objects.get(pk=request.POST['subject'])
         student_class = ClassesModel.objects.get(pk=request.POST['student_class'])
         class_section = ClassSectionModel.objects.get(pk=request.POST['class_section'])
