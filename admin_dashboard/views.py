@@ -33,38 +33,6 @@ def setup_test():
     return False
 
 
-def fix(request):
-    alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-    staff_list = StaffModel.objects.filter(gender='FEMALE')
-
-    for staff in staff_list:
-        username = staff.staff_id.lower()
-
-        # Delete old user/profile if they exist
-        UserProfileModel.objects.filter(staff=staff).delete()
-        User.objects.filter(username=username).delete()
-
-        # Generate new random password
-        password = ''.join(secrets.choice(alphabet) for _ in range(8))
-
-        # Create new user with hashed password
-        user = User(username=username)
-        user.set_password(password)
-        user.save()
-
-        # Create new user profile
-        UserProfileModel.objects.create(
-            user=user,
-            staff=staff,
-            reference_id=staff.id,
-            default_password=password,
-            type='pri'
-        )
-
-    return HttpResponse("✅ All staff users and profiles have been reset successfully.")
-
-
-
 class AdminDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'admin_dashboard/dashboard.html'
 

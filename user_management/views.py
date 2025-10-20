@@ -24,8 +24,6 @@ def user_sign_in_view(request):
 
         user = authenticate(request, username=username, password=password)
 
-        return HttpResponse(user)
-
         if user is not None:
             intended_route = request.POST.get('next')
             if not intended_route:
