@@ -42,7 +42,7 @@ def fix(request):
             if student.class_section == 'white':
                 student.class_section = 'blue'
 
-        student.subject_group = SubjectGroupModel.objects.filter(student_class=student.student_class)
+        student.subject_group = SubjectGroupModel.objects.filter(student_class=student.student_class).first()
         student.save()
 
 
