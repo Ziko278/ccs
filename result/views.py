@@ -691,6 +691,7 @@ def result_create_view(request):
         return render(request, 'result/result/update.html', context=context)
     return render(request, 'result/result/create.html', context=context)
 
+
 def result_upload_view(request):
     if request.method == 'POST':
         student_list = request.POST.getlist('students[]')
@@ -862,8 +863,7 @@ def result_upload_view(request):
         session = academic_setting.session
         term = academic_setting.term
 
-    student_list = StudentsModel.objects.filter(student_class=student_class, class_section=class_section,
-                                                status='active').order_by('surname')
+    student_list = StudentsModel.objects.filter(student_class=student_class, class_section=class_section, status='active', subject_group__subjects=subject).order_by('surname')
 
     full_list = {}
     for student in student_list:
