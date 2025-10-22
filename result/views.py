@@ -577,6 +577,7 @@ class ResultBehaviourDeleteView(LoginRequiredMixin, PermissionRequiredMixin, Suc
 def result_create_view(request):
     school_setting = SchoolGeneralInfoModel.objects.first()
     if request.method == 'POST':
+        # --- POST logic remains the same, as it correctly checks permissions upon submission ---
         student_class_pk = request.POST['student_class']
         class_section_pk = request.POST['class_section']
         subject_pk = request.POST['subject']
@@ -587,8 +588,11 @@ def result_create_view(request):
             result_setting = ResultSettingModel.objects.first()
 
         is_allowed = False
-        message = 'Access Denied'
-        if result_setting and result_setting.allowed_user != 'any':
+        message = 'Access Denied: You do not have the required permissions for the selected class/subject.'
+        # Allow superusers to bypass checks
+        if request.user.is_superuser:
+            is_allowed = True
+        elif result_setting and result_setting.allowed_user != 'any':
             current_user = request.user.profile.staff
             if current_user:
                 is_form_teacher = ClassSectionInfoModel.objects.filter(
@@ -609,9 +613,10 @@ def result_create_view(request):
                 elif result_setting.allowed_user == 'both' and (is_form_teacher or is_subject_teacher):
                     is_allowed = True
         else:
+            # This handles the 'any user' case or when no settings are found
             is_allowed = True
 
-        if not is_allowed and not request.user.is_superuser:
+        if not is_allowed:
             messages.error(request, message)
             return redirect(reverse('result_create'))
 
@@ -624,15 +629,60 @@ def result_create_view(request):
             request.session['term_pk'] = request.POST['term_pk']
         return redirect(reverse('result_upload'))
 
+    # =======================================================================
+    # START: UPDATED GET REQUEST LOGIC
+    # =======================================================================
+
     user_type = request.user.profile.type
     q_filter = Q(type=user_type) if school_setting.separate_school_section else Q()
 
+    # 1. Define the initial, unfiltered querysets
+    class_list = ClassesModel.objects.filter(q_filter, Q(result_type='score') | Q(result_type='mix')).order_by('name')
+    text_class_list = ClassesModel.objects.filter(q_filter, Q(result_type='text') | Q(result_type='mix')).order_by('name')
+    subject_list = SubjectsModel.objects.filter(q_filter).order_by('name')
+
+    # 2. Get the relevant result setting and staff profile
+    if school_setting.separate_school_section:
+        result_setting = ResultSettingModel.objects.filter(type=user_type).first()
+    else:
+        result_setting = ResultSettingModel.objects.first()
+
+    staff = request.user.profile.staff if hasattr(request.user, 'profile') else None
+
+    # 3. Apply permission filters if the user is not a superuser
+    if not request.user.is_superuser and result_setting and staff:
+        if result_setting.allowed_user == 'form teacher':
+            form_teacher_filter = Q(classsectioninfomodel__form_teacher=staff) | Q(classsectioninfomodel__assistant_form_teacher=staff)
+            class_list = class_list.filter(form_teacher_filter).distinct()
+            text_class_list = text_class_list.filter(form_teacher_filter).distinct()
+
+        elif result_setting.allowed_user == 'subject teacher':
+            subject_teacher_class_filter = Q(classsectionsubjectteachermodel__teachers=staff)
+            class_list = class_list.filter(subject_teacher_class_filter).distinct()
+            text_class_list = text_class_list.filter(subject_teacher_class_filter).distinct()
+            subject_list = subject_list.filter(subject_class_section_info__teachers=staff).distinct()
+
+        elif result_setting.allowed_user == 'both':
+            combined_filter = Q(classsectioninfomodel__form_teacher=staff) | \
+                              Q(classsectioninfomodel__assistant_form_teacher=staff) | \
+                              Q(classsectionsubjectteachermodel__teachers=staff)
+            class_list = class_list.filter(combined_filter).distinct()
+            text_class_list = text_class_list.filter(combined_filter).distinct()
+            subject_list = subject_list.filter(subject_class_section_info__teachers=staff).distinct()
+
+        # If allowed_user is 'any', no filtering is done and the initial querysets are used.
+
+    # If settings are restrictive and the user is not a superuser, they might see empty lists.
+    # This is the expected behavior.
+
+    # =======================================================================
+    # END: UPDATED GET REQUEST LOGIC
+    # =======================================================================
+
     context = {
-        'class_list': ClassesModel.objects.filter(q_filter, Q(result_type='score') | Q(result_type='mix')).order_by(
-            'name'),
-        'text_class_list': ClassesModel.objects.filter(q_filter, Q(result_type='text') | Q(result_type='mix')).order_by(
-            'name'),
-        'subject_list': SubjectsModel.objects.filter(q_filter).order_by('name'),
+        'class_list': class_list,
+        'text_class_list': text_class_list,
+        'subject_list': subject_list,
         'session_list': SessionModel.objects.filter(q_filter),
         'term_list': TermModel.objects.all().order_by('order')
     }
@@ -640,7 +690,6 @@ def result_create_view(request):
     if 'update' in request.GET:
         return render(request, 'result/result/update.html', context=context)
     return render(request, 'result/result/create.html', context=context)
-
 
 def result_upload_view(request):
     if request.method == 'POST':
