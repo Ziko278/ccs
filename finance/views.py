@@ -1392,8 +1392,8 @@ class StaffBankDetailListView(LoginRequiredMixin, PermissionRequiredMixin, ListV
     context_object_name = "bank_detail_list"
 
     def get_queryset(self):
-        return StaffBankDetail.objects.select_related('staff__staff_profile__user').order_by(
-            'staff__staff_profile__user__first_name')
+        return StaffBankDetail.objects.select_related('staff__account__user').order_by(
+            'staff__account__user__first_name')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1518,8 +1518,8 @@ class SalaryStructureListView(LoginRequiredMixin, PermissionRequiredMixin, ListV
     context_object_name = "salary_structure_list"
 
     def get_queryset(self):
-        return SalaryStructure.objects.select_related('staff__staff_profile__user').order_by(
-            'staff__staff_profile__user__first_name')
+        return SalaryStructure.objects.select_related('staff__account__user').order_by(
+            'staff__account__user__first_name')
 
 
 class SalaryStructureCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
@@ -1574,7 +1574,7 @@ class SalaryAdvanceListView(LoginRequiredMixin, PermissionRequiredMixin, ListVie
 
     def get_queryset(self):
         # Add search and filter logic here
-        return super().get_queryset().select_related('staff__staff_profile__user').order_by('-request_date')
+        return super().get_queryset().select_related('staff__account__user').order_by('-request_date')
 
 
 class SalaryAdvanceCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
@@ -1635,7 +1635,7 @@ class StaffLoanListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     paginate_by = 15
 
     def get_queryset(self):
-        return super().get_queryset().select_related('staff__staff_profile__user').order_by('-request_date')
+        return super().get_queryset().select_related('staff__account__user').order_by('-request_date')
 
 
 class StaffLoanCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
@@ -1694,7 +1694,7 @@ class StaffLoanDebtorsListView(LoginRequiredMixin, PermissionRequiredMixin, List
             total_repaid=Coalesce(Sum('staff_loans__repaid_amount', filter=Q(staff_loans__status__in=['disbursed', 'completed'])), Value(0), output_field=DecimalField())
         ).annotate(
             total_due=F('total_loan') - F('total_repaid')
-        ).filter(total_due__gt=0).order_by('staff_profile__user__last_name')
+        ).filter(total_due__gt=0).order_by('account__user__last_name')
 
 
 class StaffLoanDebtDetailView(LoginRequiredMixin, PermissionRequiredMixin, View):
@@ -1801,7 +1801,7 @@ def process_payroll_view(request):
             record.save(update_fields=['salary_advance_deduction'])
 
     queryset = SalaryRecord.objects.filter(year=year, month=month, staff__in=staff_with_structures).select_related(
-        'staff__staff_profile__user')
+        'staff__account__user')
     PaysheetFormSet = modelformset_factory(SalaryRecord, form=PaysheetRowForm, extra=0)
 
     # ==============================================================================
@@ -2765,11 +2765,11 @@ def my_salary_profile_view(request):
     Includes salary structure, bank details, and a filterable payslip history.
     """
     try:
-        user_staff_profile = request.user.staff_profile
-        staff = StaffModel.objects.get(staff_profile=user_staff_profile)
+        user_account = request.user.account
+        staff = StaffModel.objects.get(account=user_account)
     except ObjectDoesNotExist:  # Catches both DoesNotExist exceptions
         messages.error(request, "You do not have a staff profile and cannot access this page.")
-        return render(request, 'finance/staff_profile/no_profile.html')
+        return render(request, 'finance/account/no_profile.html')
 
     # Get the staff's salary structure
     try:
@@ -2807,4 +2807,4 @@ def my_salary_profile_view(request):
         'selected_year': selected_year,
         'selected_month': selected_month
     }
-    return render(request, 'finance/staff_profile/salary_profile.html', context)
+    return render(request, 'finance/account/salary_profile.html', context)

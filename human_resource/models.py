@@ -72,7 +72,7 @@ class PositionModel(models.Model):
 class StaffModel(models.Model):
     """"""
     TITLE = (
-        ('MR', 'MR'), ('MRS', 'MRS'), ('MISS', 'MISS'), ('MS', 'MS'), ('MALLAM', 'MALLAM'), ('DOC', 'DOC'),
+        ('MR', 'MR'), ('MRS', 'MRS'), ('MISS', 'MISS'), ('MS', 'MS'), ('MALLAM', 'MALLAM'), ('DR', 'DR'),
         ('BARR', 'BARR'), ('PST', 'PST'), ('PROF', 'PROF'), ('ENGR', 'ENGR'), ('ALHAJI', 'ALHAJI'),
         ('HAJIYAH', 'HAJIYAH')
     )

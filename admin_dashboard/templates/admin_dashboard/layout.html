@@ -326,7 +326,7 @@
               <i class="bi bi-circle"></i><span>Head Teacher's Comment</span>
             </a>
           </li>
-
+            {% if 'result.add_resultgrademodel' in perms %}
           <li>
             <a href="{% url 'result_grade_index' %}">
               <i class="bi bi-circle"></i><span>Result Grades</span>
@@ -338,7 +338,9 @@
               <i class="bi bi-circle"></i><span>Mid Term Grades</span>
             </a>
           </li>
+            {% endif %}
 
+            {% if 'result.add_resultfieldmodel' in perms %}
           <li>
             <a href="{% url 'result_field_index' %}">
               <i class="bi bi-circle"></i><span>Result Fields</span>
@@ -368,12 +370,14 @@
               <i class="bi bi-circle"></i><span>Text Result Fields</span>
             </a>
           </li>
-
+            {% endif %}
+            {% if 'result.change_resultsettingmodel' in perms %}
           <li>
             <a href="{% url 'result_info' %}">
               <i class="bi bi-circle"></i><span>Result Settings</span>
             </a>
           </li>
+            {% endif %}
 
         </ul>
       </li>
@@ -692,19 +696,23 @@
           <i class="bi bi-people"></i><span>HUMAN RESOURCE</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         <ul id="hr" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+           {% if 'human_resource.add_staffmodel' in perms %}
           <li>
             <a href="{% url 'staff_create' %}">
               <i class="bi bi-circle"></i><span>Register Staff</span>
             </a>
           </li>
+            {% endif %}
 
+            {% if 'human_resource.view_staffmodel' in perms %}
           <li>
             <a href="{% url 'staff_index' %}">
               <i class="bi bi-circle"></i><span>View Staff</span>
             </a>
           </li>
+            {% endif %}
 
-        {% if request.user.account.staff %}
+        {% if request.user.profile.staff %}
             <li>
                 <a href="{% url 'staff_profile' %}">
                     <i class="bi bi-circle"></i><span>My Profile</span>
@@ -712,24 +720,28 @@
             </li>
             {% endif %}
 
-
+            {% if 'human_resource.add_positionmodel' in perms %}
           <li>
             <a href="{% url 'position_index' %}">
               <i class="bi bi-circle"></i><span>Positions</span>
             </a>
           </li>
-
+            {% endif %}
+            {% if 'human_resource.add_departmentmodel' in perms %}
           <li>
             <a href="{% url 'department_index' %}">
               <i class="bi bi-circle"></i><span>Departments</span>
             </a>
           </li>
+            {% endif %}
 
+            {% if 'human_resource.add_hrsettingmodel' in perms %}
 	   <li>
             <a href="{% url 'hr_info' %}">
               <i class="bi bi-circle"></i><span>Setting</span>
             </a>
           </li>
+            {% endif %}
         </ul>
       </li>
 
