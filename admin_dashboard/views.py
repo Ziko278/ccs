@@ -201,56 +201,55 @@ def fix_missing_student_profiles(request):
 
     alphabet = string.ascii_letters + string.digits  # A–Z, a–z, 0–9
 
-    with transaction.atomic():
-        students_without_profile = StudentsModel.objects.all()
+    students_without_profile = StudentsModel.objects.all()
 
-        for student in students_without_profile:
-            try:
-                if not student.registration_number:
-                    skipped_count += 1
-                    continue
-
-                username = student.registration_number.lower()
-
-                # If a user already exists, delete it (and linked profile)
-                existing_user = User.objects.filter(username=username).first()
-                if existing_user:
-                    # Delete linked profile if exists
-                    UserProfileModel.objects.filter(user=existing_user).delete()
-                    existing_user.delete()
-
-                # Generate secure 8-character password
-                password = ''.join(secrets.choice(alphabet) for _ in range(8))
-
-                # Create new user
-                user = User.objects.create(
-                    username=username,
-                    email=student.email or "",
-                    password=make_password(password),
-                    first_name=student.surname,
-                    last_name=student.last_name,
-                )
-
-                # Link student to new user
-                student.user = user
-                student.password = password  # (optional for admin reference)
-                student.save()
-
-                # Create corresponding user profile
-                UserProfileModel.objects.create(
-                    user=user,
-                    student=student,
-                    reference='student',
-                    reference_id=student.id,
-                    default_password=password,
-                    type=student.type,
-                )
-
-                created_count += 1
-
-            except Exception as e:
+    for student in students_without_profile:
+        try:
+            if not student.registration_number:
                 skipped_count += 1
-                print(f"⚠️ Error processing {student}: {e}")
+                continue
+
+            username = student.registration_number.lower()
+
+            # If a user already exists, delete it (and linked profile)
+            existing_user = User.objects.filter(username=username).first()
+            if existing_user:
+                # Delete linked profile if exists
+                UserProfileModel.objects.filter(user=existing_user).delete()
+                existing_user.delete()
+
+            # Generate secure 8-character password
+            password = ''.join(secrets.choice(alphabet) for _ in range(8))
+
+            # Create new user
+            user = User.objects.create(
+                username=username,
+                email=student.email or "",
+                password=make_password(password),
+                first_name=student.surname,
+                last_name=student.last_name,
+            )
+
+            # Link student to new user
+            student.user = user
+            student.password = password  # (optional for admin reference)
+            student.save()
+
+            # Create corresponding user profile
+            UserProfileModel.objects.create(
+                user=user,
+                student=student,
+                reference='student',
+                reference_id=student.id,
+                default_password=password,
+                type=student.type,
+            )
+
+            created_count += 1
+
+        except Exception as e:
+            skipped_count += 1
+            print(f"⚠️ Error processing {student}: {e}")
 
     messages.success(
         request,
