@@ -109,7 +109,7 @@
 </div>
 <div id="download-result">
 	<div style="background-color:white;border:2px solid black;">
-		<div class="" style="background-color:#2b9356;color:white;font-family:cursive;border:1px solid black;border-bottom:1px solid black;height:135px">
+		<div class="" style="background-color:#B2BEB5;color:white;font-family:cursive;border:1px solid black;border-bottom:1px solid black;height:135px">
 			<div class="row">
 				<div class="col-2">
 					 <img {% if student.image %} src="{{ student.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} style="width:100%;height:133px;border-radius:0px;" />
@@ -127,7 +127,7 @@
 			</div>
 		</div>
 
-		<div style="background-color:#2b9356;color:white;height:22px;border-bottom:2px solid black;border-top:0px solid black;">
+		<div style="background-color:#B2BEB5;color:white;height:22px;border-bottom:2px solid black;border-top:0px solid black;">
 			<p class="text-center" style="font-weight:bold">Student Report Card For {% if result_type == 'midterm' %} Mid {% endif %} {{ result.term|title }} {{ result.session|title }} Session </p>
 		</div>
 
@@ -169,7 +169,7 @@
 
 		<div class="p-1">
 			<table class="table table-bordered">
-				<thead style="background:#2b9356">
+				<thead style="background:#B2BEB5">
 					<tr >
 						<th rowspan="2" style="width:150px">AREAS OF LEARNING</th>
 						<th rowspan="2" style="width:200px">ASPECT</th>
@@ -185,7 +185,7 @@
 				{% for category in result_category_list %}
 					{% if category.text_result_fields.all|length > 0 %}
 						<tr style="border:1px solid black">
-							<th style="background-color:#2b9356;color:white;font-weight:bold;font-size:20px">{{ category.name|title }}</th>
+							<th style="background-color:#B2BEB5;color:black;font-weight:bold;font-size:20px">{{ category.name|title }}</th>
 							<th colspan="3" style="padding:0px" class="">
 								<table style="height:100%;margin:0px;text-align:left" class="table">
 									{% for field in result_field_list %}
@@ -212,15 +212,15 @@
 			<table class="table table-bordered">
 				<tbody>
 				<tr>
-					<td style="width:150px;background-color:#2b9356;color:white;font-weight:bold">ACHIEVED</td>
+					<td style="width:150px;background-color:#B2BEB5;color:black;font-weight:bold">ACHIEVED</td>
 					<td>Pupil can consistently perform task with confidence.</td>
 				</tr>
 				<tr>
-					<td style="width:150px;background-color:#2b9356;color:white;font-weight:bold">CONSOLIDATING</td>
+					<td style="width:150px;background-color:#B2BEB5;color:black;font-weight:bold">CONSOLIDATING</td>
 					<td>Pupil can perform task if given some support.</td>
 				</tr>
 				<tr>
-					<td style="width:150px;background-color:#2b9356;color:white;font-weight:bold">DEVELOPING</td>
+					<td style="width:150px;background-color:#B2BEB5;color:black;font-weight:bold">DEVELOPING</td>
 					<td>Pupil is beginning to perform task.</td>
 				</tr>
 				</tbody>
@@ -240,7 +240,7 @@
 		<!-- MIDTERM RESULT TABLE -->
 		<table style="width:100%; border-collapse: collapse; font-size: 14px;">
 			<thead>
-			<tr class="header-row" style="background-color:#2b9356;color:white;">
+			<tr class="header-row" style="background-color:#B2BEB5;color:white;">
 				<th rowspan="2" class="rotated-header-cell subject-header">
 					<div class="rotated-text">SUBJECTS</div>
 				</th>
@@ -253,12 +253,6 @@
 				{% endfor %}
 				<th class="rotated-header-cell">
 					<div class="rotated-text">TOTAL ({{midterm_max|floatformat}})</div>
-				</th>
-				<th class="rotated-header-cell">
-					<div class="rotated-text">SUBJECT POSITION</div>
-				</th>
-				<th class="rotated-header-cell">
-					<div class="rotated-text">SUBJECT AVERAGE</div>
 				</th>
 				<th class="rotated-header-cell">
 					<div class="rotated-text">GRADE</div>
@@ -277,7 +271,7 @@
 									{% if subject.id|stringformat:"i" == key %}
 										{% for inner_key, score in value.items %}
 											{% if inner_key|lower == field|lower %}
-												{{ score|default:"" }}
+												{{ score }}
 											{% endif %}
 										{% endfor %}
 									{% endif %}
@@ -288,8 +282,6 @@
 						{% for key, value in result.result.items %}
 							{% if subject.id|stringformat:"i" == key %}
 								<td>{% if value.midterm_total %}{{ value.midterm_total|floatformat }}{% endif %}</td>
-								<td>{% if value.midterm_position %}{{ value.midterm_position }}{% endif %}</td>
-								<td>{% if value.midterm_average_score %}{{ value.midterm_average_score|floatformat }}{% endif %}</td>
 								<td>{% if value.midterm_grade %}{{ value.midterm_grade|upper }}{% endif %}</td>
 							{% endif %}
 						{% endfor %}
@@ -301,7 +293,7 @@
 		<!-- REGULAR RESULT TABLE -->
 		<table style="width:100%; border-collapse: collapse; font-size: 14px;">
 			<thead>
-			<tr class="header-row" style="background-color:#2b9356;color:white;">
+			<tr class="header-row" style="background-color:#B2BEB5;color:white;">
 				<th rowspan="2" class="rotated-header-cell subject-header">
 					<div class="rotated-text">SUBJECTS</div>
 				</th>
@@ -312,12 +304,6 @@
 				{% endfor %}
 				<th class="rotated-header-cell">
 					<div class="rotated-text">TOTAL (100)</div>
-				</th>
-				<th class="rotated-header-cell">
-					<div class="rotated-text">SUBJECT POSITION</div>
-				</th>
-				<th class="rotated-header-cell">
-					<div class="rotated-text">SUBJECT AVERAGE</div>
 				</th>
 				<th class="rotated-header-cell">
 					<div class="rotated-text">GRADE</div>
@@ -335,7 +321,7 @@
 									{% if subject.id|stringformat:"i" == key %}
 										{% for inner_key, score in value.items %}
 											{% if inner_key|lower == field|lower %}
-												{{ score|default:"" }}
+												{{ score }}
 											{% endif %}
 										{% endfor %}
 									{% endif %}
@@ -344,9 +330,7 @@
 						{% endfor %}
 						{% for key, value in result.result.items %}
 							{% if subject.id|stringformat:"i" == key %}
-								<td>{{ value.total|default:"" }}</td>
-								<td>{{ value.position|default:"" }}</td>
-								<td>{% if value.average_score %}{{ value.average_score|floatformat }}{% endif %}</td>
+								<td>{{ value.total }}</td>
 								<td>{% if value.grade %}{{ value.grade|upper }}{% endif %}</td>
 							{% endif %}
 						{% endfor %}
@@ -367,7 +351,7 @@
 			<div class="col-12">
 				<table class="" style="width:100%">
 					<thead>
-					<tr style="background-color:#2b9356;color:white;height:20px"><th style="text-align:left;padding-left:5px">{{category.name|upper}}</th>
+					<tr style="background-color:#B2BEB5;color:white;height:20px"><th style="text-align:left;padding-left:5px">{{category.name|upper}}</th>
 						<th style="width:30px">5</th>
 						<th style="width:30px">4</th>
 						<th style="width:30px">3</th>
@@ -394,7 +378,7 @@
 			<div class="col-12">
 				<table class="" style="width:100%">
 					<thead>
-					<tr style="background-color:#2b9356;color:white;height:20px">
+					<tr style="background-color:#B2BEB5;color:white;height:20px">
 						<th style="text-align:left;padding-left:5px">RATING INDEX</th>
 
 					</tr>
@@ -439,18 +423,53 @@
 
 
 		<div style="color:black;border-bottom:2px solid black;border-top:0px solid black;padding:1px;font-family:lato, courier, cursive">
-			<div style="border:1px solid black;border-radius:3px;padding-left:5px;padding-bottom:0px" >
-				{% if result %}
-				<p style="min-height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Name: {{ result.form_teacher|title }}</b></p>
-				<p style="background-color:#2b9356;color:white;min-height:16px;padding:0px;margin:0px;padding-left:3px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Comment:</b> {{ result.form_teacher_comment }}</p>
-				<p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>{% if result.head_teacher_title != '' %} {{result.head_teacher_title|title}} {% else %} Principal {% endif %}: {{ result.head_teacher|title }}</b></p>
-				<p style="background-color:#2b9356;color:white;height:16px;padding:0px;padding-left:3px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Comment:</b> {{ result.head_teacher_comment }}</p>
-				{% else %}
-				<p style="min-height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Name: {{ result_list.form_teacher|title }}</b></p>
-				<p style="background-color:#2b9356;color:white;min-height:16px;padding:0px;margin:0px;padding-left:3px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Comment:</b> {{ result_list.form_teacher_comment }}</p>
-				<p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>{% if result.head_teacher_title != '' %} {{result.head_teacher_title|title}} {% else %} Principal {% endif %}: {{ result.head_teacher|title }}</b></p>
-				<p style="background-color:#2b9356;color:white;height:16px;padding:0px;padding-left:3px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Comment:</b> {{ result_list.head_teacher_comment }}</p>
-				{% endif %}
+			<div style="border:1px solid black;border-radius:3px;padding-left:0px;padding-bottom:0px" >
+				<table style="width:100%;border-collapse:collapse">
+					<tr>
+						<td style="border:1px solid black;padding:5px;text-align:left;width:70%">
+							<b>HomeroomTeacher: {% if result %}{{ result.form_teacher|title }}{% else %}{{ result_list.form_teacher|title }}{% endif %}</b>
+						</td>
+						<td style="border:1px solid black;padding:5px;text-align:center;width:30%">
+							{% if result %}
+								{% if result.form_teacher.signature %}
+									<img src="{{ result.form_teacher.signature.url }}" style="max-height:40px;max-width:100%;" />
+								{% endif %}
+							{% else %}
+								{% if result_list.form_teacher.signature %}
+									<img src="{{ result_list.form_teacher.signature.url }}" style="max-height:40px;max-width:100%;" />
+								{% endif %}
+							{% endif %}
+							<br><small>Signature</small>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2" style="background-color:#B2BEB5;color:white;border:1px solid black;padding:5px;text-align:left">
+							<b>Teacher's Comment:</b> {% if result %}{{ result.form_teacher_comment }}{% else %}{{ result_list.form_teacher_comment }}{% endif %}
+						</td>
+					</tr>
+					<tr>
+						<td style="border:1px solid black;padding:5px;text-align:left;width:70%">
+							<b>{% if result %}{% if result.head_teacher_title != '' %}{{result.head_teacher_title|title}}{% else %}Principal{% endif %}{% else %}Principal{% endif %}: {% if result %}{{ result.head_teacher|title }}{% else %}{{ result_list.head_teacher|title }}{% endif %}</b>
+						</td>
+						<td style="border:1px solid black;padding:5px;text-align:center;width:30%">
+							{% if result %}
+								{% if result.head_teacher.signature %}
+									<img src="{{ result.head_teacher.signature.url }}" style="max-height:40px;max-width:100%;" />
+								{% endif %}
+							{% else %}
+								{% if result_list.head_teacher.signature %}
+									<img src="{{ result_list.head_teacher.signature.url }}" style="max-height:40px;max-width:100%;" />
+								{% endif %}
+							{% endif %}
+							<br><small>Signature</small>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2" style="background-color:#B2BEB5;color:white;border:1px solid black;padding:5px;text-align:left">
+							<b>Comment:</b> {% if result %}{{ result.head_teacher_comment }}{% else %}{{ result_list.head_teacher_comment }}{% endif %}
+						</td>
+					</tr>
+				</table>
 			</div>
 		</div>
 		<div>
@@ -469,9 +488,9 @@ document.addEventListener("DOMContentLoaded", () => {
     series: [{
       name: 'Total Score',
       {% if result_type == 'midterm' %}
-      data: [{% for key, value in result.result.items %} {{ value.midterm_total|floatformat }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+      data: [{% for key, value in result.result.items %} {% if value.midterm_total %}{{ value.midterm_total|floatformat }}{% else %}0{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}]
       {% else %}
-      data: [{% for key, value in result.result.items %} {{ value.total|floatformat }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+      data: [{% for key, value in result.result.items %} {% if value.total %}{{ value.total|floatformat }}{% else %}0{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}]
       {% endif %}
     }],
     chart: {
