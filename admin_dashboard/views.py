@@ -2,7 +2,7 @@ import secrets
 import string
 from datetime import date, timedelta
 
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
 from django.db import transaction
@@ -188,10 +188,13 @@ def fix_issue(request):
     return HttpResponse('updated')
 
 
+
 @login_required
+@permission_required('student.add_studentsmodel', raise_exception=True)
 def fix_missing_student_profiles(request):
     """
-    Finds all students without user profiles and creates users + profiles for them.
+    Select all students without user profiles and create them.
+    If a user already exists, delete it and recreate properly.
     """
     created_count = 0
     skipped_count = 0
@@ -199,34 +202,41 @@ def fix_missing_student_profiles(request):
     alphabet = string.ascii_letters + string.digits  # A–Z, a–z, 0–9
 
     with transaction.atomic():
-        # Select all students who don't have a user profile
-        students_without_profile = StudentsModel.objects.filter(user__isnull=True)
+        students_without_profile = StudentsModel.objects.all()
 
         for student in students_without_profile:
             try:
-                # Skip if registration number is missing
                 if not student.registration_number:
                     skipped_count += 1
                     continue
 
-                # Generate random 8-character password
+                username = student.registration_number.lower()
+
+                # If a user already exists, delete it (and linked profile)
+                existing_user = User.objects.filter(username=username).first()
+                if existing_user:
+                    # Delete linked profile if exists
+                    UserProfileModel.objects.filter(user=existing_user).delete()
+                    existing_user.delete()
+
+                # Generate secure 8-character password
                 password = ''.join(secrets.choice(alphabet) for _ in range(8))
 
-                # Create user
+                # Create new user
                 user = User.objects.create(
-                    username=student.registration_number.lower(),
+                    username=username,
                     email=student.email or "",
                     password=make_password(password),
                     first_name=student.surname,
                     last_name=student.last_name,
                 )
 
-                # Link user to student
+                # Link student to new user
                 student.user = user
-                student.password = password  # Optional: store original for admin use
+                student.password = password  # (optional for admin reference)
                 student.save()
 
-                # Create UserProfile
+                # Create corresponding user profile
                 UserProfileModel.objects.create(
                     user=user,
                     student=student,
@@ -240,11 +250,11 @@ def fix_missing_student_profiles(request):
 
             except Exception as e:
                 skipped_count += 1
-                print(f"Error creating profile for {student}: {e}")
+                print(f"⚠️ Error processing {student}: {e}")
 
     messages.success(
         request,
-        f"✅ {created_count} student profiles created successfully. "
+        f"✅ {created_count} student users recreated successfully. "
         f"⏭️ {skipped_count} skipped (missing reg no or error)."
     )
 
