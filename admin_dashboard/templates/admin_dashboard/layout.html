@@ -704,6 +704,14 @@
             </a>
           </li>
 
+        {% if request.user.account.staff %}
+            <li>
+                <a href="{% url 'staff_profile' %}">
+                    <i class="bi bi-circle"></i><span>My Profile</span>
+                </a>
+            </li>
+            {% endif %}
+
 
           <li>
             <a href="{% url 'position_index' %}">

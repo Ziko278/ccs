@@ -22,6 +22,10 @@
           <h5 class="card-title">STAFF BIO DATA</h5>
             <div class="row mb-3">
               <div class="form-floating mb-3 col-md-4">
+                {{form.title}}
+                <label for="floatingPassword">Title</label>
+              </div>
+              <div class="form-floating mb-3 col-md-4">
                 <input type="hidden" name="updated_by" value="{{ user.id }}" />
                 <input type="hidden" name="staff_id" value="{{ staff.staff_id }}" />
                 {{form.surname}}
@@ -104,6 +108,11 @@
               <div class="form-floating mb-3 col-md-4">
                 {{form.image}}
                 <label for="floatingPassword">Image</label>
+              </div>
+
+              <div class="form-floating mb-3 col-md-4">
+                {{form.signature}}
+                <label for="floatingPassword">Signature</label>
               </div>
 
               <div class="form-floating mb-3 col-md-4">

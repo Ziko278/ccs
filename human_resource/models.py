@@ -71,6 +71,12 @@ class PositionModel(models.Model):
 
 class StaffModel(models.Model):
     """"""
+    TITLE = (
+        ('MR', 'MR'), ('MRS', 'MRS'), ('MISS', 'MISS'), ('MS', 'MS'), ('MALLAM', 'MALLAM'), ('DOC', 'DOC'),
+        ('BARR', 'BARR'), ('PST', 'PST'), ('PROF', 'PROF'), ('ENGR', 'ENGR'), ('ALHAJI', 'ALHAJI'),
+        ('HAJIYAH', 'HAJIYAH')
+    )
+    title = models.CharField(max_length=10, choices=TITLE, default='MR')
     surname = models.CharField(max_length=50)
     middle_name = models.CharField(max_length=50, null=True, blank=True, default='')
     last_name = models.CharField(max_length=50)
@@ -103,7 +109,7 @@ class StaffModel(models.Model):
     staff_id = models.CharField(max_length=100, blank=True, null=True)
     employment_date = models.DateField(blank=True, null=True)
     cv = models.FileField(upload_to='staff/cv', storage=MediaStorage(), null=True, blank=True)
-
+    signature = models.ImageField(upload_to='signatures/', blank=True, null=True)
     salary = models.BigIntegerField(blank=True, null=True, default=0)
     bank_name = models.CharField(max_length=100, null=True, blank=True)
     account_name = models.CharField(max_length=100, null=True, blank=True)
@@ -124,9 +130,9 @@ class StaffModel(models.Model):
 
     def __str__(self):
         if self.middle_name:
-            return self.surname + ' ' + self.middle_name + ' ' + self.last_name
+            return f"{self.title} {self.surname} {self.middle_name} {self.last_name}"
         else:
-            return self.surname + ' ' + self.last_name
+            return f"{self.title} {self.surname} {self.last_name}"
 
     def is_head_teacher(self):
         setting = SchoolSettingModel.objects.first()

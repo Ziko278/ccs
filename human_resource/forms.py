@@ -1,5 +1,7 @@
 from django.forms import ModelForm, Select, TextInput, DateInput, CheckboxInput
 from human_resource.models import *
+from django import forms
+
 
 class DepartmentForm(ModelForm):
     """  """
@@ -115,7 +117,6 @@ class StaffForm(ModelForm):
         }
 
 
-
 class StaffEditForm(ModelForm):
     """  """
     def __init__(self, *args, **kwargs):
@@ -149,6 +150,25 @@ class StaffEditForm(ModelForm):
             'staff_id': TextInput(attrs={
                 'readonly': True
             })
+        }
+
+
+class StaffProfileUpdateForm(forms.ModelForm):
+    """
+    Form for staff members to update their own profile information.
+    The 'group' (position) is excluded as requested.
+    """
+    class Meta:
+        model = StaffModel
+        fields = ['title', 'surname', 'middle_name', 'last_name', 'mobile', 'email', 'signature']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'surname': forms.TextInput(attrs={'class': 'form-control'}),
+            'middle_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'mobile': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'signature': forms.FileInput(attrs={'class': 'form-control'}),
         }
 
 

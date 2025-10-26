@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.http import HttpResponse
 import json
@@ -503,3 +503,26 @@ def export_all_staff_view(request):
     response['Content-Disposition'] = f"attachment; filename={filename}"
     return response
 
+
+@login_required
+def staff_profile_view(request):
+    """
+    Allows a logged-in staff member to view and update their own profile.
+    """
+    # Get the StaffModel instance linked to the currently logged-in user
+    staff = get_object_or_404(StaffModel, account__user=request.user)
+
+    if request.method == 'POST':
+        form = StaffProfileUpdateForm(request.POST, request.FILES, instance=staff)
+        if form.is_valid():
+            form.save()  # The model's save() method will sync with the User model
+            messages.success(request, 'Your profile has been updated successfully!')
+            return redirect('staff_profile')
+    else:
+        form = StaffProfileUpdateForm(instance=staff)
+
+    context = {
+        'form': form,
+        'staff': staff
+    }
+    return render(request, 'human_resource/staff/profile.html', context)

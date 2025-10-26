@@ -19,6 +19,7 @@ urlpatterns = [
     path('staff/<int:pk>/edit', StaffUpdateView.as_view(), name='staff_edit'),
     path('staff/<int:pk>/delete', StaffDeleteView.as_view(), name='staff_delete'),
     path('staff/generate-form', generate_form_view, name='staff_form'),
+    path('staff/profile/', staff_profile_view, name='staff_profile'),
 
 
     path('setting', HRSettingView.as_view(), name='hr_info'),
