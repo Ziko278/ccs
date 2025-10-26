@@ -5,38 +5,45 @@
 
 <style>
 	.header-row {
-        background-color: #d9d9d9;
+        background-color: #2c5f8d;  /* Mature blue color */
         text-align: center;
     }
     .rotated-header-cell {
-        height: 130px; /* Sufficient height for rotated text */
+        height: 130px;
         position: relative;
-        /* Removed vertical-align: bottom as text is now absolutely centered */
-        overflow: hidden; /* Hide overflowing text */
-        padding: 5px; /* User's requested padding */
-        font-weight: 600; /* Example font weight */
-        color: white; /* Example text color */
-        white-space: nowrap; /* Prevent text wrapping in the cell */
+        overflow: hidden;
+        padding: 5px;
+        font-weight: 600;
+        color: white;
+        white-space: nowrap;
     }
     .rotated-text {
         position: absolute;
-        top: 50%; /* Position from the top */
-        left: 50%; /* Position from the left */
-        transform: translate(-50%, -50%) rotate(-90deg); /* Center element then rotate */
-        transform-origin: center center; /* Rotate around its own center */
-        white-space: nowrap; /* Prevent wrapping inside the rotated div */
-        /* Removed padding-bottom as it's no longer needed for alignment */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-90deg);
+        transform-origin: center center;
+        white-space: nowrap;
     }
     .subject-header {
-        width: 200px; /* Specific width for SUBJECTS header */
+        width: 200px;
     }
-    /* This class is needed for the second row of the thead to make rowspan="2" valid */
+    /* Adjusted widths for more balanced columns in midterm */
+    .midterm-total-col {
+        width: 70px;
+    }
+    .midterm-grade-col {
+        width: 60px;
+    }
+    .midterm-remark-col {
+        width: 90px;  /* Reduced from default to make it more even */
+    }
     .second-header-row th {
-        height: 30px; /* Adjust height as needed for the second row */
-        background-color: #f9fafb; /* Example background color */
+        height: 30px;
+        background-color: #f9fafb;
         font-weight: 600;
         color: #374151;
-        border-top: none; /* No top border if it's a continuation */
+        border-top: none;
     }
 	td, th{
 		border:1px solid black;
@@ -72,34 +79,27 @@
 		border-top: 1px dashed lightgrey
 	}
 	.vertical-header {
-  /* Lay text out vertically, and flip so it reads bottom→top */
-  writing-mode: vertical-rl;
-  text-orientation: upright;
-  vertical-align: bottom;
-  padding: 5px;
-  white-space: nowrap;
-}
-
-
+        writing-mode: vertical-rl;
+        text-orientation: upright;
+        vertical-align: bottom;
+        padding: 5px;
+        white-space: nowrap;
+    }
 
 	 @media only screen and (max-width: 767px) {
-  /* CSS rules for smaller screens */
+        #result-body {
+            width: 1300px;
+            overflow: auto;
+        }
 
-  /* Adjust the width of the result sheet to fit the screen */
-  #result-body {
-    width: 1300px;
-    overflow: auto;
-  }
-
-  /* Apply scaling transformation to the result sheet */
-  #download-result {
-    transform-origin: top left;
-    transform: scale(0.3);
-    width: 1100px;
-
-  }
-}
+        #download-result {
+            transform-origin: top left;
+            transform: scale(0.3);
+            width: 1100px;
+        }
+    }
 </style>
+
 <div class="card non-printable">
 	<div class="card-body">
 		<h4 class="card-title">Download Result</h4>
@@ -107,9 +107,10 @@
 		<a onclick="window.history.back()" style="float:right" title="Go Back" class="btn btn-danger"><i class="bi bi-arrow-left"></i> </a>
 	</div>
 </div>
+
 <div id="download-result">
 	<div style="background-color:white;border:2px solid black;">
-		<div class="" style="background-color:#808080;color:white;font-family:cursive;border:1px solid black;border-bottom:1px solid black;height:135px">
+		<div class="" style="background-color:#2c5f8d;color:white;font-family:cursive;border:1px solid black;border-bottom:1px solid black;height:135px">
 			<div class="row">
 				<div class="col-2">
 					 <img {% if student.image %} src="{{ student.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} style="width:100%;height:133px;border-radius:0px;" />
@@ -127,7 +128,7 @@
 			</div>
 		</div>
 
-		<div style="background-color:#808080;color:white;height:22px;border-bottom:2px solid black;border-top:0px solid black;">
+		<div style="background-color:#2c5f8d;color:white;height:22px;border-bottom:2px solid black;border-top:0px solid black;">
 			<p class="text-center" style="font-weight:bold">Student Report Card For {% if result_type == 'midterm' %} Mid {% endif %} {{ result.term|title }} {{ result.session|title }} Session </p>
 		</div>
 
@@ -169,7 +170,7 @@
 
 		<div class="p-1">
 			<table class="table table-bordered">
-				<thead style="background:#808080">
+				<thead style="background:#2c5f8d">
 					<tr >
 						<th rowspan="2" style="width:150px">AREAS OF LEARNING</th>
 						<th rowspan="2" style="width:200px">ASPECT</th>
@@ -185,7 +186,7 @@
 				{% for category in result_category_list %}
 					{% if category.text_result_fields.all|length > 0 %}
 						<tr style="border:1px solid black">
-							<th style="background-color:#808080;color:white;font-weight:bold;font-size:20px">{{ category.name|title }}</th>
+							<th style="background-color:#2c5f8d;color:white;font-weight:bold;font-size:20px">{{ category.name|title }}</th>
 							<th colspan="3" style="padding:0px" class="">
 								<table style="height:100%;margin:0px;text-align:left" class="table">
 									{% for field in result_field_list %}
@@ -212,15 +213,15 @@
 			<table class="table table-bordered">
 				<tbody>
 				<tr>
-					<td style="width:150px;background-color:#808080;color:white;font-weight:bold">ACHIEVED</td>
+					<td style="width:150px;background-color:#2c5f8d;color:white;font-weight:bold">ACHIEVED</td>
 					<td>Pupil can consistently perform task with confidence.</td>
 				</tr>
 				<tr>
-					<td style="width:150px;background-color:#808080;color:white;font-weight:bold">CONSOLIDATING</td>
+					<td style="width:150px;background-color:#2c5f8d;color:white;font-weight:bold">CONSOLIDATING</td>
 					<td>Pupil can perform task if given some support.</td>
 				</tr>
 				<tr>
-					<td style="width:150px;background-color:#808080;color:white;font-weight:bold">DEVELOPING</td>
+					<td style="width:150px;background-color:#2c5f8d;color:white;font-weight:bold">DEVELOPING</td>
 					<td>Pupil is beginning to perform task.</td>
 				</tr>
 				</tbody>
@@ -231,7 +232,6 @@
 
 
 	<div class="row" style="padding-right:8px">
-  <!-- Subjects & Scores (8 columns) -->
   <div {% if result_type == 'midterm' %} class="col-md-12" {% else %} class="col-md-8" {% endif %} style="padding-right:0px">
 
 		{% if result.student_class.result_type == 'score' or result.student_class.result_type == 'mix' or result_list.student_class.result_type == 'score' or result_list.student_class.result_type == 'mix' %}
@@ -240,7 +240,7 @@
 		<!-- MIDTERM RESULT TABLE -->
 		<table style="width:100%; border-collapse: collapse; font-size: 14px;">
 			<thead>
-			<tr class="header-row" style="background-color:#808080;color:white;">
+			<tr class="header-row" style="background-color:#2c5f8d;color:white;">
 				<th rowspan="2" class="rotated-header-cell subject-header">
 					<div class="rotated-text">SUBJECTS</div>
 				</th>
@@ -251,13 +251,13 @@
 					</th>
 					{% endif %}
 				{% endfor %}
-				<th class="rotated-header-cell">
+				<th class="rotated-header-cell midterm-total-col">
 					<div class="rotated-text">TOTAL ({{midterm_max|floatformat}})</div>
 				</th>
-				<th class="rotated-header-cell">
+				<th class="rotated-header-cell midterm-grade-col">
 					<div class="rotated-text">GRADE</div>
 				</th>
-				<th class="rotated-header-cell">
+				<th class="rotated-header-cell midterm-remark-col">
 					<div class="rotated-text">REMARK</div>
 				</th>
 			</tr>
@@ -284,9 +284,9 @@
 						{% endfor %}
 						{% for key, value in result.result.items %}
 							{% if subject.id|stringformat:"i" == key %}
-								<td>{% if value.midterm_total %}{{ value.midterm_total|floatformat }}{% endif %}</td>
-								<td>{% if value.midterm_grade %}{{ value.midterm_grade|upper }}{% endif %}</td>
-								<td>{% if value.midterm_remark %}{{ value.midterm_remark|title }}{% endif %}</td>
+								<td class="midterm-total-col">{% if value.midterm_total %}{{ value.midterm_total|floatformat }}{% endif %}</td>
+								<td class="midterm-grade-col">{% if value.midterm_grade %}{{ value.midterm_grade|upper }}{% endif %}</td>
+								<td class="midterm-remark-col">{% if value.midterm_remark %}{{ value.midterm_remark|title }}{% endif %}</td>
 							{% endif %}
 						{% endfor %}
 					</tr>
@@ -297,7 +297,7 @@
 		<!-- REGULAR RESULT TABLE -->
 		<table style="width:100%; border-collapse: collapse; font-size: 14px;">
 			<thead>
-			<tr class="header-row" style="background-color:#808080;color:white;">
+			<tr class="header-row" style="background-color:#2c5f8d;color:white;">
 				<th rowspan="2" class="rotated-header-cell subject-header">
 					<div class="rotated-text">SUBJECTS</div>
 				</th>
@@ -359,7 +359,7 @@
 			<div class="col-12">
 				<table class="" style="width:100%">
 					<thead>
-					<tr style="background-color:#808080;color:white;height:20px"><th style="text-align:left;padding-left:5px">{{category.name|upper}}</th>
+					<tr style="background-color:#2c5f8d;color:white;height:20px"><th style="text-align:left;padding-left:5px">{{category.name|upper}}</th>
 						<th style="width:30px">5</th>
 						<th style="width:30px">4</th>
 						<th style="width:30px">3</th>
@@ -386,7 +386,7 @@
 			<div class="col-12">
 				<table class="" style="width:100%">
 					<thead>
-					<tr style="background-color:#808080;color:white;height:20px">
+					<tr style="background-color:#2c5f8d;color:white;height:20px">
 						<th style="text-align:left;padding-left:5px">RATING INDEX</th>
 
 					</tr>
@@ -451,7 +451,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td style="background-color:#808080;color:white;border:1px solid black;padding:5px;text-align:left">
+						<td style="background-color:#2c5f8d;color:white;border:1px solid black;padding:5px;text-align:left">
 							<b>Teacher's Comment:</b> {% if result %}{{ result.form_teacher_comment }}{% else %}{{ result_list.form_teacher_comment }}{% endif %}
 						</td>
 					</tr>
@@ -473,7 +473,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td style="background-color:#808080;color:white;border:1px solid black;padding:5px;text-align:left">
+						<td style="background-color:#2c5f8d;color:white;border:1px solid black;padding:5px;text-align:left">
 							<b>Comment:</b> {% if result %}{{ result.head_teacher_comment }}{% else %}{{ result_list.head_teacher_comment }}{% endif %}
 						</td>
 					</tr>
@@ -513,11 +513,11 @@ document.addEventListener("DOMContentLoaded", () => {
         endingShape: 'rounded',
         colors: {
           ranges: [
-            { from:   0, to:  49.99, color: '#ff4d4f' },   // red
-            { from:  50, to:  59.99, color: '#ffc53d' },   // yellow
-            { from:  60, to:  69.99, color: '#5dade2' },   // sky-blue
-            { from:  70, to:  79.99, color: '#1890ff' },   // blue
-            { from:  80, to: 100.00, color: '#52c41a' }    // green
+            { from:   0, to:  49.99, color: '#ff4d4f' },
+            { from:  50, to:  59.99, color: '#ffc53d' },
+            { from:  60, to:  69.99, color: '#5dade2' },
+            { from:  70, to:  79.99, color: '#1890ff' },
+            { from:  80, to: 100.00, color: '#52c41a' }
           ]
         }
       }
@@ -534,7 +534,5 @@ document.addEventListener("DOMContentLoaded", () => {
   }).render();
 });
 </script>
-
-
 
 {% endblock %}
