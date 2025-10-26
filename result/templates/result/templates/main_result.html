@@ -26,17 +26,20 @@
         white-space: nowrap;
     }
     .subject-header {
-        width: 200px;
+        width: 250px;  /* Increased from 200px */
     }
-    /* Adjusted widths for more balanced columns in midterm */
+    /* Adjusted widths for balanced columns - all CA/Total same width */
+    .ca-col {
+        width: 70px;  /* Standard width for all CA columns and Total */
+    }
     .midterm-total-col {
         width: 70px;
     }
     .midterm-grade-col {
-        width: 60px;
+        width: 70px;
     }
     .midterm-remark-col {
-        width: 90px;  /* Reduced from default to make it more even */
+        width: 120px;  /* Increased for remark */
     }
     .second-header-row th {
         height: 30px;
@@ -246,7 +249,7 @@
 				</th>
 				{% for field in field_list %}
 					{% if field.mid_term %}
-					<th class="rotated-header-cell">
+					<th class="rotated-header-cell ca-col">
 						<div class="rotated-text">{{ field|title|upper }} ({{ field.max_mark|floatformat }})</div>
 					</th>
 					{% endif %}
