@@ -2769,7 +2769,7 @@ def my_salary_profile_view(request):
         staff = user_account.staff
     except ObjectDoesNotExist:  # Catches both DoesNotExist exceptions
         messages.error(request, "You do not have a staff profile and cannot access this page.")
-        return render(request, 'finance/account/no_profile.html')
+        return render(request, 'finance/staff_profile/no_profile.html')
 
     # Get the staff's salary structure
     try:
@@ -2807,4 +2807,4 @@ def my_salary_profile_view(request):
         'selected_year': selected_year,
         'selected_month': selected_month
     }
-    return render(request, 'finance/account/salary_profile.html', context)
+    return render(request, 'finance/staff_profile/salary_profile.html', context)
