@@ -1,167 +1,159 @@
 {% extends 'student_portal/layout.html' %}
 {% load static %}
 {% load humanize %}
-{% load fee_custom_filters %}
-{% block 'main' %}
+{% block main %}
 
 <div class="row">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-body pt-3">
-                <ul class="nav nav-tabs nav-tabs-bordered">
-                    <li class="nav-item">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payment-dashboard">Payment Dashboard</button>
-                    </li>
-                </ul>
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-body pt-3">
+        <ul class="nav nav-tabs nav-tabs-bordered">
+          <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#payment-dashboard">
+              Payment Dashboard
+            </button>
+          </li>
+        </ul>
 
-                <div class="tab-content pt-2">
-                    <div class="tab-pane fade show active profile-edit pt-3" id="payment-dashboard">
-                        <h5 class="card-title">Fee Dashboard: {{ academic_info.session }} {{ academic_info.term|title }}</h5>
+        <div class="tab-content pt-2">
+          <div class="tab-pane fade show active pt-3" id="payment-dashboard">
 
-                        <div class="row">
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-alarm-fill"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>N{{ current_fee|intcomma }}</h6>
-                                                <span class="text-muted small pt-2 ps-1">Current Fee</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            <h5 class="card-title">
+              Fee Dashboard: {{ academic_setting.session }} {{ academic_setting.term|title }}
+            </h5>
 
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-cash"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>{{ fee_paid|intcomma }}</h6>
-                                                <span class="text-muted small pt-2 ps-1">Paid Fee</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-brightness-alt-high-fill"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>{{ fee_discount|intcomma }}</h6>
-                                                <span class="text-muted small pt-2 ps-1">Discount</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle text-danger d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-flag-fill"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>{{ fee_penalty|intcomma }}</h6>
-                                                <span class="text-muted small pt-2 ps-1">Penalty</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-x-diamond-fill"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>N{{ fee_balance|intcomma }}</h6>
-                                                <span class="text-muted small pt-2 ps-1">Balance</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-percent"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>{{ percentage_paid }}%</h6>
-                                                <span class="text-muted small pt-2 ps-1">Percentage Paid</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-diamond-half"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>{{ outstanding_fee|intcomma }}</h6>
-                                                <span class="text-muted small pt-2 ps-1">Outstanding Fee</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-currency-exchange"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>{{ total_fee|intcomma }}</h6>
-                                                <span class="text-muted small pt-2 ps-1">Total Balance</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
+            {# ===== CURRENT INVOICE SUMMARY ===== #}
+            {% if current_invoice %}
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="card info-card">
+                    <div class="card-body">
+                      <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                          <i class="bi bi-receipt-cutoff"></i>
                         </div>
-
+                        <div class="ps-3">
+                          <h6>N{{ current_invoice.amount|intcomma }}</h6>
+                          <span class="text-muted small pt-2 ps-1">Current Invoice Total</span>
+                        </div>
+                      </div>
                     </div>
+                  </div>
                 </div>
-            </div>
+
+                <div class="col-md-4">
+                  <div class="card info-card">
+                    <div class="card-body">
+                      <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                          <i class="bi bi-cash-stack"></i>
+                        </div>
+                        <div class="ps-3">
+                          <h6>N{{ fee_paid|intcomma }}</h6>
+                          <span class="text-muted small pt-2 ps-1">Total Paid</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="card info-card">
+                    <div class="card-body">
+                      <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle text-danger d-flex align-items-center justify-content-center">
+                          <i class="bi bi-wallet2"></i>
+                        </div>
+                        <div class="ps-3">
+                          <h6>N{{ fee_balance|intcomma }}</h6>
+                          <span class="text-muted small pt-2 ps-1">Balance</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="card info-card">
+                    <div class="card-body">
+                      <div class="d-flex align-items-center">
+                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                          <i class="bi bi-percent"></i>
+                        </div>
+                        <div class="ps-3">
+                          <h6>{{ percentage_paid }}%</h6>
+                          <span class="text-muted small pt-2 ps-1">Percentage Paid</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <a href="{% url 'student_fee_create' current_invoice.id %}" class="btn btn-primary me-2">
+                  <i class="bi bi-upload"></i> Upload Payment
+                </a>
+                <a href="{% url 'student_fee_payment_list' %}" class="btn btn-outline-secondary">
+                  <i class="bi bi-clock-history"></i> View Payment History
+                </a>
+              </div>
+
+            {% else %}
+              <div class="alert alert-info mt-3">
+                <i class="bi bi-info-circle"></i> No active invoice for this term yet.
+              </div>
+            {% endif %}
+
+            {# ===== OUTSTANDING INVOICES ===== #}
+            {% if outstanding_invoices %}
+              <hr>
+              <h5 class="mt-4">Outstanding Invoices</h5>
+              <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                  <thead>
+                    <tr>
+                      <th>Session</th>
+                      <th>Term</th>
+                      <th>Total</th>
+                      <th>Paid</th>
+                      <th>Balance</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for inv in outstanding_invoices %}
+                      <tr>
+                        <td>{{ inv.session }}</td>
+                        <td>{{ inv.term|title }}</td>
+                        <td>N{{ inv.amount|intcomma }}</td>
+                        <td>N{{ inv.amount_paid|intcomma }}</td>
+                        <td>N{{ inv.balance|intcomma }}</td>
+                        <td>
+                          {% if inv.balance == 0 %}
+                            <span class="badge bg-success">Paid</span>
+                          {% else %}
+                            <span class="badge bg-warning text-dark">Outstanding</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                          <a href="{% url 'student_fee_create' inv.id %}" class="btn btn-sm btn-primary">
+                            Upload Payment
+                          </a>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% endif %}
+
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
-{%endblock %}
+{% endblock %}

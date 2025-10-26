@@ -1,718 +1,181 @@
 {% extends 'student_portal/layout.html' %}
 {% load static %}
 {% load humanize %}
-{% load fee_custom_filters %}
-{% block 'main' %}
-{% if form.errors %}
-        <h5 class="text-danger">{{form.errors}}</h5>
-        {% endif %}
-<div class="col-lg-12 grid-margin stretch-card">
-    <div class="card">
-        <div class="card-body">
-            <h4 class="card-title">Name: {{ student|title }} <br />
-                Reg No: {{ student.registration_number|upper }} <br />
-                Class: {% if student.student_class %} {{ student.student_class|upper }} {{ student.class_section|upper }} {% endif %}
-                <img class="rounded-circle" style="margin-top:-30px;display:inline;float:right;width:100px;height:100px;border-radius:5px;" {% if student.image %} src="{{ student.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} /></h4>
-            <p>
-                <button type="button" title="Bulk Fee Payment" data-bs-toggle="modal" data-bs-target="#bulk-payment" class="btn btn-sm btn-primary">Pay Multiple </button>
-
-            </p>
-        </div>
-    </div>
-</div>
+{% block main %}
 
 <div class="row">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-body pt-3">
-                <ul class="nav nav-tabs nav-tabs-bordered">
-                    <li class="nav-item">
-                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Current Fees</button>
-                    </li>
-
-                    <li class="nav-item">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#outstanding-payment">Outstanding Fees</button>
-                    </li>
-
-                </ul>
-
-                <div class="tab-content pt-2">
-                    <div class="tab-pane fade show active profile-overview" id="profile-overview">
-                        <h5 class="card-title">Fee Collection For {{student|title}}, {% if student.student_class %} {{ student.student_class }} {{ student.class_section }} - {% endif %} {{ academic_setting.term|title }} {{ academic_setting.session }} <span style="float:right">{% now "D d M Y" %}</span> </h5>
-                        <table class="table table-hover">
-                            <thead>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Fee</th>
-                                <th scope="col">Amount</th>
-                                <th scope="col">Paid</th>
-                                {% if fee_setting.use_discount %} <th scope="col">Discount</th> {% endif %}
-                                {% if fee_setting.use_penalty %}  <th scope="col">Penalty</th> {% endif %}
-                                <th scope="col">Balance</th>
-                                <th scope="col">Status</th>
-                                <th scope="col">Action</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% if termly_fee_list %}
-                            {% for fee in termly_fee_list %}
-                            <tr>
-                                <th scope="row">{{ forloop.counter }}</th>
-                                <td>{{ fee.fee|upper }}</td>
-                                {% if fee.same_termly_price %}
-                                <td>{{ fee.amount|intcomma }}</td>
-                                {% else %}
-                                <td>
-                                {% if academic_setting.term|lower == '1st term' %}
-                                    {{ fee.first_term_amount|intcomma }}
-                                {% elif academic_setting.term|lower == '2nd term' %}
-                                    {{ fee.second_term_amount|intcomma }}
-                                {% elif academic_setting.term|lower == '3rd term' %}
-                                    {{ fee.third_term_amount|intcomma }}
-                                {% endif %}
-                                </td>
-                                {% endif %}
-                                <td>{{ fee|get_amount_paid:student.id|intcomma }}</td>
-                                {% if fee_setting.use_discount %} <td>{{ fee|get_fee_discount:student.id }}</td> {% endif %}
-                                {% if fee_setting.use_penalty %} <td>{{ fee|get_fee_penalty:student.id }}</td> {% endif %}
-                                <td>{{ fee|get_fee_balance:student.id }}</td>
-                                <td>
-                                    {% if fee|get_fee_balance:student.id == 0 %}
-                                        <span class="text-success">Paid</span>
-                                    {% elif fee|get_amount_paid:student.id > 0 and fee|get_fee_balance:student.id > 0 %}
-                                        <span class="text-warning">Part Paid</span>
-                                    {% else %}
-                                        <span class="text-danger">No Payment</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <button type="button" title="pay fee" data-bs-toggle="modal" data-bs-target="#payfee{{ forloop.counter }}" {% if fee|get_fee_balance:student.id == 0 %} disabled {% endif %} class="btn btn-sm btn-primary">Pay</button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            {% endif %}
-
-                            {% if one_time_fee_list %}
-                            {% for fee in one_time_fee_list %}
-                            <tr>
-                                <th scope="row">{{ termly_fee_list|length|add:forloop.counter }}</th>
-                                <td>{{ fee.fee|upper }}</td>
-                                <td>{{ fee.amount|intcomma}}</td>
-
-                                <td>{{ fee|get_amount_paid:student.id|intcomma }}</td>
-                                {% if fee_setting.use_discount %} <td>{{ fee|get_fee_discount:student.id }}</td> {% endif %}
-                                {% if fee_setting.use_penalty %} <td>{{ fee|get_fee_penalty:student.id }}</td> {% endif %}
-                                <td>{{ fee|get_fee_balance:student.id }}</td>
-                                <td>
-                                    {% if fee|get_fee_balance:student.id == 0 %}
-                                        <span class="text-success">Paid</span>
-                                    {% elif fee|get_amount_paid:student.id > 0 and fee|get_fee_balance:student.id > 0 %}
-                                        <span class="text-warning">Part Paid</span>
-                                    {% else %}
-                                        <span class="text-danger">No Payment</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <button type="button" title="pay fee" data-bs-toggle="modal" data-bs-target="#payfee{{ termly_fee_list|length|add:forloop.counter }}" {% if fee|get_fee_balance:student.id == 0 %} disabled {% endif %} class="btn btn-sm btn-primary">Pay </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            {% endif %}
-                            </tbody>
-                        </table>
-                        {% if not termly_fee_list and not one_time_fee_list %}
-                            <h4 class="card-title text-center">No Available Fee for student class</h4>
-                        {% endif %}
-                    </div>
-
-                    <div class="tab-pane fade profile-edit pt-3" id="current-payment">
-                        <div class="row">
-                            <div class="card-body">
-                                {% if current_payment_list %}
-
-                                {% if academic_info.term == '3rd term' %}
-                                <h5 class="card-title">Fee Payments for {{ academic_info.session }} Session - 3rd Term</h5>
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">#</th>
-                                            <th scope="col">Fee</th>
-                                            <th scope="col">Amount Paid</th>
-                                            <th scope="col">Date</th>
-                                            <th scope="col">Payment Mode</th>
-                                            <th scope="col">Status</th>
-                                            <th scope="col" class="text-center">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for payment in current_payment_list %}
-                                            {% if payment.term == '3rd term' %}
-                                            <tr>
-                                                <th scope="row">{{ payment.reference }}</th>
-                                                <td scope="row">{{ payment.fee.fee|title }}</td>
-                                                <td scope="row">{{ payment.amount|intcomma }}</td>
-                                                <td scope="row">{{ payment.date|date }}</td>
-                                                <td scope="row">{{ payment.payment_mode|title }}</td>
-                                                <td scope="row" {% if payment.status == 'pending' %} class='text-warning' {% else %} class='text-success' {% endif %}>{{ payment.status|title }}</td>
-                                                <td scope="row" class="text-center">
-                                                    <button type="button" title="Confirm Fee Payment" data-bs-toggle="modal" data-bs-target="#confirm-fee{{forloop.counter}}" {% if payment.status == 'confirmed' or not request.user.is_superuser %} disabled {% endif %} class="btn btn-success"><i class="bi bi-check"></i> </button>
-                                                    <button type="button" title="Revert Fee Payment" data-bs-toggle="modal" data-bs-target="#revert-fee{{forloop.counter}}" {% if academic_info.term != '3rd term' or not request.user.is_superuser %} disabled {% endif %} class="btn btn-danger"><i class="bi bi-x"></i> </button>
-                                                </td>
-                                            </tr>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                                {% endif %}
-
-                                {% if academic_info.term == '3rd term' or academic_info.term == '2nd term' %}
-                                <h5 class="card-title">Fee Payments for {{ academic_info.session }} Session - 2nd Term</h5>
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">#</th>
-                                            <th scope="col">Fee</th>
-                                            <th scope="col">Amount Paid</th>
-                                            <th scope="col">Date</th>
-                                            <th scope="col">Payment Mode</th>
-                                            <th scope="col">Status</th>
-                                            <th scope="col" class="text-center">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for payment in current_payment_list %}
-                                            {% if payment.term == '2nd term' %}
-                                            <tr>
-                                                <th scope="row">{{ payment.reference }}</th>
-                                                <td scope="row">{{ payment.fee.fee|title }}</td>
-                                                <td scope="row">{{ payment.amount|intcomma }}</td>
-                                                <td scope="row">{{ payment.date|date }}</td>
-                                                <td scope="row">{{ payment.payment_mode|title }}</td>
-                                                <td scope="row" {% if payment.status == 'pending' %} class='text-warning' {% else %} class='text-success' {% endif %}>{{ payment.status|title }}</td>
-                                                <td scope="row" class="text-center">
-                                                    <button type="button" title="Confirm Fee Payment" data-bs-toggle="modal" data-bs-target="#confirm-fee{{forloop.counter}}" {% if payment.status == 'confirmed' or not request.user.is_superuser %} disabled {% endif %} class="btn btn-success"><i class="bi bi-check"></i> </button>
-                                                    <button type="button" title="Revert Fee Payment" data-bs-toggle="modal" data-bs-target="#revert-fee{{forloop.counter}}" {% if academic_info.term != '2nd term' or not request.user.is_superuser %} disabled {% endif %} class="btn btn-danger"><i class="bi bi-x"></i> </button>
-                                                </td>
-                                            </tr>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                                {% endif %}
-                                <br />
-
-                                <h5 class="card-title">Fee Payments for {{ academic_info.session }} Session - 1st Term</h5>
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">#</th>
-                                            <th scope="col">Fee</th>
-                                            <th scope="col">Amount Paid</th>
-                                            <th scope="col">Date</th>
-                                            <th scope="col">Payment Mode</th>
-                                            <th scope="col">Status</th>
-                                            <th scope="col" class="text-center">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for payment in current_payment_list %}
-                                            {% if payment.term == '1st term' %}
-                                            <tr>
-                                                <th scope="row">{{ payment.reference }}</th>
-                                                <td scope="row">{{ payment.fee.fee|title }}</td>
-                                                <td scope="row">{{ payment.amount|intcomma }}</td>
-                                                <td scope="row">{{ payment.date|date }}</td>
-                                                <td scope="row">{{ payment.payment_mode|title }}</td>
-                                                <td scope="row" {% if payment.status == 'pending' %} class='text-warning' {% else %} class='text-success' {% endif %}>{{ payment.status|title }}</td>
-                                                <td scope="row" class="text-center">
-                                                    <button type="button" title="Confirm Fee Payment" data-bs-toggle="modal" data-bs-target="#confirm-fee{{forloop.counter}}" {% if payment.status == 'confirmed' or not request.user.is_superuser %} disabled {% endif %} class="btn btn-success"><i class="bi bi-check"></i> </button>
-                                                    <button type="button" title="Revert Fee Payment" data-bs-toggle="modal" data-bs-target="#revert-fee{{forloop.counter}}" {% if academic_info.term != '1st term' or not request.user.is_superuser %} disabled {% endif %} class="btn btn-danger"><i class="bi bi-x"></i> </button>
-                                                </td>
-                                            </tr>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-
-                                {% else %}
-                                    <h3 class="card-title text-center">No Payment Made Yet</h3>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane fade profile-edit pt-3" id="outstanding-payment">
-                        {% if outstanding_payment_list %}
-                        <h5 class="card-title">Fee Payments for {{ academic_info.session }} Session - 3rd Term</h5>
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Fee</th>
-                                    <th scope="col">Session</th>
-                                    <th scope="col">Term</th>
-                                    <th scope="col">Amount</th>
-                                    <th scope="col">Paid</th>
-                                    <th scope="col">Balance</th>
-
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for payment in outstanding_payment_list %}
-                                    <tr>
-                                        <th scope="row">{{ payment.fee_master.fee|upper }}</th>
-                                        <td scope="row">{{ payment.session }}</td>
-                                        <td scope="row">{{ payment.term|title }}</td>
-                                        <th scope="row">{{ payment.outstanding_amount|intcomma }}</th>
-                                        <td scope="row">{{ payment.paid|intcomma}}</td>
-                                        <td scope="row">{{ payment.balance|intcomma }}</td>
-
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-
-                        {% else %}
-                        <h3 class="card-title text-center">No Outstanding Fee by student</h3>
-                        {% endif %}
-                    </div>
-
-                    <div class="tab-pane fade profile-edit pt-3" id="all-payment">
-                        {% if all_payment_list %}
-                        <h5 class="card-title">Fee Payments for {{ academic_info.session }} Session - 3rd Term</h5>
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Fee</th>
-                                    <th scope="col">Session</th>
-                                    <th scope="col">Term</th>
-                                    <th scope="col">Amount Paid</th>
-                                    <th scope="col">Date</th>
-                                    <th scope="col">Payment Mode</th>
-                                    <th scope="col">Status</th>
-
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for payment in current_payment_list %}
-                                    <tr>
-                                        <th scope="row">{{ payment.reference|upper }}</th>
-                                        <td scope="row">{{ payment.session }}</td>
-                                        <td scope="row">{{ payment.term|title }}</td>
-                                        <td scope="row">{{ payment.fee.fee|title }}</td>
-                                        <th scope="row">{{ payment.amount|intcomma }}</th>
-                                        <td scope="row">{{ payment.date|date }}</td>
-                                        <td scope="row">{{ payment.payment_mode|title }}</td>
-                                        <td scope="row" {% if payment.status == 'pending' %} class='text-warning' {% else %} class='text-success' {% endif %}>{{ payment.status|title }}</td>
-
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-
-                        {% else %}
-                        <h3 class="card-title text-center">No Payments Made Yet</h3>
-                        {% endif %}
-                    </div>
-
-                    <div class="tab-pane fade profile-edit pt-3" id="payment-dashboard">
-                        <h5 class="card-title">Fee Payment Detail: {{ academic_info.session }} {{ academic_info.term|title }}</h5>
-
-                        <div class="row">
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-alarm-fill"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>N{{ current_fee|intcomma }}</h6>
-                                                <span class="text-muted small pt-2 ps-1">Current Fee</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-cash"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>{{ fee_paid|intcomma }}</h6>
-                                                <span class="text-muted small pt-2 ps-1">Paid Fee</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-brightness-alt-high-fill"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>{{ fee_discount|intcomma }}</h6>
-                                                <span class="text-muted small pt-2 ps-1">Discount</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle text-danger d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-flag-fill"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>{{ fee_penalty|intcomma }}</h6>
-                                                <span class="text-muted small pt-2 ps-1">Penalty</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-x-diamond-fill"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>N{{ fee_balance|intcomma }}</h6>
-                                                <span class="text-muted small pt-2 ps-1">Balance</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-percent"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>{{ percentage_paid }}%</h6>
-                                                <span class="text-muted small pt-2 ps-1">Percentage Paid</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-diamond-half"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>{{ outstanding_fee|intcomma }}</h6>
-                                                <span class="text-muted small pt-2 ps-1">Outstanding Fee</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-xxl-4 col-md-4">
-                                <div class="card info-card sales-card">
-                                    <div class="card-body">
-                                        <h5 class="card-title"></h5>
-                                        <div class="d-flex align-items-center">
-                                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-currency-exchange"></i>
-                                            </div>
-                                            <div class="ps-3">
-                                                <h6>{{ total_fee|intcomma }}</h6>
-                                                <span class="text-muted small pt-2 ps-1">Total Balance</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-
-                    </div>
-                </div>
-            </div>
+  <div class="col-12">
+    <div class="card mb-3">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div>
+          <h4 class="mb-0">Make Payment for: {{ student|get_full_name }}</h4>
+          <small class="text-muted">Reg No: {{ student.registration_number|upper }} |
+            Class: {% if student.student_class %}{{ student.student_class }} {{ student.class_section }}{% endif %}
+          </small>
         </div>
+        <div class="text-end">
+          {% if student.image %}
+            <img src="{{ student.image.url }}" alt="student" class="rounded" style="width:80px;height:80px;object-fit:cover;">
+          {% else %}
+            <img src="{% static 'admin_dashboard/images/default_image.jpg' %}" alt="student" class="rounded" style="width:80px;height:80px;object-fit:cover;">
+          {% endif %}
+        </div>
+      </div>
     </div>
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+    {% if form.errors %}
+      <div class="alert alert-danger">
+        <strong>Please fix these errors:</strong>
+        <ul class="mb-0">
+          {% for field in form %}
+            {% for error in field.errors %}
+              <li>{{ field.label }}: {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Invoice Summary — {{ invoice.invoice_number if invoice else "No Invoice" }}</h5>
+
+        {% if invoice %}
+          <div class="row mb-3">
+            <div class="col-md-3">
+              <div class="p-3 border rounded">
+                <div class="small text-muted">Total</div>
+                <div class="h5">N{{ invoice.total_amount|intcomma }}</div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="p-3 border rounded">
+                <div class="small text-muted">Paid</div>
+                <div class="h5">N{{ invoice.amount_paid|intcomma }}</div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="p-3 border rounded">
+                <div class="small text-muted">Balance</div>
+                <div class="h5 text-danger">N{{ invoice.balance|intcomma }}</div>
+              </div>
+            </div>
+            <div class="col-md-3 text-end">
+              <a href="{% url 'student_fee_payment_list' %}" class="btn btn-outline-secondary">View Payment History</a>
+            </div>
+          </div>
+        {% else %}
+          <div class="alert alert-info">No active invoice for the selected term. Contact the school if you believe this is an error.</div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="row g-3">
+          {% csrf_token %}
+
+          {# Hidden fields linking this payment to invoice/student #}
+          {% if invoice %}
+            <input type="hidden" name="invoice" value="{{ invoice.id }}">
+          {% endif %}
+          <input type="hidden" name="student" value="{{ student.id }}">
+          <input type="hidden" name="status" value="pending">
+
+          <div class="col-md-6">
+            <label class="form-label">Amount <span class="text-danger">*</span></label>
+            {% if form.amount %}
+              {{ form.amount }}
+            {% else %}
+              <input
+                type="number"
+                name="amount"
+                step="0.01"
+                min="1"
+                class="form-control"
+                value="{{ invoice.balance|default_if_none:'0.00' }}"
+                required
+              >
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Payment Mode <span class="text-danger">*</span></label>
+            {% if form.payment_mode %}
+              {{ form.payment_mode }}
+            {% else %}
+              <select name="payment_mode" class="form-select" required>
+                <option value="">Select payment mode</option>
+                <option value="cash">Cash</option>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="bank_teller">Bank Teller</option>
+                <option value="cheque">Cheque</option>
+              </select>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Payment Date</label>
+            {% if form.date %}
+              {{ form.date }}
+            {% else %}
+              <input type="date" name="date" class="form-control" value="{% now 'Y-m-d' %}">
+            {% endif %}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Bank Account (if applicable)</label>
+            {% if form.bank_account %}
+              {{ form.bank_account }}
+            {% else %}
+              <select name="bank_account" class="form-select">
+                <option value="">Select bank account (optional)</option>
+                {% for b in bank_accounts %}
+                  <option value="{{ b.id }}">{{ b.name }} - {{ b.account_number }}</option>
+                {% endfor %}
+              </select>
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Reference / Teller No.</label>
+            {% if form.reference %}
+              {{ form.reference }}
+            {% else %}
+              <input type="text" name="reference" class="form-control" maxlength="100">
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Notes</label>
+            {% if form.notes %}
+              {{ form.notes }}
+            {% else %}
+              <textarea name="notes" class="form-control" rows="3"></textarea>
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Payment Proof (image/pdf)</label>
+            {% if form.payment_proof %}
+              {{ form.payment_proof }}
+            {% else %}
+              <input type="file" name="payment_proof" accept="image/*,application/pdf" class="form-control">
+            {% endif %}
+            <div class="form-text">Upload bank teller or receipt for admin verification.</div>
+          </div>
+
+          <div class="col-12 text-end">
+            <a href="{% url 'student_fee_dashboard' %}" class="btn btn-secondary me-2">Back</a>
+            <button type="submit" class="btn btn-primary">Upload Payment (Send for Approval)</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
 </div>
 
-{% for fee in termly_fee_list %}
-<form method="POST" action="" enctype="multipart/form-data">
-
-    {% csrf_token %}
-    <div class="modal fade" id="payfee{{ forloop.counter }}" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Make Fee Payment - {{ fee }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h5 class="card-title">Student: {{ student|title }} | {{ academic_setting.term }} {{ academic_setting.session }} |
-                        Paid: N{{ fee|get_amount_paid:student.id|intcomma }} | Balance: N{{ fee|get_fee_balance:student.id|intcomma }}</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                <input type="hidden" value="0.0" name="vat">
-                                <input type="hidden" name="type" value="{{ user.profile.type }}" />
-                                <input type="hidden" name="user" value="{{ user.id }}" />
-                                <input type="hidden" name="fee" value="{{ fee.id }}" />
-                                <input type="hidden" name="student" value="{{ student.id }}" />
-                                <input type="hidden" name="status" value="pending" />
-                                <input type="hidden" name="session" value="{{ academic_setting.session.id }}" />
-                                <input type="hidden" name="term" value="{{ academic_setting.term }}" />
-                                <input type="number" name="amount" value="{{ fee|get_fee_balance:student.id }}" min="1" max="{{ fee|get_fee_balance:student.id }}" autocomplete="off" required class="form-control">
-                                <label for="floatingName">Amount <span style="color:red"><b>*</b></span></label>
-                                <br />
-                            </div><br />
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                {{ form.payment_mode }}
-                                <label for="floatingName">Payment Mode <span style="color:red"><b>*</b></span></label>
-                                <br />
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                {{ form.date }}
-                                <label for="floatingName">Payment Date </label>
-                                <br />
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                {{ form.payment_proof }}
-                                <label for="floatingName">Payment Proof </label>
-                                <br />
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Make Payment</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-{% endfor %}
-
-
-
-{% for fee in one_time_fee_list %}
-<form method="POST" action="" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="modal fade" id="payfee{{ termly_fee_list|length|add:forloop.counter }}" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Make Fee Payment - {{ fee }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h5 class="card-title">Student: {{ student|title }} | {{ academic_setting.term }} {{ academic_setting.session }} |
-                        Paid: N{{ fee|get_amount_paid:student.id|intcomma }} | Balance: N{{ fee|get_fee_balance:student.id|intcomma }}</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                <input type="hidden" name="type" value="{{ user.profile.type }}" />
-                                <input type="hidden" name="user" value="{{ user.id }}" />
-                                <input type="hidden" name="fee" value="{{ fee.id }}" />
-                                <input type="hidden" name="student" value="{{ student.id }}" />
-                                <input type="hidden" name="status" value="pending" />
-                                <input type="hidden" name="session" value="{{ academic_setting.session.id }}" />
-                                <input type="hidden" name="term" value="{{ academic_setting.term }}" />
-                                <input type="number" name="amount" value="{{ fee|get_fee_balance:student.id }}" min="1" max="{{ fee|get_fee_balance:student.id }}" autocomplete="off" required class="form-control">
-                                <label for="floatingName">Amount <span style="color:red"><b>*</b></span></label>
-                                <br />
-                            </div><br />
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                {{ form.payment_mode }}
-                                <label for="floatingName">Payment Mode <span style="color:red"><b>*</b></span></label>
-                                <br />
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                {{ form.date }}
-                                <label for="floatingName">Payment Date </label>
-                                <br />
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                {{ form.payment_proof }}
-                                <label for="floatingName">Payment Proof </label>
-                                <br />
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Make Payment</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-{% endfor %}
-
-
-<form method="POST" action="{% url 'student_bulk_payment' %}" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="modal fade" id="bulk-payment" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Make Multiple Fee Payment</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h5 class="card-title">Student: {{ student|title }} | {{ academic_setting.term }} {{ academic_setting.session }}</h5>
-
-                    <input type="hidden" name="student" value="{{ student.id }}" />
-                    <input type="hidden" name="type" value="{{ user.profile.type }}" />
-                    <input type="hidden" name="user" value="{{ user.id }}" />
-                    <input type="hidden" name="vat" value="0" />
-                    <input type="hidden" name="status" value="pending" />
-
-                    {% for fee in termly_fee_list %}
-                    <div class="row" style="{% if forloop.counter != 1 %} margin-top:-25px {% endif %}">
-                    {% if fee|get_fee_balance:student.id > 0 %}
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                <input type="hidden" name="fee[]" value="{{ fee.id }}" />
-                                <p class="card-title">{{ fee }}</p>
-                                <br />
-                            </div><br />
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-floating">
-                                <input type="number" name="amount[]" value="{{ fee|get_fee_balance:student.id }}" min="1" max="{{ fee|get_fee_balance:student.id }}" autocomplete="off" required class="form-control">
-                                <label for="floatingName">Amount <span style="color:red"><b>*</b></span></label>
-                            </div><br />
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-floating">
-                                <select name="payment_mode[]" class="form-control" required>
-                                    <option value="">----------------</option>
-                                    <option value="cash">CASH</option>
-                                    <option value="cheque">CHEQUE</option>
-                                    <option value="bank">BANK TELLER</option>
-                                    <option value="transfer">BANK TRANSFER</option>
-                                </select>
-                                <label for="floatingName">Payment Mode <span style="color:red"><b>*</b></span></label>
-                                <br />
-                            </div>
-                        </div>
-                    {% endif %}
-                    </div>
-                    {% endfor %}
-
-		     {% for fee in one_time_fee_list %}
-                    <div class="row" style="{% if forloop.counter != 1 %} margin-top:-25px {% endif %}">
-                    {% if fee|get_fee_balance:student.id > 0 %}
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                <input type="hidden" name="fee[]" value="{{ fee.id }}" />
-                                <p class="card-title">{{ fee }}</p>
-                                <br />
-                            </div><br />
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-floating">
-                                <input type="number" name="amount[]" value="{{ fee|get_fee_balance:student.id }}" min="1" max="{{ fee|get_fee_balance:student.id }}" class="form-control" autocomplete="off" require>
-                                <label for="floatingName">Amount <span style="color:red"><b>*</b></span></label>
-                            </div><br />
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-floating">
-                                <select name="payment_mode[]" class="form-control" required>
-                                    <option value="">----------------</option>
-                                    <option value="cash">CASH</option>
-                                    <option value="cheque">CHEQUE</option>
-                                    <option value="bank">BANK TELLER</option>
-                                    <option value="transfer">BANK TRANSFER</option>
-                                </select>
-                                <label for="floatingName">Payment Mode <span style="color:red"><b>*</b></span></label>
-                                <br />
-                            </div>
-                        </div>
-                    {% endif %}
-                    </div>
-                    {% endfor %}
-
-                    <div class="row" style="margin-top:30px">
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                {{ form.date }}
-                                <label for="floatingName">Payment Date </label>
-                                <br />
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                {{ form.payment_proof }}
-                                <label for="floatingName">Payment Proof </label>
-                                <br />
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Make Payment</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-
-{%endblock %}
+{% endblock %}

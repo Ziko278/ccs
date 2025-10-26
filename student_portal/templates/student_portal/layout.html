@@ -145,6 +145,11 @@
         </a>
         <ul id="myresult" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
+            <a href="{% url 'student_current_result' user.profile.student.id %}?type=midterm">
+              <i class="bi bi-circle"></i><span>Current MidTerm Result</span>
+            </a>
+          </li>
+          <li>
             <a href="{% url 'student_current_result' user.profile.student.id %}">
               <i class="bi bi-circle"></i><span>Current Result</span>
             </a>
