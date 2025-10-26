@@ -1,7 +1,11 @@
 import secrets
+import string
 from datetime import date, timedelta
 
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
+from django.db import transaction
 from django.db.models import Sum, Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -182,3 +186,66 @@ def fix_issue(request):
     else:
         messages.info(request, "No user profiles needed updating to 'PRIMARY'.")
     return HttpResponse('updated')
+
+
+@login_required
+def fix_missing_student_profiles(request):
+    """
+    Finds all students without user profiles and creates users + profiles for them.
+    """
+    created_count = 0
+    skipped_count = 0
+
+    alphabet = string.ascii_letters + string.digits  # A–Z, a–z, 0–9
+
+    with transaction.atomic():
+        # Select all students who don't have a user profile
+        students_without_profile = StudentsModel.objects.filter(user__isnull=True)
+
+        for student in students_without_profile:
+            try:
+                # Skip if registration number is missing
+                if not student.registration_number:
+                    skipped_count += 1
+                    continue
+
+                # Generate random 8-character password
+                password = ''.join(secrets.choice(alphabet) for _ in range(8))
+
+                # Create user
+                user = User.objects.create(
+                    username=student.registration_number.lower(),
+                    email=student.email or "",
+                    password=make_password(password),
+                    first_name=student.surname,
+                    last_name=student.last_name,
+                )
+
+                # Link user to student
+                student.user = user
+                student.password = password  # Optional: store original for admin use
+                student.save()
+
+                # Create UserProfile
+                UserProfileModel.objects.create(
+                    user=user,
+                    student=student,
+                    reference='student',
+                    reference_id=student.id,
+                    default_password=password,
+                    type=student.type,
+                )
+
+                created_count += 1
+
+            except Exception as e:
+                skipped_count += 1
+                print(f"Error creating profile for {student}: {e}")
+
+    messages.success(
+        request,
+        f"✅ {created_count} student profiles created successfully. "
+        f"⏭️ {skipped_count} skipped (missing reg no or error)."
+    )
+
+    return redirect('admin_dashboard')
