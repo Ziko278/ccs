@@ -109,7 +109,7 @@
 </div>
 <div id="download-result">
 	<div style="background-color:white;border:2px solid black;">
-		<div class="" style="background-color:#B2BEB5;color:white;font-family:cursive;border:1px solid black;border-bottom:1px solid black;height:135px">
+		<div class="" style="background-color:#2b9356;color:white;font-family:cursive;border:1px solid black;border-bottom:1px solid black;height:135px">
 			<div class="row">
 				<div class="col-2">
 					 <img {% if student.image %} src="{{ student.image.url }}" {% else %} src="{% static 'admin_dashboard/images/default_image.jpg' %}" {% endif %} style="width:100%;height:133px;border-radius:0px;" />
@@ -127,7 +127,7 @@
 			</div>
 		</div>
 
-		<div style="background-color:#B2BEB5;color:white;height:22px;border-bottom:2px solid black;border-top:0px solid black;">
+		<div style="background-color:#2b9356;color:white;height:22px;border-bottom:2px solid black;border-top:0px solid black;">
 			<p class="text-center" style="font-weight:bold">Student Report Card For {% if result_type == 'midterm' %} Mid {% endif %} {{ result.term|title }} {{ result.session|title }} Session </p>
 		</div>
 
@@ -135,10 +135,10 @@
 			<div style="padding:0px;padding-bottom:0px" class="">
 				<table class="table table-bordered" style="color:black;font-size:15px">
 					<tr>
-						<th>STUDENT’S NAME: {{ student|title }}</th>
+						<th>STUDENT'S NAME: {{ student|title }}</th>
 						<th>ADM NO.:{{ student.registration_number|upper }}</th>
 						<th>NO. OF TIMES <br>SCHOOL OPENED: {% if behaviour_result.result_remark.total_attendance %} {{ behaviour_result.result_remark.total_attendance }} {% else %}{{ student.attendance.total }} {% endif %}</th>
-						{% if result_list.student_class.result_type != 'text' %}
+						{% if result_list.student_class.result_type != 'text' and result_type != 'midterm' %}
 						<th>CUM. TOTAL: {{ total_score|intcomma }}</th>
 						{% endif %}
 					</tr>
@@ -151,7 +151,7 @@
 						<th>CLASS: {{ result_list.student_class|title }} {{ result_list.class_section|upper }}</th>
 						{% endif %}
 						<th>NO. OF TIMES PRESENT:{% if behaviour_result.result_remark.present_attendance %} {{ behaviour_result.result_remark.present_attendance }} {% else %} {{ student.attendance.present }} {% endif %}</th>
-						{% if result_list.student_class.result_type != 'text' %}
+						{% if result_list.student_class.result_type != 'text' and result_type != 'midterm' %}
 						<th>CUM. AVERAGE: {{ result.student_average }}</th>
 						{% endif %}
 					</tr>
@@ -169,7 +169,7 @@
 
 		<div class="p-1">
 			<table class="table table-bordered">
-				<thead style="background:#B2BEB5">
+				<thead style="background:#2b9356">
 					<tr >
 						<th rowspan="2" style="width:150px">AREAS OF LEARNING</th>
 						<th rowspan="2" style="width:200px">ASPECT</th>
@@ -185,7 +185,7 @@
 				{% for category in result_category_list %}
 					{% if category.text_result_fields.all|length > 0 %}
 						<tr style="border:1px solid black">
-							<th style="background-color:#B2BEB5;color:black;font-weight:bold;font-size:20px">{{ category.name|title }}</th>
+							<th style="background-color:#2b9356;color:white;font-weight:bold;font-size:20px">{{ category.name|title }}</th>
 							<th colspan="3" style="padding:0px" class="">
 								<table style="height:100%;margin:0px;text-align:left" class="table">
 									{% for field in result_field_list %}
@@ -212,15 +212,15 @@
 			<table class="table table-bordered">
 				<tbody>
 				<tr>
-					<td style="width:150px;background-color:#B2BEB5;color:black;font-weight:bold">ACHIEVED</td>
+					<td style="width:150px;background-color:#2b9356;color:white;font-weight:bold">ACHIEVED</td>
 					<td>Pupil can consistently perform task with confidence.</td>
 				</tr>
 				<tr>
-					<td style="width:150px;background-color:#B2BEB5;color:black;font-weight:bold">CONSOLIDATING</td>
+					<td style="width:150px;background-color:#2b9356;color:white;font-weight:bold">CONSOLIDATING</td>
 					<td>Pupil can perform task if given some support.</td>
 				</tr>
 				<tr>
-					<td style="width:150px;background-color:#B2BEB5;color:black;font-weight:bold">DEVELOPING</td>
+					<td style="width:150px;background-color:#2b9356;color:white;font-weight:bold">DEVELOPING</td>
 					<td>Pupil is beginning to perform task.</td>
 				</tr>
 				</tbody>
@@ -232,71 +232,133 @@
 
 	<div class="row" style="padding-right:8px">
   <!-- Subjects & Scores (8 columns) -->
-  <div class="col-md-8 " style="padding-right:0px">
+  <div {% if result_type == 'midterm' %} class="col-md-12" {% else %} class="col-md-8" {% endif %} style="padding-right:0px">
 
 		{% if result.student_class.result_type == 'score' or result.student_class.result_type == 'mix' or result_list.student_class.result_type == 'score' or result_list.student_class.result_type == 'mix' %}
-<table style="width:100%; border-collapse: collapse; font-size: 14px;">
-    <thead>
-    <tr class="header-row" style="background-color:#B2BEB5;color:white;">
-        <th rowspan="2" class="rotated-header-cell subject-header">
-            <div class="rotated-text">SUBJECTS</div>
-        </th>
-        {% for field in field_list %}
-            <th class="rotated-header-cell">
-                <div class="rotated-text">{{ field|title|upper }} ({{ field.max_mark|floatformat }})</div>
-            </th>
-        {% endfor %}
-        <th class="rotated-header-cell">
-            <div class="rotated-text">TOTAL (100)</div>
-        </th>
-        <th class="rotated-header-cell">
-            <div class="rotated-text">SUBJECT POSITION</div>
-        </th>
-        <th class="rotated-header-cell">
-            <div class="rotated-text">SUBJECT AVERAGE</div>
-        </th>
-        <th class="rotated-header-cell">
-            <div class="rotated-text">GRADE</div>
-        </th>
-    </tr>
-    <!-- This row is required to make the rowspan="2" on 'SUBJECTS' valid.
-         It should contain empty <th> elements with a colspan to match the number of columns
-         in the first row, excluding the rowspan column. -->
 
-</thead>
+		{% if result_type == 'midterm' %}
+		<!-- MIDTERM RESULT TABLE -->
+		<table style="width:100%; border-collapse: collapse; font-size: 14px;">
+			<thead>
+			<tr class="header-row" style="background-color:#2b9356;color:white;">
+				<th rowspan="2" class="rotated-header-cell subject-header">
+					<div class="rotated-text">SUBJECTS</div>
+				</th>
+				{% for field in field_list %}
+					{% if field.mid_term %}
+					<th class="rotated-header-cell">
+						<div class="rotated-text">{{ field|title|upper }} ({{ field.max_mark|floatformat }})</div>
+					</th>
+					{% endif %}
+				{% endfor %}
+				<th class="rotated-header-cell">
+					<div class="rotated-text">TOTAL ({{midterm_max|floatformat}})</div>
+				</th>
+				<th class="rotated-header-cell">
+					<div class="rotated-text">SUBJECT POSITION</div>
+				</th>
+				<th class="rotated-header-cell">
+					<div class="rotated-text">SUBJECT AVERAGE</div>
+				</th>
+				<th class="rotated-header-cell">
+					<div class="rotated-text">GRADE</div>
+				</th>
+			</tr>
+		</thead>
 
-    <tbody>
-        {% for subject in subject_list.all %}
-            <tr>
-                <td style="text-align:left; padding-left:10px;"><b>{{ subject|title }}</b></td>
-                {% for field in field_list %}
-                    <td style="text-align: center;">
-                        {% for key, value in result.result.items %}
-                            {% if subject.id|stringformat:"i" == key %}
-                                {% for inner_key, score in value.items %}
-                                    {% if inner_key|lower == field|lower %}
-                                        {{ score|default:"-" }}
-                                    {% endif %}
-                                {% endfor %}
-                            {% endif %}
-                        {% endfor %}
-                    </td>
-                {% endfor %}
-                {% for key, value in result.result.items %}
-                    {% if subject.id|stringformat:"i" == key %}
-                        <td>{{ value.total|default:"-" }}</td>
-                        <td>{{ value.position|default:"-" }}</td>
-                        <td>{{ value.average_score|floatformat|default:"-" }}</td>
-                        <td>{{ value.grade|upper|default:"-" }}</td>
-                    {% endif %}
-                {% endfor %}
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endif %}
+			<tbody>
+				{% for subject in subject_list.all %}
+					<tr>
+						<td style="text-align:left; padding-left:10px;"><b>{{ subject|title }}</b></td>
+						{% for field in field_list %}
+							{% if field.mid_term %}
+							<td style="text-align: center;">
+								{% for key, value in result.result.items %}
+									{% if subject.id|stringformat:"i" == key %}
+										{% for inner_key, score in value.items %}
+											{% if inner_key|lower == field|lower %}
+												{{ score|default:"" }}
+											{% endif %}
+										{% endfor %}
+									{% endif %}
+								{% endfor %}
+							</td>
+							{% endif %}
+						{% endfor %}
+						{% for key, value in result.result.items %}
+							{% if subject.id|stringformat:"i" == key %}
+								<td>{% if value.midterm_total %}{{ value.midterm_total|floatformat }}{% endif %}</td>
+								<td>{% if value.midterm_position %}{{ value.midterm_position }}{% endif %}</td>
+								<td>{% if value.midterm_average_score %}{{ value.midterm_average_score|floatformat }}{% endif %}</td>
+								<td>{% if value.midterm_grade %}{{ value.midterm_grade|upper }}{% endif %}</td>
+							{% endif %}
+						{% endfor %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		{% else %}
+		<!-- REGULAR RESULT TABLE -->
+		<table style="width:100%; border-collapse: collapse; font-size: 14px;">
+			<thead>
+			<tr class="header-row" style="background-color:#2b9356;color:white;">
+				<th rowspan="2" class="rotated-header-cell subject-header">
+					<div class="rotated-text">SUBJECTS</div>
+				</th>
+				{% for field in field_list %}
+					<th class="rotated-header-cell">
+						<div class="rotated-text">{{ field|title|upper }} ({{ field.max_mark|floatformat }})</div>
+					</th>
+				{% endfor %}
+				<th class="rotated-header-cell">
+					<div class="rotated-text">TOTAL (100)</div>
+				</th>
+				<th class="rotated-header-cell">
+					<div class="rotated-text">SUBJECT POSITION</div>
+				</th>
+				<th class="rotated-header-cell">
+					<div class="rotated-text">SUBJECT AVERAGE</div>
+				</th>
+				<th class="rotated-header-cell">
+					<div class="rotated-text">GRADE</div>
+				</th>
+			</tr>
+		</thead>
+
+			<tbody>
+				{% for subject in subject_list.all %}
+					<tr>
+						<td style="text-align:left; padding-left:10px;"><b>{{ subject|title }}</b></td>
+						{% for field in field_list %}
+							<td style="text-align: center;">
+								{% for key, value in result.result.items %}
+									{% if subject.id|stringformat:"i" == key %}
+										{% for inner_key, score in value.items %}
+											{% if inner_key|lower == field|lower %}
+												{{ score|default:"" }}
+											{% endif %}
+										{% endfor %}
+									{% endif %}
+								{% endfor %}
+							</td>
+						{% endfor %}
+						{% for key, value in result.result.items %}
+							{% if subject.id|stringformat:"i" == key %}
+								<td>{{ value.total|default:"" }}</td>
+								<td>{{ value.position|default:"" }}</td>
+								<td>{% if value.average_score %}{{ value.average_score|floatformat }}{% endif %}</td>
+								<td>{% if value.grade %}{{ value.grade|upper }}{% endif %}</td>
+							{% endif %}
+						{% endfor %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		{% endif %}
+		{% endif %}
   </div>
 
+		{% if result_type != 'midterm' %}
 		<div class="col-md-4" style="padding:0px">
 			{% if behaviour_category_list %}
 
@@ -305,7 +367,7 @@
 			<div class="col-12">
 				<table class="" style="width:100%">
 					<thead>
-					<tr style="background-color:#B2BEB5;color:white;height:20px"><th style="text-align:left;padding-left:5px">{{category.name|upper}}</th>
+					<tr style="background-color:#2b9356;color:white;height:20px"><th style="text-align:left;padding-left:5px">{{category.name|upper}}</th>
 						<th style="width:30px">5</th>
 						<th style="width:30px">4</th>
 						<th style="width:30px">3</th>
@@ -332,7 +394,7 @@
 			<div class="col-12">
 				<table class="" style="width:100%">
 					<thead>
-					<tr style="background-color:#B2BEB5;color:white;height:20px">
+					<tr style="background-color:#2b9356;color:white;height:20px">
 						<th style="text-align:left;padding-left:5px">RATING INDEX</th>
 
 					</tr>
@@ -363,6 +425,7 @@
 
 
 		</div>
+		{% endif %}
 	</div>
 
 		<div class="row">
@@ -377,18 +440,16 @@
 
 		<div style="color:black;border-bottom:2px solid black;border-top:0px solid black;padding:1px;font-family:lato, courier, cursive">
 			<div style="border:1px solid black;border-radius:3px;padding-left:5px;padding-bottom:0px" >
-				<p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Next Term's Target: {{ behaviour_result.result_remark.area_of_focus }}</b></p>
-
 				{% if result %}
 				<p style="min-height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Name: {{ result.form_teacher|title }}</b></p>
-				<p style="background-color:#B2BEB5;color:white;min-height:16px;padding:0px;margin:0px;padding-left:3px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Comment:</b> {{ result.form_teacher_comment }}</p>
+				<p style="background-color:#2b9356;color:white;min-height:16px;padding:0px;margin:0px;padding-left:3px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Comment:</b> {{ result.form_teacher_comment }}</p>
 				<p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>{% if result.head_teacher_title != '' %} {{result.head_teacher_title|title}} {% else %} Principal {% endif %}: {{ result.head_teacher|title }}</b></p>
-				<p style="background-color:#B2BEB5;color:white;height:16px;padding:0px;padding-left:3px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Comment:</b> {{ result.head_teacher_comment }}</p>
+				<p style="background-color:#2b9356;color:white;height:16px;padding:0px;padding-left:3px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Comment:</b> {{ result.head_teacher_comment }}</p>
 				{% else %}
 				<p style="min-height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Name: {{ result_list.form_teacher|title }}</b></p>
-				<p style="background-color:#B2BEB5;color:white;min-height:16px;padding:0px;margin:0px;padding-left:3px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Comment:</b> {{ result_list.form_teacher_comment }}</p>
+				<p style="background-color:#2b9356;color:white;min-height:16px;padding:0px;margin:0px;padding-left:3px;font-size:12px;border-bottom:1px solid black"><b>Teacher's Comment:</b> {{ result_list.form_teacher_comment }}</p>
 				<p style="height:16px;padding:0px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>{% if result.head_teacher_title != '' %} {{result.head_teacher_title|title}} {% else %} Principal {% endif %}: {{ result.head_teacher|title }}</b></p>
-				<p style="background-color:#B2BEB5;color:white;height:16px;padding:0px;padding-left:3px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Comment:</b> {{ result_list.head_teacher_comment }}</p>
+				<p style="background-color:#2b9356;color:white;height:16px;padding:0px;padding-left:3px;margin:0px;font-size:12px;border-bottom:1px solid black"><b>Comment:</b> {{ result_list.head_teacher_comment }}</p>
 				{% endif %}
 			</div>
 		</div>
