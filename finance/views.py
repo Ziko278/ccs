@@ -2765,8 +2765,8 @@ def my_salary_profile_view(request):
     Includes salary structure, bank details, and a filterable payslip history.
     """
     try:
-        user_account = request.user.account
-        staff = StaffModel.objects.get(account=user_account)
+        user_account = request.user.profile
+        staff = user_account.staff
     except ObjectDoesNotExist:  # Catches both DoesNotExist exceptions
         messages.error(request, "You do not have a staff profile and cannot access this page.")
         return render(request, 'finance/account/no_profile.html')
