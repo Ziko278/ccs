@@ -300,86 +300,176 @@
                             </div>
 
                             <div class="accordion-item">
+                                <h2 class="accordion-header" id="flush-academic-permission">
+                                    <button class="accordion-button collapsed card-title" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse2" aria-expanded="false" aria-controls="flush-collapseOne">
+                                        Inventory Management Permissions
+                                    </button>
+                                </h2>
+                                <div id="flush-collapse2" class="accordion-collapse collapse" aria-labelledby="academic-permission" data-bs-parent="#accordionFlushExample">
+                                    <div class="accordion-body">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Products, Product Categories, Product Suppliers</h5>
+                                                <ul class="list-group">
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Can add and update Products, Categories and Suppliers
+                                                        <span class="badge">
+                                                            <input type="checkbox" name="permissions[]" value="add_itemmodel"
+                                                            {% if "add_itemmodel" in permission_codenames %} checked {% endif %}>
+                                                        </span>
+                                                    </li>
+
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Can View Products, Categories and Suppliers
+                                                        <span class="badge">
+                                                            <input type="checkbox" name="permissions[]" value="view_itemmodel"
+                                                            {% if "view_itemmodel" in permission_codenames %} checked {% endif %}>
+                                                        </span>
+                                                    </li>
+
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Can Delete Products, Categories and Suppliers
+                                                        <span class="badge">
+                                                            <input type="checkbox" name="permissions[]" value="delete_itemmodel"
+                                                            {% if "delete_itemmodel" in permission_codenames %} checked {% endif %}>
+                                                        </span>
+                                                    </li>
+
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Can Stock in and stock out Products
+                                                        <span class="badge">
+                                                            <input type="checkbox" name="permissions[]" value="add_stockinmodel"
+                                                            {% if "add_stockinmodel" in permission_codenames %} checked {% endif %}>
+                                                        </span>
+                                                    </li>
+
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Can View Stock in and stock out
+                                                        <span class="badge">
+                                                            <input type="checkbox" name="permissions[]" value="view_stockinmodel"
+                                                            {% if "view_stockinmodel" in permission_codenames %} checked {% endif %}>
+                                                        </span>
+                                                    </li>
+
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Can Handle inventory Management (Purchase order, purchase advance, student collections)
+                                                        <span class="badge">
+                                                            <input type="checkbox" name="permissions[]" value="add_inventorycollectionmodel"
+                                                            {% if "add_inventorycollectionmodel" in permission_codenames %} checked {% endif %}>
+                                                        </span>
+                                                    </li>
+
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Can View inventory collection
+                                                        <span class="badge">
+                                                            <input type="checkbox" name="permissions[]" value="view_inventorycollectionmodel"
+                                                            {% if "view_inventorycollectionmodel" in permission_codenames %} checked {% endif %}>
+                                                        </span>
+                                                    </li>
+
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
                                 <h2 class="accordion-header" id="flush-finance-permission">
                                     <button class="accordion-button collapsed card-title" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse3" aria-expanded="false" aria-controls="flush-collapseOne">
-                                        Fee Permissions
+                                        Finance Permissions
                                     </button>
                                 </h2>
                                 <div id="flush-collapse3" class="accordion-collapse collapse" aria-labelledby="finance-permission" data-bs-parent="#accordionFlushExample">
                                     <div class="accordion-body">
                                         <div class="card">
                                             <div class="card-body">
-                                                <h5 class="card-title">Fee Permissions</h5>
+                                                <h5 class="card-title">Student Wallet Permissions</h5>
                                                 <ul class="list-group">
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                        Collect Fees
+                                                        Fund Student Wallet
                                                         <span class="badge">
-                                                            <input type="checkbox" name="permissions[]" value="add_feepaymentmodel"
-                                                            {% if "add_feepaymentmodel" in permission_codenames %} checked {% endif %}>
+                                                            <input type="checkbox" name="permissions[]" value="add_studentfundingmodel"
+                                                            {% if "add_studentfundingmodel" in permission_codenames %} checked {% endif %}>
                                                         </span>
                                                     </li>
 
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                        View Collected Fees
+                                                        View Student Funding
                                                         <span class="badge">
-                                                            <input type="checkbox" name="permissions[]" value="view_feepaymentmodel"
-                                                            {% if "view_feepaymentmodel" in permission_codenames %} checked {% endif %}>
+                                                            <input type="checkbox" name="permissions[]" value="view_studentfundingmodel"
+                                                            {% if "view_studentfundingmodel" in permission_codenames %} checked {% endif %}>
                                                         </span>
                                                     </li>
 
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                        Revert Collected Fees
+                                                        Confirm Student Funding by Parent
                                                         <span class="badge">
-                                                            <input type="checkbox" name="permissions[]" value="delete_feepaymentmodel"
-                                                            {% if "delete_feepaymentmodel" in permission_codenames %} checked {% endif %}>
+                                                            <input type="checkbox" name="permissions[]" value="change_studentfundingmodel"
+                                                            {% if "change_studentfundingmodel" in permission_codenames %} checked {% endif %}>
+                                                        </span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Finance Permissions</h5>
+                                                <ul class="list-group">
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Can Record Transactions
+                                                        <span class="badge">
+                                                            <input type="checkbox" name="permissions[]" value="add_expensemodel"
+                                                            {% if "add_expensemodel" in permission_codenames %} checked {% endif %}>
                                                         </span>
                                                     </li>
 
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                        Create and Update Fees
+                                                        Can View Transactions
                                                         <span class="badge">
-                                                            <input type="checkbox" name="permissions[]" value="add_feemodel"
-                                                            {% if "add_feemodel" in permission_codenames %} checked {% endif %}>
+                                                            <input type="checkbox" name="permissions[]" value="view_expensemodel"
+                                                            {% if "view_expensemodel" in permission_codenames %} checked {% endif %}>
                                                         </span>
                                                     </li>
 
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                        Create and Update Fee Groups
+                                                        Can View Finance Setting
                                                         <span class="badge">
-                                                            <input type="checkbox" name="permissions[]" value="add_feegroupmodel"
-                                                            {% if "add_feegroupmodel" in permission_codenames %} checked {% endif %}>
+                                                            <input type="checkbox" name="permissions[]" value="view_financesettingmodel"
+                                                            {% if "view_financesettingmodel" in permission_codenames %} checked {% endif %}>
                                                         </span>
                                                     </li>
 
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                        Assign Fees to classes
+                                                        Can Update Finance Setting
                                                         <span class="badge">
-                                                            <input type="checkbox" name="permissions[]" value="add_feemastermodel"
-                                                            {% if "add_feemastermodel" in permission_codenames %} checked {% endif %}>
+                                                            <input type="checkbox" name="permissions[]" value="change_financesettingmodel"
+                                                            {% if "change_financesettingmodel" in permission_codenames %} checked {% endif %}>
+                                                        </span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Salary Permissions</h5>
+                                                <ul class="list-group">
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Can Process Salary and Salary Setup
+                                                        <span class="badge">
+                                                            <input type="checkbox" name="permissions[]" value="add_salaryrecord"
+                                                            {% if "add_salaryrecord" in permission_codenames %} checked {% endif %}>
                                                         </span>
                                                     </li>
 
                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                        Create and Update Fee Discounts
+                                                        Can View Salary and Salary Setup
                                                         <span class="badge">
-                                                            <input type="checkbox" name="permissions[]" value="add_feediscountmodel"
-                                                            {% if "add_feediscountmodel" in permission_codenames %} checked {% endif %}>
-                                                        </span>
-                                                    </li>
-
-                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                        Create and Update Fee Penalty
-                                                        <span class="badge">
-                                                            <input type="checkbox" name="permissions[]" value="add_feepenaltymodel"
-                                                            {% if "add_feepenaltymodel" in permission_codenames %} checked {% endif %}>
-                                                        </span>
-                                                    </li>
-
-                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                        Create and Update Online Fee Payment Method
-                                                        <span class="badge">
-                                                            <input type="checkbox" name="permissions[]" value="add_onlinepaymentmodel"
-                                                            {% if "add_onlinepaymentmodel" in permission_codenames %} checked {% endif %}>
+                                                            <input type="checkbox" name="permissions[]" value="view_salaryrecord"
+                                                            {% if "view_salaryrecord" in permission_codenames %} checked {% endif %}>
                                                         </span>
                                                     </li>
 
@@ -391,6 +481,58 @@
                                 </div>
                             </div>
 
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="flush-finance2-permission">
+                                    <button class="accordion-button collapsed card-title" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse32" aria-expanded="false" aria-controls="flush-collapseOne">
+                                        Fee Collection Permissions
+                                    </button>
+                                </h2>
+                                <div id="flush-collapse32" class="accordion-collapse collapse" aria-labelledby="finance-permission" data-bs-parent="#accordionFlushExample">
+                                    <div class="accordion-body">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Student Fee Permissions</h5>
+                                                <ul class="list-group">
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Can Handle Fee Setup (Fees, Fee Group, Fee Structure)
+                                                        <span class="badge">
+                                                            <input type="checkbox" name="permissions[]" value="add_feemodel"
+                                                            {% if "add_feemodel" in permission_codenames %} checked {% endif %}>
+                                                        </span>
+                                                    </li>
+
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Can View Fee Setup (Fees, Fee Group, Fee Structure)
+                                                        <span class="badge">
+                                                            <input type="checkbox" name="permissions[]" value="view_feemodel"
+                                                            {% if "view_feemodel" in permission_codenames %} checked {% endif %}>
+                                                        </span>
+                                                    </li>
+
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Can Process Fee Collections
+                                                        <span class="badge">
+                                                            <input type="checkbox" name="permissions[]" value="add_feepaymentmodel"
+                                                            {% if "add_feepaymentmodel" in permission_codenames %} checked {% endif %}>
+                                                        </span>
+                                                    </li>
+
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Can View Fee Collections
+                                                        <span class="badge">
+                                                            <input type="checkbox" name="permissions[]" value="add_feepaymentmodel"
+                                                            {% if "add_feepaymentmodel" in permission_codenames %} checked {% endif %}>
+                                                        </span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="flush-result-permission">
                                     <button class="accordion-button collapsed card-title" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse4" aria-expanded="false" aria-controls="flush-collapseOne">

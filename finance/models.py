@@ -93,7 +93,7 @@ class FeeModel(models.Model):
     """Defines a single type of fee (e.g., Tuition, PTA Levy, Bus Fee)."""
 
     class FeeOccurrence(models.TextChoices):
-        TERMLY = 'quaterly', 'Quaterly'
+        TERMLY = 'termly', 'Termly'
         ANNUALLY = 'annually', 'Annually'
         ONE_TIME = 'one_time', 'One Time'
 
