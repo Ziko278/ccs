@@ -51,7 +51,6 @@ urlpatterns = [
     path('class_list', result_class_list_view, name='result_class_list'),
     path('student/<int:pk>', result_student_detail_view, name='result_student_detail'),
     path('affective_domain/<int:pk>', result_affective_domain_view, name='result_affective_domain'),
-    path('student/<int:pk>/sheet', result_student_sheet_view, name='result_student_sheet'),
 
     path('student/<int:pk>/result-archive/sheet', result_archive_student_sheet_view, name='result_archive_sheet'),
     path('student/<int:pk>/sheet', result_student_sheet_view, name='result_student_sheet'),
