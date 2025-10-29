@@ -1713,7 +1713,7 @@ def result_student_sheet_view(request, pk):
         'result': result, 'total_score': total_score, 'number_of_course': number_of_course,
         'average_score': average, 'result_remark': result_remark,
         'general_setting': SchoolGeneralInfoModel.objects.first(), 'subject_list': subject_list,
-        'field_list': field_list, 'grade_list': grade_list,
+        'field_list': field_list, 'grade_list': grade_list, 'mid_grade_list': mid_grade_list,
         'behaviour_category_list': behaviour_category_list, 'behaviour_result': behaviour_result,
         'class_minimum': class_minimum, 'result_type': result_type, 'midterm_max': midterm_max,
     })

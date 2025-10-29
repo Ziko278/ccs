@@ -458,7 +458,7 @@
 		</div>
 
 		<div style="color:grey;border:1px solid black;padding:0px;height:45px">
-			
+
 			{% if result_type != 'midterm' %}
 			<p class="text-center" style="padding:0px;height:20px;font-size:12px;font-family:Arial">
 				Grading: {% for grade in grade_list %} <span>{{ grade.min_mark|floatformat }} - {{ grade.max_mark|floatformat }} = {{ grade.remark|title }} {% if forloop.counter < grade_list|length %} | {% endif %}</span> {% endfor %}
