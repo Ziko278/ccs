@@ -12,7 +12,8 @@ from school_setting.models import SchoolGeneralInfoModel, SchoolAcademicInfoMode
 from student.models import StudentsModel
 from result.models import (ResultModel, ResultBehaviourCategoryModel, ResultBehaviourComputeModel,
                            ResultStatisticModel, ResultRemarkModel, ResultFieldModel, ResultGradeModel,
-                           TextBasedResultModel, TextResultCategoryModel, TextResultModel, ResultSettingModel)
+                           TextBasedResultModel, TextResultCategoryModel, TextResultModel, ResultSettingModel,
+                           MidResultGradeModel)
 from academic.models import AcademicSettingModel, ClassSectionInfoModel, SubjectsModel
 
 
@@ -103,11 +104,13 @@ def current_term_result(request, pk):
     if school_setting.separate_school_section:
         field_list = ResultFieldModel.objects.filter(student_class=student_class, class_section=class_section, type=student.type).order_by('order')
         grade_list = ResultGradeModel.objects.filter(student_class=student_class, class_section=class_section, type=student.type).order_by('order')
+        mid_grade_list = MidResultGradeModel.objects.filter(type=request.user.profile.type).order_by('order')
         behaviour_category_list = ResultBehaviourCategoryModel.objects.filter(type=student.type).order_by('name')
     else:
         field_list = ResultFieldModel.objects.filter(student_class=student_class, class_section=class_section).order_by('order')
         grade_list = ResultGradeModel.objects.filter(student_class=student_class, class_section=class_section).order_by('order')
         behaviour_category_list = ResultBehaviourCategoryModel.objects.all().order_by('name')
+        mid_grade_list = MidResultGradeModel.objects.all().order_by('order')
 
     class_detail = ClassSectionInfoModel.objects.filter(student_class=student_class, section=class_section).first()
     subject_list = student.subject_group.subjects.all() if student.subject_group else (class_detail.subjects.all() if class_detail else [])
@@ -146,6 +149,7 @@ def current_term_result(request, pk):
         'subject_list': subject_list,
         'field_list': field_list,
         'grade_list': grade_list,
+        'mid_grade_list': mid_grade_list,
         'behaviour_category_list': behaviour_category_list,
         'behaviour_result': behaviour_result,
         'class_minimum': class_minimum,
