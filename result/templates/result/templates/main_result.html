@@ -142,9 +142,9 @@
 					<tr>
 						<th>STUDENT'S NAME: {{ student|title }}</th>
 						{% if result %}
-						<th>CLASS: {{ result.student_class|title }} {{ result.class_section|upper }}</th>
+						<th>CLASS: {{ result.student_class|upper }} {{ result.class_section|upper }}</th>
 						{% else %}
-						<th>CLASS: {{ result_list.student_class|title }} {{ result_list.class_section|upper }}</th>
+						<th>CLASS: {{ result_list.student_class|upper }} {{ result_list.class_section|upper }}</th>
 						{% endif %}
 						<th>SEX: {{student.gender|title}}</th>
 
@@ -176,9 +176,9 @@
 					<tr>
 						<th>DATE OF BIRTH: {% if student.date_of_birth %} {{ student.date_of_birth }} {% endif %}</th>
 						{% if result %}
-						<th>CLASS: {{ result.student_class|title }} {{ result.class_section|upper }}</th>
+						<th>CLASS: {{ result.student_class|upper }} {{ result.class_section|upper }}</th>
 						{% else %}
-						<th>CLASS: {{ result_list.student_class|title }} {{ result_list.class_section|upper }}</th>
+						<th>CLASS: {{ result_list.student_class|upper }} {{ result_list.class_section|upper }}</th>
 						{% endif %}
 						<th>NO. OF TIMES PRESENT:{% if behaviour_result.result_remark.present_attendance %} {{ behaviour_result.result_remark.present_attendance }} {% else %} {{ student.attendance.present }} {% endif %}</th>
 						{% if result_list.student_class.result_type != 'text' and result_type != 'midterm' %}
@@ -458,10 +458,7 @@
 		</div>
 
 		<div style="color:grey;border:1px solid black;padding:0px;height:45px">
-			<p class="text-center" style="font-weight:bold;font-size:14px">
-				Rating: 5 - Excellent Trait, 4 Good Trait, 3 Fair Trait, 1 - No Trait
-			</p>
-			<hr style="margin-top:-10px;margin-bottom:0px" />
+			
 			{% if result_type != 'midterm' %}
 			<p class="text-center" style="padding:0px;height:20px;font-size:12px;font-family:Arial">
 				Grading: {% for grade in grade_list %} <span>{{ grade.min_mark|floatformat }} - {{ grade.max_mark|floatformat }} = {{ grade.remark|title }} {% if forloop.counter < grade_list|length %} | {% endif %}</span> {% endfor %}
@@ -475,8 +472,6 @@
 
 			{% endif %}
 		</div>
-
-
 
 		<div style="color:black;border-bottom:2px solid black;border-top:0px solid black;padding:1px;font-family:lato, courier, cursive">
 			<div style="border:1px solid black;border-radius:3px;padding-left:0px;padding-bottom:0px" >

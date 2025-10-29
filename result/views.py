@@ -1679,6 +1679,7 @@ def result_student_sheet_view(request, pk):
         grade_list = ResultGradeModel.objects.filter(student_class=student_class,
                                                      class_section=class_section,
                                                      type=request.user.profile.type).order_by('order')
+        mid_grade_list = MidResultGradeModel.objects.filter(type=request.user.profile.type).order_by('order')
         behaviour_category_list = ResultBehaviourCategoryModel.objects.filter(type=request.user.profile.type).order_by(
             'name')
     else:
@@ -1687,7 +1688,7 @@ def result_student_sheet_view(request, pk):
         grade_list = ResultGradeModel.objects.filter(student_class=student_class,
                                                      class_section=class_section).order_by('order')
         behaviour_category_list = ResultBehaviourCategoryModel.objects.all().order_by('name')
-
+        mid_grade_list = MidResultGradeModel.objects.all().order_by('order')
     subject_list = student.subject_group.subjects.all() if student.subject_group else []
 
     midterm_max = sum(field.max_mark for field in field_list if field.mid_term)
