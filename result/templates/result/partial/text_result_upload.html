@@ -16,9 +16,10 @@
                 <td class="pt-3">
                     <select name="{{field.name }}" class="form-control">
                         <option value="">----------------</option>
-                        <option {% for key, value in result_list.result.items %} {% if key|lower == field|lower and value.rating|lower == 'achieved' %} selected {% endif %} {% endfor %}>ACHIEVED</option>
-                        <option {% for key, value in result_list.result.items %} {% if key|lower == field|lower and value.rating|lower == 'consolidating' %} selected {% endif %} {% endfor %}>CONSOLIDATING</option>
-                        <option {% for key, value in result_list.result.items %} {% if key|lower == field|lower and value.rating|lower == 'developing' %} selected {% endif %} {% endfor %}>DEVELOPING</option>
+                        <option {% for key, value in result_list.result.items %} {% if key|lower == field|lower and value.rating|lower == 'excellent' %} selected {% endif %} {% endfor %}>EXCELLENT</option>
+                        <option {% for key, value in result_list.result.items %} {% if key|lower == field|lower and value.rating|lower == 'very good' %} selected {% endif %} {% endfor %}>VERY GOOD</option>
+                        <option {% for key, value in result_list.result.items %} {% if key|lower == field|lower and value.rating|lower == 'good' %} selected {% endif %} {% endfor %}>GOOD</option>
+                        <option {% for key, value in result_list.result.items %} {% if key|lower == field|lower and value.rating|lower == 'needs improvement' %} selected {% endif %} {% endfor %}>NEEDS IMPROVEMENT</option>
                     </select>
                 </td>
 
