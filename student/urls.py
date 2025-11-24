@@ -5,6 +5,11 @@ from student.views import *
 
 
 urlpatterns = [
+    path('utilities/', UtilityListView.as_view(), name='student_utility_list'),
+    path('utilities/create/', UtilityCreateView.as_view(), name='student_utility_create'),
+    path('utilities/<int:pk>/update/', UtilityUpdateView.as_view(), name='student_utility_update'),
+    path('utilities/<int:pk>/delete/', UtilityDeleteView.as_view(), name='student_utility_delete'),
+
     path('student/<int:parent_pk>/register', StudentCreateView.as_view(), name='student_create'),
     path('student/index', StudentListView.as_view(), name='student_index'),
     path('student/class/index', class_student_list_view, name='student_class_index'),

@@ -1,4 +1,4 @@
-{% extends 'admin_dashboard/layout.html' %}
+{% extends 'admin_site/layout.html' %}
 {% load humanize %}
 
 {% block 'main' %}
@@ -30,9 +30,9 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label for="term-filter" class="form-label">Term</label>
+                <label for="term-filter" class="form-label">Quaters</label>
                 <select name="term" id="term-filter" class="form-select">
-                    <option value="">All Terms</option>
+                    <option value="">All Quaters</option>
                     {% for term in term_list %}
                         <option value="{{ term.pk }}" {% if current_term_id == term.pk|stringformat:"s" %}selected{% endif %}>
                             {{ term.name|title }}
@@ -42,7 +42,7 @@
             </div>
             <div class="col-md-4">
                 <label for="search-input" class="form-label">Search</label>
-                <input type="text" name="search" id="search-input" class="form-control" 
+                <input type="text" name="search" id="search-input" class="form-control"
                        placeholder="Student Name, Reg No, Invoice #" value="{{ search_query }}">
             </div>
             <div class="col-md-2 d-flex align-items-end">
@@ -58,9 +58,10 @@
                         <th>Student</th>
                         <th>Reg. Number</th>
                         <th class="text-end">Amount Paid</th>
+                        <th class="text-end">Currency</th>
                         <th>Invoice #</th>
                         <th>Payment Date</th>
-                        <th>Session / Term</th>
+                        <th>Session / Quarter</th>
                         <th>Status</th>
                         <th class="text-center">Action</th>
                     </tr>
@@ -70,7 +71,8 @@
                     <tr>
                         <td><a href="{% url 'finance_student_dashboard' payment.invoice.student.pk %}">{{ payment.invoice.student|title }}</a></td>
                         <td>{{ payment.invoice.student.registration_number }}</td>
-                        <td class="text-end fw-bold">₦{{ payment.amount|floatformat:2|intcomma }}</td>
+                        <td class="text-end fw-bold">{{ payment.amount|floatformat:2|intcomma }}</td>
+                        <td class="text-end fw-bold">{{ payment.currency}}</td>
                         <td><a href="{% url 'finance_invoice_detail' payment.invoice.pk %}">{{ payment.invoice.invoice_number }}</a></td>
                         <td>{{ payment.date|date:"d M, Y" }}</td>
                         <td>{{ payment.invoice.session }} / {{ payment.invoice.term.name|title }}</td>

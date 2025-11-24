@@ -11,6 +11,28 @@ from django.apps import apps
 from admin_dashboard.storage_backends import MediaStorage
 
 
+class UtilityModel(models.Model):
+    """
+    Represents a school utility/service that students can subscribe to.
+    Examples: Boarding, Transport, After-School Care, etc.
+    """
+    name = models.CharField(max_length=100, unique=True,
+                            help_text="Name of the utility (e.g., Boarding, Transport)")
+    code = models.CharField(max_length=50, unique=True,
+                            help_text="Unique code for this utility (e.g., BRD, TRN)")
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = "Utility"
+        verbose_name_plural = "Utilities"
+
+    def __str__(self):
+        return self.name.upper()
+
+
 class ParentsModel(models.Model):
     """   """
     TITLE = (
@@ -139,6 +161,12 @@ class StudentsModel(models.Model):
     gender = models.CharField(max_length=10, choices=GENDER)
     state = models.CharField(max_length=100, null=True, blank=True)
     lga = models.CharField(max_length=100, null=True, blank=True)
+    utilities = models.ManyToManyField(
+        UtilityModel,
+        related_name='students',
+        blank=True,
+        help_text="Services the student is subscribed to (e.g., Transport, Boarding)"
+    )
     RELIGION = (
         ('christianity', 'CHRISTIANITY'), ('islam', 'ISLAM'), ('others', 'OTHERS')
     )

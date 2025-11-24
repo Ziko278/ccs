@@ -4,6 +4,7 @@ import uuid
 from decimal import Decimal
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator, MinValueValidator
 from django.db import models
 from django.apps import apps
@@ -86,6 +87,65 @@ class StudentFundingModel(models.Model):
         super().save(*args, **kwargs)
 
 
+class StaffFundingModel(models.Model):
+    # ✔️ REFACTOR: Enforced data integrity using TextChoices.
+    class PaymentMethod(models.TextChoices):
+        CASH = 'cash', 'Cash'
+        POS = 'pos', 'POS'
+        BANK_TELLER = 'bank teller', 'Bank Teller'
+        BANK_TRANSFER = 'bank transfer', 'Bank Transfer'
+
+    class PaymentMode(models.TextChoices):
+        OFFLINE = 'offline', 'Offline'
+        ONLINE = 'online', 'Online'
+
+    class PaymentStatus(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        CONFIRMED = 'confirmed', 'Confirmed'
+        FAILED = 'failed', 'Failed'
+
+    staff = models.ForeignKey(StaffModel, on_delete=models.CASCADE, related_name='staff_funding_list')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    proof_of_payment = models.FileField(blank=True, null=True, upload_to='images/funding')
+    method = models.CharField(max_length=100, choices=PaymentMethod.choices, default=PaymentMethod.CASH)
+    mode = models.CharField(max_length=100, choices=PaymentMode.choices, blank=True, default=PaymentMode.OFFLINE)
+    status = models.CharField(max_length=30, choices=PaymentStatus.choices, default=PaymentStatus.CONFIRMED)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(StaffModel, on_delete=models.SET_NULL, null=True, blank=True,
+                                   help_text="Staff member who recorded this funding transaction.")
+    # ✔️ REFACTOR: Linked to SessionModel and the new TermModel for consistency.
+    session = models.ForeignKey(SessionModel, on_delete=models.SET_NULL, null=True, blank=True)
+    term = models.ForeignKey(TermModel, on_delete=models.SET_NULL, null=True, blank=True)
+    teller_number = models.CharField(max_length=50, null=True, blank=True)
+    decline_reason = models.CharField(max_length=250, null=True, blank=True)
+    reference = models.CharField(max_length=250, null=True, blank=True, help_text="Unique reference for this transaction.")
+
+    class Meta:
+        verbose_name = "Student Funding Record"
+        verbose_name_plural = "Student Funding Records"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Funding for {self.staff} - {self.amount}"
+
+    def save(self, *args, **kwargs):
+        # ✔️ ROBUSTNESS: Improved logic to safely auto-populate session and term.
+        if self.session is None or self.term is None:
+            try:
+                setting = SchoolSettingModel.objects.first()
+                if setting:
+                    if self.session is None: self.session = setting.session
+                    if self.term is None: self.term = setting.term
+                else:
+                    logger.warning("No SchoolSettingModel found. Cannot auto-set session/term for funding.")
+            except (OperationalError, Exception) as e:
+                logger.error(f"Error fetching SchoolSettingModel for funding record: {e}", exc_info=True)
+
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+
+
+
 # ===================================================================
 # Fee Structure Setup Models (The "Price List")
 # ===================================================================
@@ -103,6 +163,16 @@ class FeeModel(models.Model):
     occurrence = models.CharField(max_length=50, choices=FeeOccurrence.choices)
     payment_term = models.ForeignKey(TermModel, on_delete=models.SET_NULL, null=True, blank=True,
                                      help_text="For 'One Time' fees, specify which term it must be paid in.")
+    required_utility = models.ForeignKey(
+        'student.UtilityModel',
+        on_delete=models.SET_NULL, null=True, blank=True,
+        help_text="If set, this fee is only applied to students subscribed to this utility (e.g., Bus Fee for Transport Utility)."
+    )
+
+    parent_bound = models.BooleanField(
+        default=False,
+        help_text="Check if this fee should be charged once per Parent/Family, rather than per student."
+    )
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_fees')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -209,19 +279,48 @@ class InvoiceModel(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.invoice_number
-
-    @property
-    def total_amount(self):
-        return self.items.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        return f"{self.invoice_number} {self.student} {self.student.student_class} {self.student.class_section}"
 
     @property
     def amount_paid(self):
-        return self.payments.filter(status='confirmed').aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        """Total amount paid including direct payments and family-bound fees paid by siblings"""
+        # Check if this invoice has actual payment records
+        payment_total = self.payments.filter(status='confirmed').aggregate(total=Sum('amount'))['total'] or Decimal(
+            '0.00')
+
+        if payment_total > 0:
+            # This invoice has actual payments - use payment records to avoid double counting
+            return payment_total
+        else:
+            # No payments, but check if items are marked as paid (e.g., family-bound fees paid by siblings)
+            item_paid_total = self.items.aggregate(total=Sum('amount_paid'))['total'] or Decimal('0.00')
+            return item_paid_total
+
+    @property
+    def total_amount(self):
+        """Total invoice amount before discounts"""
+        return self.items.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+    @property
+    def total_discount(self):
+        """Total discount applied across all invoice items"""
+        total = Decimal('0.00')
+        for item in self.items.all():
+            item_discounts = item.discounts_applied.aggregate(total=Sum('amount_discounted'))['total'] or Decimal(
+                '0.00')
+            total += item_discounts
+        return total
+
+    @property
+    def amount_after_discount(self):
+        """Invoice amount after applying discounts"""
+        return self.total_amount - self.total_discount
 
     @property
     def balance(self):
-        return self.total_amount - self.amount_paid
+        """Balance after discounts and payments"""
+        return self.amount_after_discount - self.amount_paid
+
 
 
 class InvoiceItemModel(models.Model):
@@ -233,8 +332,21 @@ class InvoiceItemModel(models.Model):
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     @property
+    def total_discount(self):
+        """Total discount on this item"""
+        return self.discounts_applied.aggregate(
+            total=Sum('amount_discounted')
+        )['total'] or Decimal('0.00')
+
+    @property
+    def amount_after_discount(self):
+        """Amount after applying discount"""
+        return self.amount - self.total_discount
+
+    @property
     def balance(self):
-        return self.amount - self.amount_paid
+        """Update to use discounted amount"""
+        return self.amount_after_discount - self.amount_paid
 
     def __str__(self):
         return self.description
@@ -354,15 +466,27 @@ class IncomeCategoryModel(models.Model):
 
 
 class ExpenseModel(models.Model):
+    # Payment Method Choices (Updated)
     CASH = "cash"
     CARD = "card"
     TRANSFER = "transfer"
+    DOLLAR_PAY = "dollar_pay"
+    OTHERS = "others"
+
     PAYMENT_METHOD_CHOICES = [
         (CASH, "Cash"),
         (CARD, "Card"),
         (TRANSFER, "Bank Transfer"),
+        (DOLLAR_PAY, "Dollar Pay"),
+        (OTHERS, "Others"),
     ]
 
+    # Currency Choices
+    class Currency(models.TextChoices):
+        NAIRA = 'naira', 'Naira (NGN)'
+        DOLLAR = 'dollar', 'Dollar (USD)'
+
+    # Core Fields
     category = models.ForeignKey(
         ExpenseCategoryModel, on_delete=models.PROTECT, related_name="expenses"
     )
@@ -371,10 +495,22 @@ class ExpenseModel(models.Model):
     )
     expense_date = models.DateField(default=timezone.now, db_index=True)
 
+    # Payment Details
     payment_method = models.CharField(
         max_length=50, choices=PAYMENT_METHOD_CHOICES, default=CASH
     )
+    currency = models.CharField(
+        max_length=20, choices=Currency.choices, default=Currency.NAIRA
+    )
+    bank_account = models.ForeignKey(
+        'SchoolBankDetail', on_delete=models.PROTECT, null=True, blank=True,
+        related_name="expenses"
+    )
+
+    # Basic Info
+    name = models.CharField(max_length=100, blank=True, null=True)
     reference = models.CharField(max_length=100, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
     receipt = models.FileField(
         upload_to="finance/expenses/",
         blank=True,
@@ -383,6 +519,34 @@ class ExpenseModel(models.Model):
     )
     notes = models.TextField(blank=True, null=True)
 
+    # Voucher Specific Fields
+    voucher_number = models.CharField(max_length=50, blank=True, db_index=True)
+    vote_and_subhead = models.CharField(max_length=200, blank=True, null=True)
+    line_items = models.JSONField(default=list, blank=True)
+    # Format: [{"date": "2024-01-15", "particular": "Item description", "amount": "5000.00"}, ...]
+
+    # Staff Fields
+    prepared_by = models.ForeignKey(
+        'human_resource.StaffModel', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='prepared_expenses'
+    )
+    authorised_by = models.ForeignKey(
+        'human_resource.StaffModel', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='authorised_expenses'
+    )
+    collected_by = models.ForeignKey(
+        'human_resource.StaffModel', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='collected_expenses'
+    )
+
+    # Cheque Details (Optional - for manual completion)
+    cheque_number = models.CharField(max_length=100, blank=True, null=True)
+    bank_name = models.CharField(max_length=200, blank=True, null=True)
+    cheque_by = models.CharField(max_length=100, blank=True, null=True)
+    cheque_prepared_date = models.DateField(blank=True, null=True)
+    cheque_signed_date = models.DateField(blank=True, null=True)
+
+    # System Fields
     session = models.ForeignKey(
         SessionModel, on_delete=models.SET_NULL, null=True, blank=True, related_name="expenses"
     )
@@ -403,20 +567,72 @@ class ExpenseModel(models.Model):
             models.Index(fields=["category"]),
             models.Index(fields=["session"]),
             models.Index(fields=["term"]),
+            models.Index(fields=["voucher_number"]),
         ]
         verbose_name = _("Expense")
         verbose_name_plural = _("Expenses")
 
     def save(self, *args, **kwargs):
-        # set defaults only if not provided
+        # Set defaults only if not provided
         if not self.session:
             self.session = get_current_session()
         if not self.term:
             self.term = get_current_term()
+
+        # Auto-generate voucher number from reference if blank
+        if not self.voucher_number:
+            if self.reference:
+                self.voucher_number = self.reference
+            else:
+                # Generate unique voucher number
+                self.voucher_number = self.generate_voucher_number()
+
+        # Note: Don't recalculate amount here - it's already set by the form
+        # The form handles line_items calculation before calling save()
+
         super().save(*args, **kwargs)
+
+    def generate_voucher_number(self):
+        """Generate unique voucher number with format EXP-YYYY-NNNN"""
+        from django.db.models import Max
+        import re
+
+        current_year = timezone.now().year
+        prefix = f"EXP-{current_year}-"
+
+        # Get the last voucher number for this year
+        last_expense = ExpenseModel.objects.filter(
+            voucher_number__startswith=prefix
+        ).aggregate(Max('voucher_number'))
+
+        last_voucher = last_expense.get('voucher_number__max')
+
+        if last_voucher:
+            # Extract number from voucher like "EXP-2024-0042"
+            match = re.search(r'-(\d+)$', last_voucher)
+            if match:
+                last_num = int(match.group(1))
+                new_num = last_num + 1
+            else:
+                new_num = 1
+        else:
+            new_num = 1
+
+        return f"{prefix}{str(new_num).zfill(4)}"
+
+    def get_total_in_words(self):
+        """Convert amount to words for voucher"""
+        from num2words import num2words
+        try:
+            amount_str = num2words(float(self.amount), lang='en')
+            currency_name = "Naira" if self.currency == self.Currency.NAIRA else "Dollars"
+            return f"{amount_str.title()} {currency_name} Only"
+        except:
+            return f"{self.amount} Only"
 
     def __str__(self):
         return f"{self.category.__str__()} ({self.amount})"
+
 
 
 class IncomeModel(models.Model):
@@ -862,3 +1078,174 @@ class AdvanceSettlementModel(models.Model):
 
     def __str__(self):
         return f"{self.settlement_type.title()} - {self.advance.staff} - ₦{self.amount}"
+
+
+class DiscountModel(models.Model):
+    """The blueprint for a discount (Identity and Scope)."""
+
+    class DiscountType(models.TextChoices):
+        PERCENTAGE = 'percentage', 'Percentage (%)'
+        FIXED = 'fixed', 'Fixed Amount ($)'
+
+    class DiscountOccurrence(models.TextChoices):
+        TERMLY = 'quaterly', 'Quaterly'
+        ANNUALLY = 'annually', 'Annually'
+        ONE_TIME = 'one_time', 'One Time (Single Term)'
+
+    title = models.CharField(max_length=250, unique=True, help_text="e.g., Staff Discount, Early Bird Discount")
+
+    # The current, intended type. This is used to default the DiscountApplicationModel.
+    discount_type = models.CharField(max_length=20, choices=DiscountType.choices,
+                                     help_text="The intended type for this discount blueprint.")
+
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
+                                 help_text="Default value (amount/percentage) for initial application setup.")
+
+    occurrence = models.CharField(max_length=50, choices=DiscountOccurrence.choices)
+
+    applicable_fees = models.ManyToManyField('FeeModel', help_text="Fees this discount can be applied against.",
+                                             blank=True)
+    applicable_classes = models.ManyToManyField(ClassesModel, help_text="Classes this discount can apply to.",
+                                                blank=True, related_name='applicable_classes')
+
+    # Deletion Protection: If any application record exists, this blueprint cannot be deleted.
+    is_protected = models.BooleanField(default=False, editable=False)
+
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['title']
+        verbose_name = "Discount Blueprint"
+
+    def __str__(self):
+        return self.title.upper()
+
+
+class DiscountApplicationModel(models.Model):
+    """
+    Locks the rate and type for a specific Session and Term.
+    Session and Term are optional, defaulting to the SchoolSettingModel's active term.
+    """
+
+    DiscountType = DiscountModel.DiscountType
+
+    discount = models.ForeignKey('DiscountModel', on_delete=models.PROTECT, related_name='applications')
+
+    # UPDATED: Session and Term are now optional (null=True, blank=True)
+    session = models.ForeignKey(SessionModel, on_delete=models.PROTECT, null=True, blank=True)
+    term = models.ForeignKey(TermModel, on_delete=models.PROTECT, null=True, blank=True)
+
+    discount_type = models.CharField(max_length=20, choices=DiscountType.choices,
+                                     help_text="The type of discount (Percentage or Fixed) locked for this term.")
+
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2,
+                                          help_text="The exact amount or percentage locked for this term.")
+
+    is_protected = models.BooleanField(default=False, editable=False)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # NOTE: The unique_together constraint must be dropped or modified because
+        # allowing nulls means multiple records can have (discount, null, null).
+        # We will enforce the uniqueness of (discount, session, term) with a clean method.
+        # We will keep unique_together for non-null values for database integrity.
+        unique_together = ['discount', 'session', 'term']
+        ordering = ['-session__id', 'term__order']
+        verbose_name = "Discount Application"
+
+    def __str__(self):
+        session_name = self.session.__str__() if self.session else 'Global'
+        term_name = self.term.name if self.term else 'Current'
+        return f"{self.discount.title} ({session_name} - {term_name})"
+
+    # Custom logic to handle defaulting and unique constraint for nulls
+    def clean(self):
+        # Enforce that if one is set, both must be set (cannot have session=X, term=None)
+        if (self.session and not self.term) or (not self.session and self.term):
+            raise ValidationError("Session and Term must either both be set, or both be left blank.")
+
+        # Enforce uniqueness for the 'Global' application (when both are null)
+        if self.session is None and self.term is None:
+            if DiscountApplicationModel.objects.filter(
+                    discount=self.discount, session__isnull=True, term__isnull=True
+            ).exclude(pk=self.pk).exists():
+                raise ValidationError("A Global (Current Session/Term) application already exists for this discount.")
+
+    def save(self, *args, **kwargs):
+        # 1. New Record Logic: Inherit Type and Protect Blueprint
+        if not self.pk:
+            # Inherit the current type from the blueprint on creation
+            self.discount_type = self.discount.discount_type
+
+            # Protect the blueprint
+            if not self.discount.is_protected:
+                self.discount.is_protected = True
+                self.discount.save(update_fields=['is_protected'])
+
+        # 2. Defaulting Logic: Pull active session/term from SchoolSettingModel if not set
+        if self.session is None and self.term is None:
+            try:
+                # Assuming SchoolSettingModel is a singleton (has only one record)
+                settings = SchoolSettingModel.objects.first()
+                if settings.session and settings.term:
+                    self.session = settings.session
+                    self.term = settings.term
+            except SchoolSettingModel.DoesNotExist:
+                # If no settings exist, it saves with nulls, handled by the unique constraint check
+                pass
+            except SchoolSettingModel.MultipleObjectsReturned:
+                # Should not happen if it's a singleton, but good practice to catch
+                pass
+
+        # 3. Existing Record Logic: Lock Type for historical safety
+        # ... (The logic to prevent changing self.discount_type remains the same) ...
+        if self.pk:
+            original = DiscountApplicationModel.objects.get(pk=self.pk)
+            if original.discount_type != self.discount_type:
+                self.discount_type = original.discount_type  # Revert the change
+
+        super().save(*args, **kwargs)
+
+
+class StudentDiscountModel(models.Model):
+    """The transactional record of a discount being applied to a student's invoice."""
+
+    student = models.ForeignKey(StudentsModel, on_delete=models.PROTECT, related_name='discounts_received')
+
+    # Links to the locked rate and type (DiscountApplicationModel)
+    discount_application = models.ForeignKey(DiscountApplicationModel, on_delete=models.PROTECT,
+                                             related_name='student_discounts')
+
+    # Links to the final billing document
+    invoice_item = models.ForeignKey('InvoiceItemModel', on_delete=models.PROTECT, null=True,
+                                     related_name='discounts_applied')
+    # The final calculated monetary amount discounted on this specific invoice.
+    amount_discounted = models.DecimalField(max_digits=10, decimal_places=2)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # A student can only receive a specific discount application once per invoice
+        unique_together = ['student', 'discount_application', 'invoice_item']
+        verbose_name = "Student Discount Record"
+
+    def __str__(self):
+        return f"{self.student.first_name} received ₦{self.amount_discounted} discount on {self.invoice_item.description}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Ensure the application model is protected once a student record exists
+        if not self.discount_application.is_protected:
+            self.discount_application.is_protected = True
+            self.discount_application.save(update_fields=['is_protected'])
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        # If this was the last student record for the application, unprotect it
+        if not self.discount_application.student_discounts.exists():
+            self.discount_application.is_protected = False
+            self.discount_application.save(update_fields=['is_protected'])
+

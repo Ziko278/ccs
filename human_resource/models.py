@@ -227,6 +227,15 @@ class StaffModel(models.Model):
         return subject_list
 
 
+class StaffWalletModel(models.Model):
+    staff = models.OneToOneField(StaffModel, on_delete=models.CASCADE, related_name='staff_wallet')
+    # Use DecimalField for financial accuracy
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def __str__(self):
+        return f"{self.staff}'s Wallet"
+
+
 class StaffIDGeneratorModel(models.Model):
     last_id = models.IntegerField()
     last_staff_id = models.CharField(max_length=100, null=True, blank=True)

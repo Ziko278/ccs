@@ -21,7 +21,12 @@ from finance.views import (
     decline_payment_view, deposit_detail_view, InvoiceReceiptView, FeePaymentListView, finance_dashboard, fee_dashboard,
     SchoolBankDetailListView, SchoolBankDetailUpdateView, SchoolBankDetailCreateView, SchoolBankDetailDeleteView,
     StaffLoanListView, StaffLoanCreateView, StaffLoanDetailView, StaffLoanActionView, StaffLoanDebtorsListView,
-    StaffLoanDebtDetailView, record_staff_loan_repayment, my_salary_profile_view,
+    StaffLoanDebtDetailView, record_staff_loan_repayment, my_salary_profile_view, DiscountListView, DiscountCreateView,
+    DiscountUpdateView, DiscountDeleteView, DiscountApplicationCreateView, DiscountApplicationUpdateView,
+    DiscountApplicationDeleteView, DiscountApplicationListView, DiscountSelectStudentView, StudentDiscountAssignView,
+    StudentDiscountIndexView, DepositPaymentSelectStaffView, staff_deposit_payment_list_view, staff_deposit_detail_view,
+    staff_pending_deposit_payment_list_view, staff_confirm_payment_view, staff_decline_payment_view,
+    staff_deposit_create_view, StaffUploadDepositView, StaffDepositHistoryView, ExpensePrintVoucherView,
 )
 
 urlpatterns = [
@@ -67,6 +72,21 @@ urlpatterns = [
     path('fee-structures/<int:pk>/update/', FeeMasterUpdateView.as_view(), name='finance_fee_master_update'),
     path('fee-structures/<int:pk>/delete/', FeeMasterDeleteView.as_view(), name='finance_fee_master_delete'),
 
+    path('discounts/', DiscountListView.as_view(), name='finance_discount_list'),
+    path('discounts/create/', DiscountCreateView.as_view(), name='finance_discount_create'),
+    path('discounts/<int:pk>/update/', DiscountUpdateView.as_view(), name='finance_discount_update'),
+    path('discounts/<int:pk>/delete/', DiscountDeleteView.as_view(), name='finance_discount_delete'),
+
+    path('discount-rates/create/', DiscountApplicationCreateView.as_view(), name='finance_discount_application_create'),
+    path('discount-rates/<int:application_pk>/update/', DiscountApplicationUpdateView.as_view(), name='finance_discount_application_update'),
+    path('discount-rates/<int:application_pk>/delete/', DiscountApplicationDeleteView.as_view(), name='finance_discount_application_delete'),
+    path('discount-rates/', DiscountApplicationListView.as_view(), name='finance_discount_application_list'),
+
+    path('discounts/select-student/', DiscountSelectStudentView.as_view(), name='finance_discount_select_student'),
+    path('discount/student/<int:student_pk>/assign/', StudentDiscountAssignView.as_view(), name='finance_discount_assign'),
+    path('discounts/index/', StudentDiscountIndexView.as_view(), name='finance_discount_index'),
+
+
     # --- Invoicing & Payment ---
     path('invoices/', InvoiceListView.as_view(), name='finance_invoice_list'),
     path('invoices/generate/', InvoiceGenerationView.as_view(), name='finance_invoice_generate'),
@@ -101,6 +121,8 @@ urlpatterns = [
     path("expenses/create/", ExpenseCreateView.as_view(), name="expense_create"),
     path("expenses/<int:pk>/edit/", ExpenseUpdateView.as_view(), name="expense_update"),
     path("expenses/<int:pk>/", ExpenseDetailView.as_view(), name="expense_detail"),
+    path('expense/<int:pk>/print-voucher/', ExpensePrintVoucherView.as_view(), name='expense_print_voucher'),
+
 
     # Income Category URLs
     path("income-categories/", IncomeCategoryListView.as_view(), name="income_category_index"),
@@ -170,6 +192,20 @@ urlpatterns = [
     path('deposit/<int:student_pk>/create', deposit_create_view, name='deposit_create'),
     path('deposit/<int:payment_id>/confirm/', confirm_payment_view, name='confirm_payment'),
     path('deposit/<int:payment_id>/cancel/', decline_payment_view, name='decline_payment'),
+
+    path('staff-deposit/select-staff', DepositPaymentSelectStaffView.as_view(), name='deposit_select_staff'),
+    path('staff-deposit/payment/index', staff_deposit_payment_list_view, name='staff_deposit_index'),
+    path('staff-deposit/<int:pk>/detail', staff_deposit_detail_view, name='staff_deposit_detail'),
+    path('staff-deposit/<int:staff_pk>/create', staff_deposit_create_view, name='staff_deposit_create'),
+
+    path('staff-deposit/payment/pending/index', staff_pending_deposit_payment_list_view, name='staff_pending_deposit_index'),
+    path('staff-deposit/<int:payment_id>/confirm/', staff_confirm_payment_view, name='staff_confirm_payment'),
+    path('staff-deposit/<int:payment_id>/cancel/', staff_decline_payment_view, name='staff_decline_payment'),
+
+    path('my-funding/upload/', StaffUploadDepositView.as_view(), name='staff_upload_deposit'),
+    # 2. STAFF: Page for staff to see their own deposit history
+    path('my-funding/history/', StaffDepositHistoryView.as_view(), name='staff_deposit_history'),
+
 
     path('fee/dashboard/', fee_dashboard, name='fee_dashboard'),
     path('dashboard/', finance_dashboard, name='finance_dashboard'),

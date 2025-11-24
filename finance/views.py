@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import transaction
 from django.db.models import Q, Sum, Avg, F, DecimalField, Value, Count
 from django.db.models.functions import TruncMonth, Coalesce, Concat
@@ -22,9 +23,10 @@ from django.views import View
 from django.views.generic import TemplateView, CreateView, UpdateView, ListView, DetailView, DeleteView, FormView
 from openpyxl.styles import Font
 # SUGGESTED NEW IMPORTS
-from school_setting.models import SessionModel, TermModel, SchoolSettingModel, SchoolAcademicInfoModel
+from school_setting.models import SessionModel, TermModel, SchoolSettingModel, SchoolAcademicInfoModel, \
+    SchoolGeneralInfoModel
 from academic.models import ClassesModel, ClassSectionModel # Added ClassSectionModel for completeness
-from human_resource.models import StaffModel
+from human_resource.models import StaffModel, StaffWalletModel
 from student.models import StudentsModel, StudentWalletModel
 # Note: StudentWalletModel, StaffProfileModel, and ActivityLogModel are not in your project. See below.
 from user_management.models import UserProfileModel
@@ -33,12 +35,14 @@ from .models import FinanceSettingModel, SupplierPaymentModel, PurchaseAdvancePa
     FeeMasterModel, InvoiceGenerationJob, InvoiceModel, FeePaymentModel, ExpenseCategoryModel, ExpenseModel, \
     IncomeCategoryModel, IncomeModel, TermlyFeeAmountModel, StaffBankDetail, SalaryRecord, SalaryAdvance, \
     SalaryStructure, StudentFundingModel, InvoiceItemModel, AdvanceSettlementModel, \
-    SchoolBankDetail, StaffLoan, StaffLoanRepayment
+    SchoolBankDetail, StaffLoan, StaffLoanRepayment, DiscountApplicationModel, DiscountModel, StudentDiscountModel, \
+    StaffFundingModel
 from .forms import FinanceSettingForm, SupplierPaymentForm, PurchaseAdvancePaymentForm, FeeForm, FeeGroupForm, \
     InvoiceGenerationForm, FeePaymentForm, ExpenseCategoryForm, ExpenseForm, IncomeCategoryForm, \
     IncomeForm, TermlyFeeAmountFormSet, FeeMasterCreateForm, BulkPaymentForm, StaffBankDetailForm, PaysheetRowForm, \
     SalaryAdvanceForm, SalaryStructureForm, StudentFundingForm, SchoolBankDetailForm, \
-    StaffLoanForm, StaffLoanRepaymentForm
+    StaffLoanForm, StaffLoanRepaymentForm, DiscountApplicationForm, StudentDiscountAssignForm, DiscountForm, \
+    StaffFundingForm
 from finance.tasks import generate_invoices_task
 from pytz import timezone as pytz_timezone
 import logging
@@ -1176,9 +1180,10 @@ class ExpenseListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        # only select related fields that exist on your model
+        # Select related fields that exist on your model
         queryset = ExpenseModel.objects.select_related(
-            'category', 'session', 'term', 'created_by'
+            'category', 'session', 'term', 'created_by', 'bank_account',
+            'prepared_by', 'authorised_by', 'collected_by'
         ).order_by('-expense_date')
 
         # Filter by category, session, term
@@ -1194,12 +1199,15 @@ class ExpenseListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         if term:
             queryset = queryset.filter(term_id=term)
 
-        # Search over description and reference
+        # Search over description, reference, name, and voucher_number
         search = self.request.GET.get('search')
         if search:
             queryset = queryset.filter(
                 Q(description__icontains=search) |
-                Q(reference__icontains=search)
+                Q(reference__icontains=search) |
+                Q(name__icontains=search) |
+                Q(voucher_number__icontains=search) |
+                Q(notes__icontains=search)
             )
 
         return queryset
@@ -1207,8 +1215,11 @@ class ExpenseListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = ExpenseCategoryModel.objects.all().order_by('name')
-        # removed departments - not in your model
         context['total_amount'] = self.get_queryset().aggregate(Sum('amount'))['amount__sum'] or 0
+
+        # Pass search query back to template
+        context['search_query'] = self.request.GET.get('search', '')
+
         return context
 
 
@@ -1229,6 +1240,7 @@ class ExpenseUpdateView(LoginRequiredMixin, PermissionRequiredMixin, FlashFormEr
     form_class = ExpenseForm
     template_name = 'finance/expense/edit.html'
     success_message = 'Expense Successfully Updated'
+    context_object_name = "expense"
 
     def get_success_url(self):
         return reverse('expense_detail', kwargs={'pk': self.object.pk})
@@ -1239,6 +1251,27 @@ class ExpenseDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView)
     permission_required = 'finance.view_expensemodel'
     template_name = 'finance/expense/detail.html'
     context_object_name = "expense"
+
+
+class ExpensePrintVoucherView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
+    """
+    View for printing payment voucher
+    """
+    model = ExpenseModel
+    permission_required = 'finance.view_expensemodel'
+    template_name = 'finance/expense/print_voucher.html'
+    context_object_name = "expense"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Get school settings if available
+        try:
+            context['school_setting'] = SchoolGeneralInfoModel.objects.first()
+        except:
+            context['school_setting'] = None
+
+        return context
 
 
 # -------------------------
@@ -2808,3 +2841,700 @@ def my_salary_profile_view(request):
         'selected_month': selected_month
     }
     return render(request, 'finance/staff_profile/salary_profile.html', context)
+
+
+
+
+# ===================================================================
+# Discount Model Views (Blueprint Interface)
+# ===================================================================
+
+import json  # Make sure to import json
+
+
+class DiscountListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+    model = DiscountModel
+    permission_required = 'finance.view_discountmodel'
+    template_name = 'finance/discount/index.html'
+    context_object_name = 'discounts'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'form' not in context:
+            context['form'] = DiscountForm()
+
+        # Add the application form
+        if 'application_form' not in context:
+            context['application_form'] = DiscountApplicationForm()
+
+        # --- ADD THIS ---
+        # 3. Create a data map for JS autofill
+        discount_data = {
+            d.pk: {'type': d.discount_type, 'amount': d.amount or 0.00}
+            for d in DiscountModel.objects.all()
+        }
+        # Pass the data as a JSON string
+        context['discount_data_json'] = json.dumps(
+            discount_data,
+            cls=DjangoJSONEncoder
+        )
+        # ----------------
+
+        return context
+
+class DiscountCreateView(LoginRequiredMixin, PermissionRequiredMixin, FlashFormErrorsMixin, CreateView):
+    model = DiscountModel
+    permission_required = 'finance.add_discountmodel'
+    form_class = DiscountForm
+
+    def get_success_url(self):
+        return reverse('finance_discount_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Discount Blueprint created successfully.")
+        form.instance.created_by = self.request.user
+        return super().form_valid(form)
+
+    def dispatch(self, request, *args, **kwargs):
+        # Redirect GET requests to the list view for modal interface pattern
+        if request.method == 'GET':
+            return redirect(self.get_success_url())
+        return super().dispatch(request, *args, **kwargs)
+
+class DiscountUpdateView(LoginRequiredMixin, PermissionRequiredMixin, FlashFormErrorsMixin, UpdateView):
+    model = DiscountModel
+    permission_required = 'finance.change_discountmodel'
+    form_class = DiscountForm
+
+    def get_success_url(self):
+        return reverse('finance_discount_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Discount Blueprint updated successfully.")
+        form.instance.updated_by = self.request.user
+        return super().form_valid(form)
+
+    def dispatch(self, request, *args, **kwargs):
+        # Redirect GET requests to the list view for modal interface pattern
+        if request.method == 'GET':
+            return redirect(self.get_success_url())
+        return super().dispatch(request, *args, **kwargs)
+
+
+class DiscountDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+    model = DiscountModel
+    permission_required = 'finance.delete_discountmodel'
+    template_name = 'finance/discount/delete.html'
+    success_url = reverse_lazy('finance_discount_list')
+    context_object_name = 'discount'
+
+    def form_valid(self, form):
+        # We need custom logic here to prevent deletion if the is_protected flag is True
+        if self.object.is_protected:
+            messages.error(self.request, f"Cannot delete Discount '{self.object.title}'. It is linked to active discount applications.")
+            return redirect(self.success_url)
+
+        messages.success(self.request, f"Discount Blueprint '{self.object.title}' deleted successfully.")
+        return super().form_valid(form)
+
+
+# ===================================================================
+# Discount Application Views (Context/Rate Locking Interface)
+# ===================================================================
+
+class DiscountApplicationCreateView(LoginRequiredMixin, PermissionRequiredMixin, FlashFormErrorsMixin, CreateView):
+    model = DiscountApplicationModel
+    permission_required = 'finance.add_discountapplicationmodel'
+    form_class = DiscountApplicationForm
+
+    def get_success_url(self):
+        # Assuming we redirect back to the list of Discount Blueprints
+        return reverse('finance_discount_application_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Discount rate locked for the specified term.")
+        form.instance.created_by = self.request.user
+        return super().form_valid(form)
+
+    def dispatch(self, request, *args, **kwargs):
+        # Redirect GET requests to the list view for modal interface pattern
+        if request.method == 'GET':
+            return redirect(self.get_success_url())
+        return super().dispatch(request, *args, **kwargs)
+
+
+class DiscountApplicationUpdateView(LoginRequiredMixin, PermissionRequiredMixin, FlashFormErrorsMixin, UpdateView):
+    model = DiscountApplicationModel
+    permission_required = 'finance.change_discountapplicationmodel'
+    form_class = DiscountApplicationForm
+    pk_url_kwarg = 'application_pk' # Use a distinct keyword argument to prevent clashes
+
+    def get_success_url(self):
+        return reverse('finance_discount_application_list')
+
+    def form_valid(self, form):
+        # Note: The model's save() method prevents changing discount_type
+        messages.success(self.request, "Discount rate and term updated successfully.")
+        form.instance.updated_by = self.request.user
+        return super().form_valid(form)
+
+    def dispatch(self, request, *args, **kwargs):
+        # Redirect GET requests to the list view for modal interface pattern
+        if request.method == 'GET':
+            return redirect(self.get_success_url())
+        return super().dispatch(request, *args, **kwargs)
+
+
+class DiscountApplicationDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+    model = DiscountApplicationModel
+    permission_required = 'finance.delete_discountapplicationmodel'
+    template_name = 'finance/discount/application_delete.html'
+    success_url = reverse_lazy('finance_discount_application_list')
+    context_object_name = 'application'
+    pk_url_kwarg = 'application_pk' # Use a distinct keyword argument
+
+    def form_valid(self, form):
+        # We need custom logic here to prevent deletion if the is_protected flag is True
+        if self.object.is_protected:
+            messages.error(self.request, f"Cannot delete Discount Application for '{self.object.discount.title}' as it is linked to active student records.")
+            return redirect(self.success_url)
+
+        messages.success(self.request, f"Discount Application for '{self.object.discount.title}' deleted successfully.")
+        return super().form_valid(form)
+
+
+# ===================================================================
+# Discount Application List View (Optional Dedicated Page)
+# ===================================================================
+
+
+class DiscountApplicationListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+    model = DiscountApplicationModel
+    permission_required = 'finance.view_discountapplicationmodel'
+    template_name = 'finance/discount/application_list.html'
+    context_object_name = 'applications'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # The form will have session/term defaults from its __init__
+        if 'form' not in context:
+            context['form'] = DiscountApplicationForm()
+
+        # --- ADD THIS LOGIC ---
+        # Create a data map for JS autofill
+        discount_data = {
+            d.pk: {'type': d.discount_type, 'amount': d.amount or 0.00}
+            for d in DiscountModel.objects.all()
+        }
+        # Pass the data as a JSON string, using Django's encoder for Decimals
+        context['discount_data_json'] = json.dumps(
+            discount_data,
+            cls=DjangoJSONEncoder
+        )
+        # ---------------------
+
+        return context
+
+
+class DiscountSelectStudentView(LoginRequiredMixin, PermissionRequiredMixin, SuccessMessageMixin, TemplateView):
+    template_name = 'finance/discount/select_student.html'
+    permission_required = 'finance.add_feemodel'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['class_list'] = ClassesModel.objects.all().order_by('name')
+
+        student_list = StudentsModel.objects.all()
+        context['student_list_json'] = serializers.serialize("json", student_list)
+
+        # Build class_list_json with sections (adapt related name if necessary)
+        classes_data = []
+        for cls in context['class_list']:
+            # try common related names for the sections relationship, adapt if different
+            if hasattr(cls, 'section'):
+                secs_qs = cls.section.all()
+            else:
+                secs_qs = []
+
+            sections = [{'id': s.id, 'name': getattr(s, 'name', str(s))} for s in secs_qs]
+            classes_data.append({'id': cls.id, 'name': cls.name, 'sections': sections})
+
+        context['class_list_json'] = json.dumps(classes_data)
+        return context
+
+
+class StudentDiscountAssignView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
+    """Assign a discount application to a student for specific invoice items."""
+
+    permission_required = 'finance.add_studentdiscountmodel'
+    template_name = 'finance/discount/assign_discount.html'
+    form_class = StudentDiscountAssignForm
+
+    def get_student(self):
+        return get_object_or_404(StudentsModel, pk=self.kwargs['student_pk'])
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['student'] = self.get_student()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        student = self.get_student()
+        context['student'] = student
+
+        # Get available discount applications for current/specified term
+        school_setting = SchoolSettingModel.objects.first()
+        context['available_discounts'] = DiscountApplicationModel.objects.filter(
+            Q(session=school_setting.session, term=school_setting.term) |
+            Q(session__isnull=True, term__isnull=True)  # Global discounts
+        ).select_related('discount')
+
+        return context
+
+    def form_valid(self, form):
+        student = self.get_student()
+        discount_application = form.cleaned_data['discount_application']
+        discount = discount_application.discount
+
+        # 1. Check if student's class is eligible
+        if discount.applicable_classes.exists() and student.student_class not in discount.applicable_classes.all():
+            messages.error(self.request,
+                           f"Student's class ({student.student_class.name}) is not eligible for this discount.")
+            return self.form_invalid(form)
+
+        # 2. Check if discount has applicable fees defined
+        if not discount.applicable_fees.exists():
+            messages.error(self.request, "This discount has no fees defined. Please configure the discount first.")
+            return self.form_invalid(form)
+
+        # 3. Get student's invoice for the discount's session/term
+        try:
+            invoice = InvoiceModel.objects.get(
+                student=student,
+                session=discount_application.session,
+                term=discount_application.term
+            )
+        except InvoiceModel.DoesNotExist:
+            messages.error(self.request,
+                           f"No invoice found for {discount_application.session}/{discount_application.term.name}.")
+            return self.form_invalid(form)
+
+        # 4. Find applicable invoice items
+        applicable_fees = discount.applicable_fees.all()
+        applicable_items = invoice.items.filter(
+            fee_master__fee__in=applicable_fees
+        )
+
+        if not applicable_items.exists():
+            messages.error(self.request,
+                           "No matching fees found on student's invoice for this discount.")
+            return self.form_invalid(form)
+
+        # 5. Apply discount to each applicable item
+        with transaction.atomic():
+            total_discounted = Decimal('0.00')
+            items_processed = 0
+
+            for item in applicable_items:
+                # Check if discount already applied to this item
+                if StudentDiscountModel.objects.filter(
+                        student=student,
+                        discount_application=discount_application,
+                        invoice_item=item
+                ).exists():
+                    continue  # Skip if already applied
+
+                # Calculate discount amount
+                if discount_application.discount_type == DiscountModel.DiscountType.PERCENTAGE:
+                    discount_amount = (item.amount * discount_application.discount_amount) / Decimal('100')
+                else:  # FIXED
+                    # For fixed amount, divide equally among applicable items
+                    discount_amount = discount_application.discount_amount / applicable_items.count()
+
+                # Round to 2 decimal places
+                discount_amount = discount_amount.quantize(Decimal('0.01'))
+
+                # Create discount record
+                StudentDiscountModel.objects.create(
+                    student=student,
+                    discount_application=discount_application,
+                    invoice_item=item,
+                    amount_discounted=discount_amount
+                )
+
+                total_discounted += discount_amount
+                items_processed += 1
+
+            if items_processed == 0:
+                messages.warning(self.request, "This discount has already been applied to all eligible fees.")
+            else:
+                messages.success(self.request,
+                                 f"Discount applied successfully! ₦{total_discounted:,.2f} discounted across {items_processed} fee(s).")
+
+        return redirect('finance_student_dashboard', pk=student.pk)
+
+
+class StudentDiscountIndexView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+    """List all student discounts with filtering by session, term, and student name."""
+
+    permission_required = 'finance.view_studentdiscountmodel'
+    template_name = 'finance/discount/discount_index.html'
+    context_object_name = 'discounts'
+    paginate_by = 50
+
+    def get_queryset(self):
+        queryset = StudentDiscountModel.objects.select_related(
+            'student',
+            'discount_application__discount',
+            'discount_application__session',
+            'discount_application__term',
+            'invoice_item__invoice'
+        ).order_by('-created_at')
+
+        # Filter by session
+        session_id = self.request.GET.get('session')
+        if session_id:
+            queryset = queryset.filter(discount_application__session_id=session_id)
+
+        # Filter by term
+        term_id = self.request.GET.get('term')
+        if term_id:
+            queryset = queryset.filter(discount_application__term_id=term_id)
+
+        # Filter by student name
+        student_name = self.request.GET.get('student_name')
+        if student_name:
+            queryset = queryset.filter(
+                Q(student__first_name__icontains=student_name) |
+                Q(student__last_name__icontains=student_name) |
+                Q(student__registration_number__icontains=student_name)
+            )
+
+        # Filter by discount
+        discount_id = self.request.GET.get('discount')
+        if discount_id:
+            queryset = queryset.filter(discount_application__discount_id=discount_id)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Provide filter options
+        context['sessions'] = SessionModel.objects.all().order_by('-start_year')
+        context['terms'] = TermModel.objects.all().order_by('order')
+        context['discount_list'] = DiscountModel.objects.all().order_by('title')
+
+        # Preserve filter values
+        context['selected_session'] = self.request.GET.get('session', '')
+        context['selected_term'] = self.request.GET.get('term', '')
+        context['selected_discount'] = self.request.GET.get('discount', '')
+        context['student_name'] = self.request.GET.get('student_name', '')
+
+        # Calculate summary statistics
+        queryset = self.get_queryset()
+        context['total_discounts'] = queryset.count()
+        context['total_amount_discounted'] = queryset.aggregate(
+            total=Sum('amount_discounted')
+        )['total'] or Decimal('0.00')
+
+        return context
+
+
+class DepositPaymentSelectStaffView(LoginRequiredMixin, PermissionRequiredMixin, SuccessMessageMixin, TemplateView):
+    template_name = 'finance/funding/select_staff.html'
+    permission_required = 'finance.add_studentfundingmodel'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        staff_list = StaffModel.objects.all()
+        context['staff_list'] = serializers.serialize("json", staff_list)
+        return context
+
+
+@login_required
+@permission_required("finance.view_studentfundingmodel", raise_exception=True)
+def staff_deposit_payment_list_view(request):
+    session_id = request.GET.get('session', None)
+    term_id = request.GET.get('term', None)
+    school_setting = SchoolSettingModel.objects.first()
+    if not session_id:
+        session = school_setting.session
+    else:
+        session = SessionModel.objects.get(id=session_id)
+    if not term_id:
+        term = school_setting.term
+    else:
+        term = TermModel.objects.get(id=term_id)
+    session_list = SessionModel.objects.all()
+    term_list = TermModel.objects.all()
+
+    fee_payment_list = StaffFundingModel.objects.filter(session=session, term=term).exclude(status='pending').order_by('-id')
+    context = {
+        'fee_payment_list': fee_payment_list,
+        'current_session': session,
+        'current_term': term,
+        'session_list': session_list,
+        'term_list': term_list
+    }
+    return render(request, 'finance/funding/staff_index.html', context)
+
+
+@login_required
+@permission_required("finance.view_studentfundingmodel", raise_exception=True)
+def staff_deposit_detail_view(request, pk):
+    deposit = get_object_or_404(StaffFundingModel, pk=pk)
+
+    # Compute total profit here
+    return render(request, 'finance/funding/staff_detail.html', {
+        'funding': deposit,
+    })
+
+
+@login_required
+@permission_required("finance.add_studentfundingmodel", raise_exception=True)
+def staff_deposit_create_view(request, staff_pk):
+    staff = StaffModel.objects.get(pk=staff_pk)
+    setting = SchoolSettingModel.objects.first()
+
+    if request.method == 'POST':
+        form = StaffFundingForm(request.POST, request.FILES)  # Pass request.FILES for file uploads
+        if form.is_valid():
+            deposit = form.save(commit=False)  # Don't save yet, we need to set the staff
+            deposit.staff = staff  # Associate the funding with the staff
+
+            try:
+                profile = UserProfileModel.objects.get(user=request.user)
+                deposit.created_by = profile.staff
+            except Exception:
+                pass
+            # Set session and term based on school setting if not provided by form
+            if not deposit.session:
+                deposit.session = setting.session
+            if not deposit.term:
+                deposit.term = setting.term
+
+            amount = deposit.amount  # Get amount directly from the saved instance
+            messages.success(request, f'Deposit of ₦{amount} successful!')
+
+            # Update staff wallet
+            staff_wallet, created = StaffWalletModel.objects.get_or_create(staff=staff)  # Get or create wallet
+
+            staff_wallet.balance += amount
+
+            staff_wallet.save()
+
+            deposit.balance = staff_wallet.balance
+            deposit.save()  # Now save the deposit
+
+            return redirect('staff_deposit_detail',
+                        pk=deposit.pk)  # Redirect to prevent form resubmission on refresh
+        else:
+            # If form is not valid, messages.error can show form errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field.replace('_', ' ').title()}: {error}")
+    else:
+        form = StaffFundingForm()  # Instantiate an empty form for GET request
+
+    staff_wallet, created = StaffWalletModel.objects.get_or_create(staff=staff)  # Get or create wallet
+
+    context = {
+        'staff': staff,
+        'form': form,
+        'payment_list': StaffFundingModel.objects.filter(staff=staff, term=setting.term,
+                                                           session=setting.session).order_by('-created_at'),
+        'setting': setting
+    }
+    return render(request, 'finance/funding/staff_create.html', context)
+
+
+
+@login_required
+@permission_required("finance.view_studentfundingmodel", raise_exception=True)
+def staff_pending_deposit_payment_list_view(request):
+    session_id = request.GET.get('session', None)
+    session = SessionModel.objects.get(id=session_id)
+    term_id = request.GET.get('term', None)
+    term = TermModel.objects.get(id=term_id)
+    session_list = SessionModel.objects.all()
+    term_list = TermModel.objects.all().order_by('order')
+    fee_payment_list = StaffFundingModel.objects.filter(session=session, term=term, status='pending').order_by('-id')
+    context = {
+        'fee_payment_list': fee_payment_list,
+        'session': session,
+        'term': term,
+        'session_list': session_list,
+        'term_list': term_list,
+    }
+    return render(request, 'finance/funding/staff_pending.html', context)
+
+
+@login_required
+@permission_required("finance.change_studentfundingmodel", raise_exception=True)
+@transaction.atomic
+def staff_confirm_payment_view(request, payment_id):
+    payment = get_object_or_404(StaffFundingModel, pk=payment_id)
+    staff = payment.staff # Get the staff associated with this payment
+
+    if request.method == 'POST':
+        # Check if the payment is already confirmed or declined
+        if payment.status != 'pending':
+            messages.warning(request, f"Payment is already {payment.status.capitalize()}. Cannot confirm.")
+            # Redirect to a list of payments or the payment detail page
+            return redirect(reverse('pending_deposit_index')) # Replace with your actual URL name
+
+        # Get or create staff wallet
+        staff_wallet, created = StaffWalletModel.objects.get_or_create(staff=staff)
+
+        # Apply the payment amount to the wallet balance
+        # Keeping calculations as float as per original deposit_create_view
+        staff_wallet.balance += payment.amount
+
+        staff_wallet.save() # Save the updated wallet
+
+        # Update the payment status and its internal balance field
+        payment.status = 'confirmed'
+        # Replicate the balance update from the original view
+        payment.save() # Save the updated payment record
+
+        # Log wallet confirmation
+        from pytz import timezone as pytz_timezone
+        localized_created_at = timezone.localtime(now(), timezone=pytz_timezone('Africa/Lagos'))
+        formatted_time = localized_created_at.strftime(
+            f"%B {localized_created_at.day}{get_day_ordinal_suffix(localized_created_at.day)} %Y %I:%M%p"
+        )
+
+        payment_url = reverse('staff_deposit_detail', kwargs={'pk': payment.pk})
+        staff = UserProfileModel.objects.get(user=request.user).staff
+        staff_url = reverse('staff_detail', kwargs={'pk': staff.pk}) if staff else '#'
+
+        messages.success(request, f"Payment of ₦{payment.amount} for {staff.first_name} {staff.last_name} confirmed successfully.")
+        return redirect(reverse('staff_deposit_index')) # Replace with your actual URL name
+
+    else:
+        # For GET requests to this URL, you might want to display a confirmation prompt
+        # or just redirect with a message. Assuming redirect for simplicity.
+        messages.info(request, "Please use a POST request to confirm this payment.")
+        return redirect(reverse('staff_pending_deposit_index'))  # Replace with your actual URL name
+
+
+# --- Decline Payment View ---
+@login_required
+@permission_required("finance.change_studentfundingmodel", raise_exception=True)
+@transaction.atomic
+def staff_decline_payment_view(request, payment_id):
+    payment = get_object_or_404(StaffFundingModel, pk=payment_id)
+    staff = payment.staff # Get the staff associated with this payment
+
+    if request.method == 'POST':
+        # Check if the payment is already confirmed or declined
+        if payment.status != 'pending':
+            messages.warning(request, f"Payment is already {payment.status.capitalize()}. Cannot decline.")
+            # Redirect to a list of payments or the payment detail page
+            return redirect(reverse('staff_pending_deposit_index')) # Replace with your actual URL name
+
+        # Update the payment status to 'declined'
+        payment.status = 'declined'
+        payment.save()
+
+        # Log wallet deposit decline
+        from pytz import timezone as pytz_timezone
+        localized_created_at = timezone.localtime(now(), timezone=pytz_timezone('Africa/Lagos'))
+        formatted_time = localized_created_at.strftime(
+            f"%B {localized_created_at.day}{get_day_ordinal_suffix(localized_created_at.day)} %Y %I:%M%p"
+        )
+
+        messages.success(request, f"Payment of ₦{payment.amount} for {staff.first_name} {staff.last_name} has been declined.")
+        return redirect(reverse('staff_deposit_index'))  # Replace with your actual URL name
+    else:
+        # For GET requests to this URL, you might want to display a confirmation prompt
+        # or just redirect with a message. Assuming redirect for simplicity.
+        messages.info(request, "Method Not Supported.")
+        return redirect(reverse('staff_pending_deposit_index'))  # Replace with your actual URL name
+
+
+class StaffUploadDepositView(LoginRequiredMixin, CreateView):
+    """
+    A view for a logged-in staff member to submit a deposit request (e.g., a teller).
+    This creates a StaffFundingModel instance with a 'pending' status.
+    It does NOT credit their wallet.
+    """
+    model = StaffFundingModel
+    form_class = StaffFundingForm
+    template_name = 'finance/funding/staff_upload_form.html'
+    success_url = reverse_lazy('staff_deposit_history')  # Redirect to their history page
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "Upload Deposit Teller"
+        context['bank_detail'] = SchoolSettingModel.objects.first()
+        return context
+
+    def form_valid(self, form):
+        try:
+            # Get the logged-in user's Staff profile and Staff instance
+            staff_member = self.request.user.profile.staff
+        except UserProfileModel.DoesNotExist:
+            messages.error(self.request, "Your user account is not linked to a staff profile. Cannot submit deposit.")
+            return super().form_invalid(form)
+        except AttributeError:
+            messages.error(self.request, "Could not find a staff profile for your user.")
+            return super().form_invalid(form)
+
+        deposit = form.save(commit=False)
+        deposit.staff = staff_member
+        deposit.created_by = staff_member  # Record who submitted it
+
+        # --- THIS IS THE KEY ---
+        # Set status to PENDING and do NOT touch the wallet
+        deposit.status = StaffFundingModel.PaymentStatus.PENDING
+        # --- END KEY ---
+
+        # Set session and term from settings
+        setting = SchoolSettingModel.objects.first()
+        if setting:
+            if not deposit.session:
+                deposit.session = setting.session
+            if not deposit.term:
+                deposit.term = setting.term
+
+        # We must save the object before we can log about it
+        super().form_valid(form)
+
+        messages.success(self.request,
+                         f"Your deposit request of ₦{deposit.amount:,.2f} has been submitted for review.")
+
+        # Note: We are calling super().form_valid() which handles saving and redirection
+        return redirect(self.get_success_url())
+
+
+# --- 2. STAFF: VIEW MY DEPOSIT HISTORY (LIST VIEW) ---
+
+class StaffDepositHistoryView(LoginRequiredMixin, ListView):
+    """
+    Shows a logged-in staff member a paginated list of their
+    own deposit submissions and their current status.
+    """
+    model = StaffFundingModel
+    template_name = 'finance/funding/staff_history_list.html'
+    context_object_name = 'payment_list'
+    paginate_by = 20
+
+    def get_queryset(self):
+        try:
+            # Get the logged-in user's Staff profile
+            staff_member = self.request.user.staff_profile.staff
+            # Return ONLY this staff member's deposits, newest first
+            return StaffFundingModel.objects.filter(staff=staff_member).order_by('-created_at')
+        except (UserProfileModel.DoesNotExist, AttributeError):
+            messages.warning(self.request, "Your user account is not linked to a staff profile.")
+            return StaffFundingModel.objects.none()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "My Deposit History"
+        return context
+

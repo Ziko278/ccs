@@ -5,7 +5,7 @@ import secrets
 from django.contrib.messages.views import messages
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.urls import resolve
@@ -21,6 +21,7 @@ from django.views.generic.detail import DetailView
 from xlsxwriter import Workbook
 
 from admin_dashboard.utility import state_list
+from inventory.views import FlashFormErrorsMixin
 from school_setting.models import *
 from django.apps import apps
 from student.models import *
@@ -146,6 +147,91 @@ class ParentDeleteView(LoginRequiredMixin, PermissionRequiredMixin, SuccessMessa
         context = super().get_context_data(**kwargs)
 
         return context
+
+
+class UtilityListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
+    """
+    The main view for displaying the list of utilities. It also provides
+    the form instance needed for the 'Add New' modal.
+    """
+    model = UtilityModel
+    # Assuming new permissions parallel to the original
+    permission_required = 'student.view_utilitymodel'
+    template_name = 'student/utility/index.html' # New template path
+    context_object_name = 'utilities'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Provide an empty form for the 'Add New Utility' modal.
+        if 'form' not in context:
+            context['form'] = UtilityForm()
+        return context
+
+
+class UtilityCreateView(LoginRequiredMixin, PermissionRequiredMixin, FlashFormErrorsMixin, CreateView):
+    """
+    Handles the creation of a new utility. This view only processes POST
+    requests from the modal form on the utility list page.
+    """
+    model = UtilityModel
+    permission_required = 'student.add_utilitymodel'
+    form_class = UtilityForm
+    template_name = 'student/utility/index.html'  # Required for error redirect context
+
+    def get_success_url(self):
+        return reverse('student_utility_list') # New URL name
+
+    def form_valid(self, form):
+        messages.success(self.request, f"Utility '{form.cleaned_data['name']}' created successfully.")
+        # Omitted form.instance.created_by = self.request.user (field not in model)
+        return super().form_valid(form)
+
+    def dispatch(self, request, *args, **kwargs):
+        # This view should not be accessed via GET. It is a POST endpoint only.
+        if request.method == 'GET':
+            return redirect(self.success_url)
+        return super().dispatch(request, *args, **kwargs)
+
+
+class UtilityUpdateView(LoginRequiredMixin, PermissionRequiredMixin, FlashFormErrorsMixin, UpdateView):
+    """
+    Handles updating an existing utility. This view only processes POST
+    requests from the modal form on the utility list page.
+    """
+    model = UtilityModel
+    permission_required = 'student.add_utilitymodel'
+    form_class = UtilityForm
+    template_name = 'student/utility/index.html'  # Required for error redirect context
+
+    def get_success_url(self):
+        return reverse('student_utility_list') # New URL name
+
+    def form_valid(self, form):
+        messages.success(self.request, f"Utility '{form.cleaned_data['name']}' updated successfully.")
+        return super().form_valid(form)
+
+    def dispatch(self, request, *args, **kwargs):
+        # This view should not be accessed via GET. It is a POST endpoint only.
+        if request.method == 'GET':
+            return redirect(self.success_url)
+        return super().dispatch(request, *args, **kwargs)
+
+
+class UtilityDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+    """
+    Handles the actual deletion of a utility object. The confirmation
+    is handled by a modal on the list page.
+    """
+    model = UtilityModel
+    permission_required = 'student.delete_utilitymodel'
+    template_name = 'student/utility/delete.html'  # New template path
+    success_url = reverse_lazy('student_utility_list') # New URL name
+    context_object_name = 'utility'
+
+    def form_valid(self, form):
+        # Add a success message before deleting the object.
+        messages.success(self.request, f"Utility '{self.object.name}' was deleted successfully.")
+        return super().form_valid(form)
 
 
 class StudentCreateView(LoginRequiredMixin, PermissionRequiredMixin, SuccessMessageMixin, CreateView):

@@ -1,22 +1,23 @@
 import re
 from datetime import date
 from decimal import Decimal
-
+from django.db import models
 from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from django.db.models import Sum
-from django.forms import inlineformset_factory
+from django.db.models import Sum, Q
+from django.forms import inlineformset_factory, CheckboxSelectMultiple
 from school_setting.models import TermModel, SessionModel, SchoolSettingModel
 from academic.models import ClassesModel, ClassSectionModel
 from finance.models import FinanceSettingModel, SupplierPaymentModel, PurchaseAdvancePaymentModel, FeeModel, \
     FeeGroupModel, FeeMasterModel, InvoiceGenerationJob, FeePaymentModel, ExpenseCategoryModel, ExpenseModel, \
     IncomeCategoryModel, IncomeModel, TermlyFeeAmountModel, StaffBankDetail, SalaryStructure, SalaryAdvance, \
-    SalaryRecord, StudentFundingModel, SchoolBankDetail, StaffLoanRepayment, StaffLoan
+    SalaryRecord, StudentFundingModel, SchoolBankDetail, StaffLoanRepayment, StaffLoan, DiscountModel, \
+    DiscountApplicationModel, StaffFundingModel
 from human_resource.models import StaffModel
 from inventory.models import PurchaseOrderModel
-
+from student.models import StudentsModel
 
 # Helpers
 MAX_AMOUNT = Decimal('999999999.99')
@@ -327,34 +328,77 @@ class ExpenseCategoryForm(forms.ModelForm):
 # -------------------- EXPENSE FORM --------------------
 
 class ExpenseForm(forms.ModelForm):
-    # expose receipt as a FileField so we can validate size
+    # Expose receipt as a FileField so we can validate size
     receipt = forms.FileField(required=False, validators=[validate_file_size])
+
+    # Line items as a hidden JSON field (will be populated via JavaScript)
+    line_items_json = forms.CharField(required=False, widget=forms.HiddenInput())
 
     class Meta:
         model = ExpenseModel
         fields = [
             "category", "amount", "expense_date",
-            "payment_method", "reference", "receipt", "notes",
+            "payment_method", "currency", "bank_account", "reference", "name",
+            "description", "receipt", "notes",
+            "vote_and_subhead",
+            "prepared_by", "authorised_by", "collected_by",
+            "cheque_number", "bank_name", "cheque_by", "cheque_prepared_date", "cheque_signed_date",
             "session", "term",
         ]
+        # Note: line_items excluded - handled via line_items_json hidden field
         widgets = {
             "category": forms.Select(attrs={"class": "form-control"}),
-            "amount": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "min": "0.01"}),
+            "amount": forms.NumberInput(attrs={
+                "class": "form-control",
+                "step": "0.01",
+                "min": "0.01",
+                "id": "id_amount"
+            }),
             "expense_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
-            "payment_method": forms.TextInput(attrs={"class": "form-control", "placeholder": "cash, card, transfer"}),
+            "payment_method": forms.Select(attrs={"class": "form-control"}),
+            "currency": forms.Select(attrs={"class": "form-control"}),
+            "bank_account": forms.Select(attrs={"class": "form-control"}),
             "reference": forms.TextInput(attrs={"class": "form-control"}),
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
             "notes": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
+            "vote_and_subhead": forms.TextInput(attrs={"class": "form-control"}),
             "session": forms.Select(attrs={"class": "form-control"}),
             "term": forms.Select(attrs={"class": "form-control"}),
+
+            # Staff fields with Select2
+            "prepared_by": forms.Select(attrs={"class": "form-control select2-staff"}),
+            "authorised_by": forms.Select(attrs={"class": "form-control select2-staff"}),
+            "collected_by": forms.Select(attrs={"class": "form-control select2-staff"}),
+
+            # Cheque fields
+            "cheque_number": forms.TextInput(attrs={"class": "form-control"}),
+            "bank_name": forms.TextInput(attrs={"class": "form-control"}),
+            "cheque_by": forms.TextInput(attrs={"class": "form-control"}),
+            "cheque_prepared_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "cheque_signed_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # only categories that are active
-        self.fields["category"].queryset = ExpenseCategoryModel.objects.filter(is_active=True).order_by("name")
+        # Only categories that are active
+        self.fields["category"].queryset = ExpenseCategoryModel.objects.filter(
+            is_active=True
+        ).order_by("name")
 
-        # set defaults from SchoolSettingModel when available
+        # Staff queryset - only active staff
+        active_staff = StaffModel.objects.filter(status='active').order_by('first_name', 'last_name')
+        self.fields["prepared_by"].queryset = active_staff
+        self.fields["authorised_by"].queryset = active_staff
+        self.fields["collected_by"].queryset = active_staff
+
+        # Make staff fields not required
+        self.fields["prepared_by"].required = False
+        self.fields["authorised_by"].required = False
+        self.fields["collected_by"].required = False
+
+        # Set defaults from SchoolSettingModel when available
         setting = get_current_setting()
         if setting:
             if not self.initial.get("session") and hasattr(setting, "session"):
@@ -362,8 +406,27 @@ class ExpenseForm(forms.ModelForm):
             if not self.initial.get("term") and hasattr(setting, "term"):
                 self.initial["term"] = setting.term
 
+        # Populate line_items_json from instance if editing
+        if self.instance and self.instance.pk and self.instance.line_items:
+            import json
+            self.fields['line_items_json'].initial = json.dumps(self.instance.line_items)
+
     def clean_amount(self):
         amount = self.cleaned_data.get("amount")
+        line_items_json = self.cleaned_data.get("line_items_json")
+
+        # If line items exist, amount should be calculated from them
+        if line_items_json:
+            try:
+                import json
+                line_items = json.loads(line_items_json)
+                if line_items and len(line_items) > 0:
+                    # Amount will be calculated in save(), so we allow any value here
+                    return amount
+            except:
+                pass
+
+        # Standard validation if no line items
         if amount is None:
             raise ValidationError("Amount is required.")
         try:
@@ -392,10 +455,66 @@ class ExpenseForm(forms.ModelForm):
             pm = pm.strip()
             if len(pm) > 50:
                 raise ValidationError("Payment method is too long.")
-            # simple character check
+            # Simple character check
             if not re.match(r'^[\w\s\-\/&,]+$', pm):
                 raise ValidationError("Payment method contains invalid characters.")
         return pm
+
+    def clean_line_items_json(self):
+        """Validate and parse line items JSON"""
+        line_items_json = self.cleaned_data.get("line_items_json")
+        if not line_items_json:
+            return []
+
+        try:
+            import json
+            # Check if it's already a list/dict or needs parsing
+            if isinstance(line_items_json, str):
+                line_items = json.loads(line_items_json)
+            else:
+                line_items = line_items_json
+
+            # Validate structure
+            if not isinstance(line_items, list):
+                raise ValidationError("Invalid line items format.")
+
+            for item in line_items:
+                if not isinstance(item, dict):
+                    raise ValidationError("Invalid line item structure.")
+                if 'particular' not in item or 'amount' not in item:
+                    raise ValidationError("Each line item must have 'particular' and 'amount'.")
+
+                # Validate amount
+                try:
+                    Decimal(item['amount'])
+                except:
+                    raise ValidationError(f"Invalid amount in line item: {item.get('particular', '')}")
+
+            return line_items
+        except json.JSONDecodeError:
+            raise ValidationError("Invalid JSON format for line items.")
+        except ValidationError:
+            raise
+        except Exception as e:
+            raise ValidationError(f"Error processing line items: {str(e)}")
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        # Get the cleaned line items (already validated and parsed in clean_line_items_json)
+        parsed_items = self.cleaned_data.get('line_items_json', [])
+
+        instance.line_items = parsed_items
+
+        # Recalculate amount from line items if they exist
+        if parsed_items and len(parsed_items) > 0:
+            from decimal import Decimal
+            total = sum(Decimal(item.get('amount', 0)) for item in parsed_items)
+            instance.amount = total
+
+        if commit:
+            instance.save()
+        return instance
 
 
 # -------------------- INCOME CATEGORY FORM --------------------
@@ -742,6 +861,7 @@ class PaysheetRowForm(forms.ModelForm):
 
 
 class StudentFundingForm(forms.ModelForm):
+
     """Form for creating a new funding record."""
     class Meta:
         model = StudentFundingModel
@@ -762,3 +882,145 @@ class StudentFundingForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # You can hide the student field if it's set by the URL
+
+class StaffFundingForm(forms.ModelForm):
+    """Form for creating a new funding record."""
+    class Meta:
+        model = StaffFundingModel
+        # Be explicit about the fields a user can fill
+        fields = [
+             'amount', 'method', 'mode',
+             'proof_of_payment', 'teller_number', 'reference'
+        ]
+        widgets = {
+            'amount': forms.NumberInput(attrs={'class': 'form-control'}),
+            'method': forms.Select(attrs={'class': 'form-select'}),
+            'mode': forms.Select(attrs={'class': 'form-select'}),
+            'proof_of_payment': forms.FileInput(attrs={'class': 'form-control'}),
+            'teller_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'reference': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # You can hide the student field if it's set by the URL
+
+
+class DiscountForm(forms.ModelForm):
+    """Form for DiscountModel blueprint using the modal interface."""
+
+    # Explicitly define M2M fields using CheckboxSelectMultiple widget
+    applicable_fees = forms.ModelMultipleChoiceField(
+        queryset=FeeModel.objects.all().order_by('name'),
+        widget=CheckboxSelectMultiple,
+        required=False,
+        label="Applicable Fee Types"
+    )
+    applicable_classes = forms.ModelMultipleChoiceField(
+        queryset=ClassesModel.objects.all().order_by('name'),
+        widget=CheckboxSelectMultiple,
+        required=False,
+        label="Applicable Classes"
+    )
+
+    class Meta:
+        model = DiscountModel
+        fields = [
+            'title', 'discount_type', 'amount', 'occurrence',
+            'applicable_fees', 'applicable_classes'
+        ]
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'discount_type': forms.Select(attrs={'class': 'form-select'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'occurrence': forms.Select(attrs={'class': 'form-select'}),
+            # Note: applicable_fees and applicable_classes are handled above.
+        }
+
+
+class DiscountApplicationForm(forms.ModelForm):
+    """Form for DiscountApplicationModel, locking the rate and type for a term."""
+
+    class Meta:
+        model = DiscountApplicationModel
+        fields = [
+            'discount', 'session', 'term',
+            'discount_type', 'discount_amount'
+        ]
+        widgets = {
+            # Add unique IDs for JavaScript targeting
+            'discount': forms.Select(attrs={'class': 'form-select', 'id': 'id_app_discount'}),
+            'session': forms.Select(attrs={'class': 'form-select'}),
+            'term': forms.Select(attrs={'class': 'form-select'}),
+            'discount_type': forms.Select(attrs={'class': 'form-select', 'id': 'id_app_discount_type'}),
+            'discount_amount': forms.NumberInput(
+                attrs={'class': 'form-control', 'step': '0.01', 'id': 'id_app_discount_amount'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # 1. Set default session and term from SchoolSettingModel
+        try:
+            # Assumes SchoolSettingModel is a singleton (has only one record)
+            settings = SchoolSettingModel.objects.get()
+            if settings.session:
+                self.fields['session'].initial = settings.session.pk
+            if settings.term:
+                self.fields['term'].initial = settings.term.pk
+        except SchoolSettingModel.DoesNotExist:
+            pass  # No settings found, so no defaults
+        except SchoolSettingModel.MultipleObjectsReturned:
+            pass  # Should not happen
+
+        # 2. Set 'discount_type' to disabled (it will be autofilled by JS)
+        # The model's save() method handles setting the type, so disabling
+        # it here is purely for the UI.
+        self.fields['discount_type'].readonly = True
+        self.fields['discount_amount'].readonly = True
+
+        # Order the FK fields
+        self.fields['discount'].queryset = DiscountModel.objects.all().order_by('title')
+        self.fields['session'].queryset = SessionModel.objects.all().order_by('-id')
+        self.fields['term'].queryset = TermModel.objects.all().order_by('order')
+
+        # Set optional status for session/term
+        self.fields['session'].required = False
+        self.fields['term'].required = False
+
+        # If editing an existing object, lock the discount dropdown
+        if self.instance.pk:
+            self.fields['discount'].disabled = True
+
+
+class StudentDiscountAssignForm(forms.Form):
+    discount_application = forms.ModelChoiceField(
+        queryset=DiscountApplicationModel.objects.none(),
+        label="Select Discount",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        student = kwargs.pop('student', None)
+        super().__init__(*args, **kwargs)
+
+        # Show available discount applications
+        school_setting = SchoolSettingModel.objects.first()
+
+        queryset = DiscountApplicationModel.objects.filter(
+            Q(session=school_setting.session, term=school_setting.term) |
+            Q(session__isnull=True, term__isnull=True)
+        ).select_related('discount')
+
+        # Filter to show only discounts applicable to student's class (if student provided)
+        if student and student.student_class:
+            # Show discounts that either have no class restriction OR include student's class
+            queryset = queryset.filter(
+                Q(discount__applicable_classes__isnull=True) |
+                Q(discount__applicable_classes=student.student_class)
+            ).distinct()
+
+        self.fields['discount_application'].queryset = queryset
+
+        self.fields['discount_application'].label_from_instance = lambda obj: \
+            f"{obj.discount.title} - {obj.discount_amount}{'%' if obj.discount_type == 'percentage' else ' (Fixed)'}"
