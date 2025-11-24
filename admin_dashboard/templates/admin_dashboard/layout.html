@@ -180,6 +180,13 @@
             </a>
           </li>
 
+                    <li>
+                        <a href="{% url 'student_utility_list' %}">
+                            <i class="bi bi-circle"></i><span>Student Utilities</span>
+                        </a>
+                    </li>
+
+
 <!--            {% if 'student.add_studentmodel' in perms %}-->
 <!--            <li>-->
 <!--                <a href="{% url 'paste_create_students' %}">-->
@@ -498,7 +505,17 @@
                         <i class="bi bi-circle"></i><span>Fee Payment</span>
                     </a>
                 </li>
+
                 {% endif %}
+
+                {% if 'finance.add_feepaymentmodel' in perms %}
+                <li>
+                    <a href="{% url 'finance_discount_select_student' %}">
+                        <i class="bi bi-circle"></i><span>Apply Discount</span>
+                    </a>
+                </li>
+                {% endif %}
+
 
                 {% if 'finance.view_feepaymentmodel' in perms %}
                 <li>
@@ -534,6 +551,18 @@
                         <i class="bi bi-circle"></i><span>Fees</span>
                     </a>
                 </li>
+
+                <li>
+                    <a href="{% url 'finance_discount_application_list' %}">
+                        <i class="bi bi-circle"></i><span>Discount Application</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'finance_discount_list' %}">
+                        <i class="bi bi-circle"></i><span>Fees Discounts</span>
+                    </a>
+                </li>
+
                 {% endif %}
 
             </ul>
@@ -558,15 +587,26 @@
                     {% if 'finance.add_studentfundingmodel' in perms %}
                     <li>
                         <a href="{% url 'deposit_select_student' %}">
-                            <i class="bi bi-circle"></i><span>Wallet Deposit</span>
+                            <i class="bi bi-circle"></i><span>Student Wallet Deposit</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'deposit_select_staff' %}">
+                            <i class="bi bi-circle"></i><span>Staff Wallet Deposit</span>
                         </a>
                     </li>
                     {% endif %}
 
-                    {% if 'finance.view_studentfundingmodel' in perms %}
+                   {% if 'finance.view_studentfundingmodel' in perms %}
                     <li>
-                        <a href="{% url 'deposit_index' %}?session={{academic_info.session.id}}&term={{academic_info.term}}">
-                            <i class="bi bi-circle"></i><span>Deposit History</span>
+                        <a href="{% url 'deposit_index' %}?session={{academic_info.session.id}}&term={{academic_info.term.id}}">
+                            <i class="bi bi-circle"></i><span>Student Deposit History</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{% url 'staff_deposit_index' %}?session={{academic_info.session.id}}&term={{academic_info.term.id}}">
+                            <i class="bi bi-circle"></i><span>Staff Deposit History</span>
                         </a>
                     </li>
                     {% endif %}
@@ -574,10 +614,26 @@
                     {% if 'finance.change_studentfundingmodel' in perms %}
                     <li>
                         <a href="{% url 'pending_deposit_index' %}?session={{academic_info.session.id}}&term={{academic_info.term.id}}">
-                            <i class="bi bi-circle"></i><span>Pending Deposit</span>
+                            <i class="bi bi-circle"></i><span>Student Pending Deposit</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="{% url 'staff_pending_deposit_index' %}?session={{academic_info.session.id}}&term={{academic_info.term.id}}">
+                            <i class="bi bi-circle"></i><span>Staff Pending Deposit</span>
+                        </a>
+                    </li>
+
                     {% endif %}
+                    <li>
+                        <a href="{% url 'staff_upload_deposit' %}">
+                            <i class="bi bi-circle"></i><span>Wallet Funding</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'staff_deposit_history' %}">
+                            <i class="bi bi-circle"></i><span>My Funding History</span>
+                        </a>
+                    </li>
 
                     {% if 'finance.view_expensemodel' in perms %}
                     <li>
