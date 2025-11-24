@@ -78,6 +78,22 @@
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <h6 class="card-subtitle mt-4 mb-2 text-muted">Student Utilities</h6>
+                                        <div class="row border-top pt-3">
+                                            {% for utility in utility_list %}
+                                            <div class="col-lg-3 col-md-4 label fw-bold">{{ utility|title }}</div>
+                                            <div class="col-lg-9 col-md-8">
+                                                {% if utility in student.utilities.all %}
+                                                    <i class="bi bi-check-circle-fill text-success" title="Subscribed"></i>
+                                                {% else %}
+                                                    <i class="bi bi-x-circle-fill text-danger" title="Not Subscribed"></i>
+                                                {% endif %}
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+
+                                        
                                     </div>
 
                                     <div class="accordion-item" style="margin-top:20px">
