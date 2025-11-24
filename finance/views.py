@@ -865,7 +865,7 @@ class StudentFinancialDashboardView(LoginRequiredMixin, PermissionRequiredMixin,
         student = get_object_or_404(StudentsModel, pk=self.kwargs['pk'])
         context['student'] = student
 
-        school_setting = SchoolSettingModel.objects.first()
+        school_setting = SchoolAcademicInfoModel.objects.first()
 
         # --- NEW LOGIC: Load a specific invoice or the current one ---
         invoice_id = self.request.GET.get('invoice_id')
@@ -2079,7 +2079,7 @@ def deposit_get_class_students_by_reg_number(request):
 @permission_required("student.view_studentfundingmodel", raise_exception=True)
 def deposit_payment_list_view(request):
     session_id = request.GET.get('session', None)
-    school_setting = SchoolSettingModel.objects.first()
+    school_setting = SchoolAcademicInfoModel.objects.first()
     if not session_id:
         session = school_setting.session
     else:
@@ -2122,7 +2122,7 @@ def pending_deposit_payment_list_view(request):
 @permission_required("student.add_studentfundingmodel", raise_exception=True)
 def deposit_create_view(request, student_pk):
     student = StudentsModel.objects.get(pk=student_pk)
-    setting = SchoolSettingModel.objects.first()
+    setting = SchoolAcademicInfoModel.objects.first()
 
     if request.method == 'POST':
         form = StudentFundingForm(request.POST, request.FILES)  # Pass request.FILES for file uploads
@@ -3085,7 +3085,7 @@ class StudentDiscountAssignView(LoginRequiredMixin, PermissionRequiredMixin, For
         context['student'] = student
 
         # Get available discount applications for current/specified term
-        school_setting = SchoolSettingModel.objects.first()
+        school_setting = SchoolAcademicInfoModel.objects.first()
         context['available_discounts'] = DiscountApplicationModel.objects.filter(
             Q(session=school_setting.session, term=school_setting.term) |
             Q(session__isnull=True, term__isnull=True)  # Global discounts
@@ -3259,7 +3259,7 @@ class DepositPaymentSelectStaffView(LoginRequiredMixin, PermissionRequiredMixin,
 def staff_deposit_payment_list_view(request):
     session_id = request.GET.get('session', None)
     term_id = request.GET.get('term', None)
-    school_setting = SchoolSettingModel.objects.first()
+    school_setting = SchoolAcademicInfoModel.objects.first()
     if not session_id:
         session = school_setting.session
     else:
@@ -3297,7 +3297,7 @@ def staff_deposit_detail_view(request, pk):
 @permission_required("finance.add_studentfundingmodel", raise_exception=True)
 def staff_deposit_create_view(request, staff_pk):
     staff = StaffModel.objects.get(pk=staff_pk)
-    setting = SchoolSettingModel.objects.first()
+    setting = SchoolAcademicInfoModel.objects.first()
 
     if request.method == 'POST':
         form = StaffFundingForm(request.POST, request.FILES)  # Pass request.FILES for file uploads
@@ -3494,7 +3494,7 @@ class StaffUploadDepositView(LoginRequiredMixin, CreateView):
         # --- END KEY ---
 
         # Set session and term from settings
-        setting = SchoolSettingModel.objects.first()
+        setting = SchoolAcademicInfoModel.objects.first()
         if setting:
             if not deposit.session:
                 deposit.session = setting.session
