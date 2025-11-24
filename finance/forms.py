@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import Sum, Q
 from django.forms import inlineformset_factory, CheckboxSelectMultiple
-from school_setting.models import TermModel, SessionModel, SchoolSettingModel
+from school_setting.models import TermModel, SessionModel, SchoolSettingModel, SchoolAcademicInfoModel
 from academic.models import ClassesModel, ClassSectionModel
 from finance.models import FinanceSettingModel, SupplierPaymentModel, PurchaseAdvancePaymentModel, FeeModel, \
     FeeGroupModel, FeeMasterModel, InvoiceGenerationJob, FeePaymentModel, ExpenseCategoryModel, ExpenseModel, \
@@ -963,7 +963,7 @@ class DiscountApplicationForm(forms.ModelForm):
         # 1. Set default session and term from SchoolSettingModel
         try:
             # Assumes SchoolSettingModel is a singleton (has only one record)
-            settings = SchoolSettingModel.objects.get()
+            settings = SchoolAcademicInfoModel.objects.get()
             if settings.session:
                 self.fields['session'].initial = settings.session.pk
             if settings.term:
