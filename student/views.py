@@ -361,6 +361,8 @@ class StudentDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView)
 
         context['academic_setting'] = academic_setting
         context['student'] = student
+        context['utility_list'] = UtilityModel.objects.all()
+
 
         return context
 
