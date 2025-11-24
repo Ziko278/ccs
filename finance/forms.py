@@ -1005,7 +1005,7 @@ class StudentDiscountAssignForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         # Show available discount applications
-        school_setting = SchoolSettingModel.objects.first()
+        school_setting = SchoolAcademicInfoModel.objects.first()
 
         queryset = DiscountApplicationModel.objects.filter(
             Q(session=school_setting.session, term=school_setting.term) |
