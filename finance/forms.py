@@ -137,13 +137,16 @@ class FeeForm(forms.ModelForm):
 
     class Meta:
         model = FeeModel
-        fields = ['name', 'code', 'occurrence', 'payment_term', 'description']
+        fields = ['name', 'code', 'occurrence', 'payment_term', 'description', 'required_utility',
+            'parent_bound']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'code': forms.TextInput(attrs={'class': 'form-control'}),
             'occurrence': forms.Select(attrs={'class': 'form-select'}),
             'payment_term': forms.Select(attrs={'class': 'form-select'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'required_utility': forms.Select(attrs={'class': 'form-select'}),
+            'parent_bound': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):
