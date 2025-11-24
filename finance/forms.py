@@ -32,7 +32,7 @@ def validate_file_size(f):
 
 
 def get_current_setting():
-    return SchoolSettingModel.objects.first()
+    return SchoolAcademicInfoModel.objects.first()
 
 
 def normalize_whitespace(s: str) -> str:
