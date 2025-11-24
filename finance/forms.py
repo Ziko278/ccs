@@ -388,7 +388,7 @@ class ExpenseForm(forms.ModelForm):
         ).order_by("name")
 
         # Staff queryset - only active staff
-        active_staff = StaffModel.objects.filter(status='active').order_by('first_name', 'last_name')
+        active_staff = StaffModel.objects.filter(status='active').order_by('surname', 'last_name')
         self.fields["prepared_by"].queryset = active_staff
         self.fields["authorised_by"].queryset = active_staff
         self.fields["collected_by"].queryset = active_staff
