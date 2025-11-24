@@ -68,7 +68,7 @@ $(document).ready(function(){
     staff_name_list = {}
     staff_name_list = {}
     for(const key in staff_list){
-        staff_name_list[staff_list[key]['pk']] = staff_list[key]['fields']['first_name']  + " " + staff_list[key]['fields']['last_name']
+        staff_name_list[staff_list[key]['pk']] = staff_list[key]['fields']['surname']  + " " + staff_list[key]['fields']['last_name']
         staff_name_list[staff_list[key]['pk']] = staff_name_list[staff_list[key]['pk']].toLowerCase()
 
     }
