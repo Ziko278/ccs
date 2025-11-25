@@ -1,7 +1,7 @@
 from django.contrib.auth import forms
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm, Select, TextInput, DateInput, CheckboxSelectMultiple, Textarea, \
-    ModelMultipleChoiceField
+    ModelMultipleChoiceField, HiddenInput
 from student.models import ParentsModel, StudentsModel, StudentSettingModel, UtilityModel
 
 
@@ -188,7 +188,7 @@ class StudentEditForm(ModelForm):
 
     class Meta:
         model = StudentsModel
-        exclude = ['type', 'user', 'status', 'parent']
+        exclude = ['type', 'user', 'status']
         widgets = {
             'school': TextInput(attrs={
                 'class': 'form-control',
@@ -196,7 +196,8 @@ class StudentEditForm(ModelForm):
             'date_of_birth': TextInput(attrs={
                 'type': 'date',
                 'class': 'form-control',
-            })
+            }),
+            'parent': HiddenInput()
         }
 
 

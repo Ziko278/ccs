@@ -62,6 +62,7 @@ def disable_student_view(request, pk):
 
     return redirect(reverse('student_detail', kwargs={'pk': pk}))
 
+
 class ParentCreateView(LoginRequiredMixin, PermissionRequiredMixin, SuccessMessageMixin, CreateView):
     model = ParentsModel
     permission_required = 'student.add_parentsmodel'
@@ -363,7 +364,6 @@ class StudentDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView)
         context['student'] = student
         context['utility_list'] = UtilityModel.objects.all()
 
-
         return context
 
 
@@ -395,9 +395,13 @@ class StudentUpdateView(LoginRequiredMixin, PermissionRequiredMixin, SuccessMess
             context['student_setting'] = StudentSettingModel.objects.filter(
                 type=self.request.user.profile.type).first()
             context['class_list'] = ClassesModel.objects.filter(type=self.request.user.profile.type).order_by('name')
+            parent_list = ParentsModel.objects.filter(type=self.request.user.profile.type)
+
         else:
+            parent_list = ParentsModel.objects.all()
             context['student_setting'] = StudentSettingModel.objects.filter().first()
             context['class_list'] = ClassesModel.objects.all().order_by('name')
+        context['parent_list'] = serializers.serialize("json", parent_list)
         return context
 
 
