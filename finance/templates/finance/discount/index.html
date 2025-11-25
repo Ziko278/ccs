@@ -87,7 +87,7 @@
                     <li class="list-group-item"><strong>Applicable Fees/Classes:</strong> Which fees or classes this discount can apply to.</li>
                 </ul>
                 <hr>
-                <p><strong>Rate Locks (Applications):</strong> To *use* a blueprint, you must create a "Rate Lock" (Application). This locks the rate (e.g., "10%") for a specific Quarter (e.g., "First Quarter 2025").</p>
+                <p><strong>Rate Locks (Applications):</strong> To *use* a blueprint, you must create a "Rate Lock" (Application). This locks the rate (e.g., "10%") for a specific Term (e.g., "First Term 2025").</p>
             </div>
              <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
         </div>
@@ -133,11 +133,11 @@
             <div class="modal-content">
                 <div class="modal-header"><h5 class="modal-title"><b>Add New Discount Rate Lock</b></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
-                    <p class="small text-muted">This locks a discount's rate (e.g., 10%) for a specific session/Quarter. If you leave Session/Quarter blank, the *current active* ones will be used.</p>
+                    <p class="small text-muted">This locks a discount's rate (e.g., 10%) for a specific session/Term. If you leave Session/Term blank, the *current active* ones will be used.</p>
                     <div class="row g-3">
                         <div class="col-12"><label class="form-label">Discount Blueprint</label>{{ application_form.discount }}</div>
                         <div class="col-md-6"><label class="form-label">Session (Optional)</label>{{ application_form.session }}</div>
-                        <div class="col-md-6"><label class="form-label">Quarter (Optional)</label>{{ application_form.term }}</div>
+                        <div class="col-md-6"><label class="form-label">Term (Optional)</label>{{ application_form.term }}</div>
                         <div class="col-md-6"><label class="form-label">Discount Type</label>{{ application_form.discount_type }}</div>
                         <div class="col-md-6"><label class="form-label">Locked Rate / Amount</label>{{ application_form.discount_amount }}</div>
                     </div>
