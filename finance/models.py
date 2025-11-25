@@ -16,7 +16,7 @@ from inventory.models import SupplierModel, PurchaseOrderModel, PurchaseAdvanceM
 from human_resource.models import StaffModel
 # SUGGESTED NEW IMPORTS
 from student.models import StudentsModel 
-from school_setting.models import SessionModel, TermModel, SchoolSettingModel
+from school_setting.models import SessionModel, TermModel, SchoolSettingModel, SchoolAcademicInfoModel
 from academic.models import ClassesModel, ClassSectionModel
 from django.utils.translation import gettext_lazy as _
 
@@ -74,7 +74,7 @@ class StudentFundingModel(models.Model):
         # ✔️ ROBUSTNESS: Improved logic to safely auto-populate session and term.
         if self.session is None or self.term is None:
             try:
-                setting = SchoolSettingModel.objects.first()
+                setting = SchoolAcademicInfoModel.objects.first()
                 if setting:
                     if self.session is None: self.session = setting.session
                     if self.term is None: self.term = setting.term
@@ -132,7 +132,7 @@ class StaffFundingModel(models.Model):
         # ✔️ ROBUSTNESS: Improved logic to safely auto-populate session and term.
         if self.session is None or self.term is None:
             try:
-                setting = SchoolSettingModel.objects.first()
+                setting = SchoolAcademicInfoModel.objects.first()
                 if setting:
                     if self.session is None: self.session = setting.session
                     if self.term is None: self.term = setting.term
@@ -416,12 +416,12 @@ class InvoiceGenerationJob(models.Model):
 
 
 def get_current_session():
-    setting = SchoolSettingModel.objects.first()
+    setting = SchoolAcademicInfoModel.objects.first()
     return setting.session if setting and getattr(setting, "session", None) else None
 
 
 def get_current_term():
-    setting = SchoolSettingModel.objects.first()
+    setting = SchoolAcademicInfoModel.objects.first()
     return setting.term if setting and getattr(setting, "term", None) else None
 
 
@@ -814,7 +814,7 @@ class SalaryAdvance(models.Model):
 
     def save(self, *args, **kwargs):
         if self.session is None or self.term is None:
-            setting = SchoolSettingModel.objects.first()
+            setting = SchoolAcademicInfoModel.objects.first()
             if setting:
                 if self.session is None: self.session = setting.session
                 if self.term is None: self.term = setting.term
@@ -859,7 +859,7 @@ class StaffLoan(models.Model):
 
     def save(self, *args, **kwargs):
         if self.session is None or self.term is None:
-            setting = SchoolSettingModel.objects.first()
+            setting = SchoolAcademicInfoModel.objects.first()
             if setting:
                 if self.session is None: self.session = setting.session
                 if self.term is None: self.term = setting.term
@@ -883,7 +883,7 @@ class StaffLoanRepayment(models.Model):
 
     def save(self, *args, **kwargs):
         if self.session is None or self.term is None:
-            setting = SchoolSettingModel.objects.first()
+            setting = SchoolAcademicInfoModel.objects.first()
             if setting:
                 if self.session is None: self.session = setting.session
                 if self.term is None: self.term = setting.term
@@ -933,7 +933,7 @@ class SalaryRecord(models.Model):
     def save(self, *args, **kwargs):
         # Auto-populate session and term if not set
         if self.session is None or self.term is None:
-            setting = SchoolSettingModel.objects.first()
+            setting = SchoolAcademicInfoModel.objects.first()
             if setting:
                 if self.session is None: self.session = setting.session
                 if self.term is None: self.term = setting.term
@@ -1016,7 +1016,7 @@ class SupplierPaymentModel(models.Model):
             self.receipt_number = f"PMT-{timezone.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
 
         if self.session is None or self.term is None:
-            setting = SchoolSettingModel.objects.first()
+            setting = SchoolAcademicInfoModel.objects.first()
             if setting:
                 if self.session is None: self.session = setting.session
                 if self.term is None: self.term = setting.term
@@ -1189,7 +1189,7 @@ class DiscountApplicationModel(models.Model):
         if self.session is None and self.term is None:
             try:
                 # Assuming SchoolSettingModel is a singleton (has only one record)
-                settings = SchoolSettingModel.objects.first()
+                settings = SchoolAcademicInfoModel.objects.first()
                 if settings.session and settings.term:
                     self.session = settings.session
                     self.term = settings.term

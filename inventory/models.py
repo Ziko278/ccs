@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 import uuid
 
 from human_resource.models import StaffModel
-from school_setting.models import SessionModel, SchoolSettingModel, TermModel
+from school_setting.models import SessionModel, SchoolSettingModel, TermModel, SchoolAcademicInfoModel
 from student.models import StudentsModel
 
 # ================== INVENTORY MODELS ==================
@@ -195,7 +195,7 @@ class PurchaseOrderModel(models.Model):
         if not self.order_number:
             self.order_number = f"PO-{timezone.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
         if self.session is None or self.term is None:
-            setting = SchoolSettingModel.objects.first()
+            setting = SchoolAcademicInfoModel.objects.first()
             if setting:
                 if self.session is None:
                     self.session = setting.session
@@ -299,7 +299,7 @@ class StockInModel(models.Model):
             self.receipt_number = f"STK-IN-{timezone.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
 
         if self.session is None or self.term is None:
-            setting = SchoolSettingModel.objects.first()
+            setting = SchoolAcademicInfoModel.objects.first()
             if setting:
                 if self.session is None:
                     self.session = setting.session
@@ -436,7 +436,7 @@ class StockOutModel(models.Model):
             self.total_cost = self.quantity_removed * self.unit_cost
 
         if self.session is None or self.term is None:
-            setting = SchoolSettingModel.objects.first()
+            setting = SchoolAcademicInfoModel.objects.first()
             if setting:
                 if self.session is None:
                     self.session = setting.session
@@ -472,7 +472,7 @@ class StockTransferModel(models.Model):
         if not self.receipt_number:
             self.receipt_number = f"STK-TRN-{timezone.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
         if self.session is None or self.term is None:
-            setting = SchoolSettingModel.objects.first()
+            setting = SchoolAcademicInfoModel.objects.first()
             if setting:
                 if self.session is None:
                     self.session = setting.session
@@ -547,7 +547,7 @@ class InventoryAssignmentModel(models.Model):
     def save(self, *args, **kwargs):
         # Auto-set session and term if not provided
         if not self.session or not self.term:
-            setting = SchoolSettingModel.objects.first()
+            setting = SchoolAcademicInfoModel.objects.first()
             if setting:
                 if not self.session:
                     self.session = setting.session
@@ -707,7 +707,7 @@ class SaleModel(models.Model):
         if not self.transaction_id:
             self.transaction_id = f"SALE-{timezone.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:4].upper()}"
         if not self.session or not self.term:
-            setting = SchoolSettingModel.objects.first()
+            setting = SchoolAcademicInfoModel.objects.first()
             if setting:
                 if not self.session: self.session = setting.session
                 if not self.term: self.term = setting.term
@@ -816,7 +816,7 @@ class PurchaseAdvanceModel(models.Model):
 
         # Auto-set session and term
         if not self.session or not self.term:
-            setting = SchoolSettingModel.objects.first()
+            setting = SchoolAcademicInfoModel.objects.first()
             if setting:
                 if not self.session:
                     self.session = setting.session
@@ -1034,7 +1034,7 @@ class DirectSaleModel(models.Model):
 
         # Auto-set session and term if not provided
         if not self.session or not self.term:
-            setting = SchoolSettingModel.objects.first()
+            setting = SchoolAcademicInfoModel.objects.first()
             if setting:
                 if not self.session:
                     self.session = setting.session
