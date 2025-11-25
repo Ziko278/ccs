@@ -1088,7 +1088,7 @@ class DiscountModel(models.Model):
         FIXED = 'fixed', 'Fixed Amount ($)'
 
     class DiscountOccurrence(models.TextChoices):
-        TERMLY = 'quaterly', 'Quaterly'
+        TERMLY = 'termly', 'Termly'
         ANNUALLY = 'annually', 'Annually'
         ONE_TIME = 'one_time', 'One Time (Single Term)'
 
