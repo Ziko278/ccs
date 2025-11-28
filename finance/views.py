@@ -2076,7 +2076,7 @@ def deposit_get_class_students_by_reg_number(request):
 
 
 @login_required
-@permission_required("student.view_studentfundingmodel", raise_exception=True)
+@permission_required("finance.view_studentfundingmodel", raise_exception=True)
 def deposit_payment_list_view(request):
     session_id = request.GET.get('session', None)
     school_setting = SchoolAcademicInfoModel.objects.first()
@@ -2099,7 +2099,7 @@ def deposit_payment_list_view(request):
 
 
 @login_required
-@permission_required("student.view_studentfundingmodel", raise_exception=True)
+@permission_required("finance.view_studentfundingmodel", raise_exception=True)
 def pending_deposit_payment_list_view(request):
     session_id = request.GET.get('session', None)
     session = SessionModel.objects.get(id=session_id)
@@ -2119,7 +2119,7 @@ def pending_deposit_payment_list_view(request):
 
 
 @login_required
-@permission_required("student.add_studentfundingmodel", raise_exception=True)
+@permission_required("finance.add_studentfundingmodel", raise_exception=True)
 def deposit_create_view(request, student_pk):
     student = StudentsModel.objects.get(pk=student_pk)
     setting = SchoolAcademicInfoModel.objects.first()
@@ -2194,7 +2194,7 @@ def deposit_detail_view(request, pk):
 
 
 @login_required
-@permission_required("student.change_studentfundingmodel", raise_exception=True)
+@permission_required("finance.change_studentfundingmodel", raise_exception=True)
 @transaction.atomic
 def confirm_payment_view(request, payment_id):
     payment = get_object_or_404(StudentFundingModel, pk=payment_id)
@@ -2243,7 +2243,7 @@ def confirm_payment_view(request, payment_id):
 
 # --- Decline Payment View ---
 @login_required
-@permission_required("student.change_studentfundingmodel", raise_exception=True)
+@permission_required("finance.change_studentfundingmodel", raise_exception=True)
 @transaction.atomic
 def decline_payment_view(request, payment_id):
     payment = get_object_or_404(StudentFundingModel, pk=payment_id)
