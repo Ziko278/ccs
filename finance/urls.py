@@ -27,6 +27,7 @@ from finance.views import (
     StudentDiscountIndexView, DepositPaymentSelectStaffView, staff_deposit_payment_list_view, staff_deposit_detail_view,
     staff_pending_deposit_payment_list_view, staff_confirm_payment_view, staff_decline_payment_view,
     staff_deposit_create_view, StaffUploadDepositView, StaffDepositHistoryView, ExpensePrintVoucherView,
+    income_expense_report, payment_review_view, get_invoice_items_json,
 )
 
 urlpatterns = [
@@ -106,6 +107,9 @@ urlpatterns = [
     path('finance/student/<int:pk>/bulk-payment/', BulkFeePaymentView.as_view(), name='finance_bulk_payment_create'),
 
     # Action URLs for individual payments
+    path('get-invoice-items/<int:invoice_id>/', get_invoice_items_json, name='get_invoice_items_json'),
+    path('payment/review/<int:payment_id>/', payment_review_view, name='review_fee_payment'),
+
     path('finance/student-payments/<int:pk>/revert/', FeePaymentRevertView.as_view(), name='finance_fee_payment_revert'),
     path('finance/student-payments/<int:pk>/receipt/', FeePaymentReceiptView.as_view(), name='finance_fee_payment_receipt'),
     path('finance/student-payments/<int:pk>/receipt/', FeePaymentReceiptView.as_view(), name='finance_fee_payment_receipt'),
@@ -209,4 +213,7 @@ urlpatterns = [
 
     path('fee/dashboard/', fee_dashboard, name='fee_dashboard'),
     path('dashboard/', finance_dashboard, name='finance_dashboard'),
+
+    path('reports/income-expense/', income_expense_report, name='income_expense_report'),
+
 ]

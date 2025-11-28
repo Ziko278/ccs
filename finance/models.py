@@ -322,7 +322,6 @@ class InvoiceModel(models.Model):
         return self.amount_after_discount - self.amount_paid
 
 
-
 class InvoiceItemModel(models.Model):
     """A single line item on an invoice, representing a specific fee."""
     invoice = models.ForeignKey(InvoiceModel, on_delete=models.CASCADE, related_name='items')
@@ -330,6 +329,9 @@ class InvoiceItemModel(models.Model):
     description = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    paid_by_sibling = models.ForeignKey(StudentsModel, on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='family_fees_covered',
+                                        help_text="If this is a parent-bound fee paid by a sibling")
 
     @property
     def total_discount(self):
