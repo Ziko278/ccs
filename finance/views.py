@@ -1117,7 +1117,7 @@ class BulkFeePaymentView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
                         amount=payment_for_this_invoice,
                         payment_mode=form.cleaned_data['payment_mode'],
                         date=form.cleaned_data['date'],
-                    
+
                         reference=form.cleaned_data.get('reference') or f"bulk-pmt-{invoice.invoice_number}",
                         status=FeePaymentModel.PaymentStatus.CONFIRMED,
                         confirmed_by=self.request.user
