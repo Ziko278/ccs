@@ -865,7 +865,7 @@ class StudentFinancialDashboardView(LoginRequiredMixin, PermissionRequiredMixin,
         student = get_object_or_404(StudentsModel, pk=self.kwargs['pk'])
         context['student'] = student
 
-        school_setting = SchoolSettingModel.objects.first()
+        school_setting = SchoolAcademicInfoModel.objects.first()
 
         # --- NEW LOGIC: Load a specific invoice or the current one ---
         invoice_id = self.request.GET.get('invoice_id')
