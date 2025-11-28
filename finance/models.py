@@ -1235,7 +1235,7 @@ class StudentDiscountModel(models.Model):
         verbose_name = "Student Discount Record"
 
     def __str__(self):
-        return f"{self.student.first_name} received ₦{self.amount_discounted} discount on {self.invoice_item.description}"
+        return f"{self.student.__str__()} received ₦{self.amount_discounted} discount on {self.invoice_item.description}"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
