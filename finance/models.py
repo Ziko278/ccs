@@ -366,7 +366,7 @@ class FeePaymentModel(models.Model):
         FAILED = 'failed', 'Failed'
 
     invoice = models.ForeignKey(InvoiceModel, on_delete=models.PROTECT, related_name='payments')
-    bank_account = models.ForeignKey('SchoolBankDetail', on_delete=models.PROTECT)
+    bank_account = models.ForeignKey('SchoolBankDetail', null=True, blank=True, on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_mode = models.CharField(max_length=20, choices=PaymentMode.choices)
     date = models.DateField(default=timezone.now)

@@ -182,7 +182,8 @@ class StudentsModel(models.Model):
     age = models.IntegerField(null=True, blank=True)
     student_class = models.ForeignKey(ClassesModel, null=True, on_delete=models.CASCADE)
     class_section = models.ForeignKey(ClassSectionModel, null=True, on_delete=models.CASCADE)
-    parent = models.ForeignKey(ParentsModel, on_delete=models.CASCADE, blank=True, related_name='students')
+    parent = models.ForeignKey(ParentsModel, on_delete=models.PROTECT, related_name='wards')
+
     RELATIONSHIP_WITH_PARENT = (
         ('father', 'FATHER'), ('mother', 'MOTHER'), ('sister', 'SISTER'), ('brother', 'BROTHER'), ('uncle', 'UNCLE'),
         ('aunty', 'AUNTY'), ('pastor', 'PASTOR'), ('others', 'OTHERS')
