@@ -862,7 +862,7 @@ class StudentFinancialDashboardView(LoginRequiredMixin, PermissionRequiredMixin,
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        student = get_object_or_404(StudentModel, pk=self.kwargs['pk'])
+        student = get_object_or_404(StudentsModel, pk=self.kwargs['pk'])
         context['student'] = student
 
         school_setting = SchoolSettingModel.objects.first()
@@ -896,7 +896,7 @@ class StudentFinancialDashboardView(LoginRequiredMixin, PermissionRequiredMixin,
         return context
 
     def post(self, request, *args, **kwargs):
-        student = get_object_or_404(StudentModel, pk=self.kwargs.get('pk'))
+        student = get_object_or_404(StudentsModel, pk=self.kwargs.get('pk'))
         invoice_id = request.POST.get('invoice_id')
         invoice = get_object_or_404(InvoiceModel, pk=invoice_id)
 
