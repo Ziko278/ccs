@@ -27,7 +27,8 @@ from finance.views import (
     StudentDiscountIndexView, DepositPaymentSelectStaffView, staff_deposit_payment_list_view, staff_deposit_detail_view,
     staff_pending_deposit_payment_list_view, staff_confirm_payment_view, staff_decline_payment_view,
     staff_deposit_create_view, StaffUploadDepositView, StaffDepositHistoryView, ExpensePrintVoucherView,
-    income_expense_report, payment_review_view, get_invoice_items_json,
+    income_expense_report, payment_review_view, get_invoice_items_json, StudentDiscountDeleteView, InvoiceDeleteView,
+    InvoiceItemDeleteView,
 )
 
 urlpatterns = [
@@ -86,6 +87,7 @@ urlpatterns = [
     path('discounts/select-student/', DiscountSelectStudentView.as_view(), name='finance_discount_select_student'),
     path('discount/student/<int:student_pk>/assign/', StudentDiscountAssignView.as_view(), name='finance_discount_assign'),
     path('discounts/index/', StudentDiscountIndexView.as_view(), name='finance_discount_index'),
+    path('discounts/delete/<int:pk>/', StudentDiscountDeleteView.as_view(), name='finance_discount_delete'),
 
 
     # --- Invoicing & Payment ---
@@ -94,6 +96,10 @@ urlpatterns = [
     path('invoices/job/<uuid:pk>/', InvoiceJobStatusView.as_view(), name='finance_invoice_job_status'),
     path('invoices/job/<uuid:pk>/api/', invoice_job_status_api, name='finance_invoice_job_status_api'),
     path('invoices/<int:pk>/', InvoiceDetailView.as_view(), name='finance_invoice_detail'),
+
+    path('invoices/<int:pk>/delete/', InvoiceDeleteView.as_view(), name='finance_invoice_delete'),
+    path('invoices/items/<int:pk>/delete/', InvoiceItemDeleteView.as_view(), name='finance_invoice_item_delete'),
+
 
     path('student-payments/search/', StudentFeeSearchView.as_view(), name='finance_student_payment_search'),
     path('student-payments/ajax/get-by-class/', get_students_by_class_ajax, name='finance_ajax_get_students_by_class'),

@@ -321,6 +321,9 @@ class InvoiceModel(models.Model):
         """Balance after discounts and payments"""
         return self.amount_after_discount - self.amount_paid
 
+    def has_confirmed_payments(self):
+        """Check if the invoice has any confirmed payments"""
+        return self.payments.filter(status='confirmed').exists()
 
 class InvoiceItemModel(models.Model):
     """A single line item on an invoice, representing a specific fee."""
