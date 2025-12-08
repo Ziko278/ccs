@@ -6,14 +6,13 @@ urlpatterns = [
     path('my-classmate', StudentClassMateView.as_view(), name='student_classmate'),
 
     path('fee/dashboard', StudentFeeDashboardView.as_view(), name='student_fee_dashboard'),
-    path('fee/index', StudentFeeView.as_view(), name='student_fee'),
-    path('fee/upload', StudentFeePaymentCreateView.as_view(), name='student_fee_create'),
-    path('fee/payments', student_fee_payment_list_view, name='student_fee_payments'),
-    path('fee/payments/<int:pk>/detail', StudentFeeDetailView.as_view(), name='student_fee_detail'),
-    path('fee/select-method', select_fee_method, name='select_fee_method'),
-    path('fee/pay-multiple-fee', student_bulk_payment_create_view, name='student_bulk_payment'),
-    path('fee/payment/<int:payment_pk>/<int:student_pk>/create', student_create_fee__payment_summary,
-         name='student_fee_payment_summary_create'),
+
+    path('account-details/', AccountDetailView.as_view(), name='parent_account_detail'),
+    path('fees/', FeeInvoiceListView.as_view(), name='parent_fee_list'),
+    path('fees/invoice/<int:pk>/', FeeInvoiceDetailView.as_view(), name='parent_fee_invoice_detail'),
+    # Added detail view
+    path('fees/upload/', FeeUploadView.as_view(), name='parent_fee_upload'),
+    path('fees/history/', FeeUploadHistoryView.as_view(), name='parent_fee_history'),
 
     path('dashboard', StudentDashboardView.as_view(), name='student_dashboard'),
     path('result/<int:pk>/current-result', current_term_result, name='student_current_result'),

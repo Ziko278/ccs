@@ -5,12 +5,12 @@
 
 {% block title %}Payment Upload History - {{ selected_ward.first_name }}{% endblock %}
 
-{% block content %}
+{% block 'main' %}
 <div class="pagetitle">
   <h1>Payment Upload History</h1>
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'parent_dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'student_dashboard' %}">Dashboard</a></li>
       <li class="breadcrumb-item">Fees</li>
       <li class="breadcrumb-item active">Upload History</li>
     </ol>
