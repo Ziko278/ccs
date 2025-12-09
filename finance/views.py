@@ -4487,14 +4487,7 @@ def get_invoice_items_json(request, invoice_id):
     Returns JSON data with item details including discounts.
     """
     try:
-        # Get the parent's selected ward from session
-        parent = request.user.parent_profile.parent
-        ward_id = request.session.get('selected_ward_id')
-
-        if not ward_id:
-            return JsonResponse({'error': 'No ward selected'}, status=400)
-
-        ward = student = request.user.profile.student
+        ward = request.user.profile.student
 
         # Get the invoice and verify it belongs to this ward
         invoice = InvoiceModel.objects.get(pk=invoice_id, student=ward)
