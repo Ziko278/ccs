@@ -4494,7 +4494,7 @@ def get_invoice_items_json(request, invoice_id):
         if not ward_id:
             return JsonResponse({'error': 'No ward selected'}, status=400)
 
-        ward = parent.wards.get(pk=ward_id)
+        ward = student = request.user.profile.student
 
         # Get the invoice and verify it belongs to this ward
         invoice = InvoiceModel.objects.get(pk=invoice_id, student=ward)
