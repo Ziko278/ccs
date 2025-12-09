@@ -273,7 +273,7 @@ function loadInvoiceItems(invoiceId) {
     container.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"></div> Loading fees...</div>';
 
     // Fetch invoice data - you'll need to create an endpoint or embed data
-    fetch(`/admin/finance/get-invoice-items/${invoiceId}/`, {
+    fetch(`/finance/get-invoice-items/${invoiceId}/`, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
         }
