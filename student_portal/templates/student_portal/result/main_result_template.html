@@ -146,7 +146,7 @@
 						{% else %}
 						<th>CLASS: {{ result_list.student_class|upper }} {{ result_list.class_section|upper }}</th>
 						{% endif %}
-						<th>SEX: {{student.gender|title}}</th>
+						<th>GENDER: {{student.gender|title}}</th>
 
 					</tr>
 
@@ -164,32 +164,35 @@
 				</table>
 				{% else %}
 				<table class="table table-bordered" style="color:black;font-size:15px">
-					<tr>
-						<th>STUDENT'S NAME: {{ student|title }}</th>
-						<th>ADM NO.:{{ student.registration_number|upper }}</th>
-						<th>NO. OF TIMES <br>SCHOOL OPENED: {% if behaviour_result.result_remark.total_attendance %} {{ behaviour_result.result_remark.total_attendance }} {% else %}{{ student.attendance.total }} {% endif %}</th>
-						{% if result_list.student_class.result_type != 'text' and result_type != 'midterm' %}
-						<th>CUM. TOTAL: {{ total_score|intcomma }}</th>
-						{% endif %}
-					</tr>
 
 					<tr>
-						<th>DATE OF BIRTH: {% if student.date_of_birth %} {{ student.date_of_birth }} {% endif %}</th>
+						<th>STUDENT'S NAME: {{ student|title }}</th>
 						{% if result %}
 						<th>CLASS: {{ result.student_class|upper }} {{ result.class_section|upper }}</th>
 						{% else %}
 						<th>CLASS: {{ result_list.student_class|upper }} {{ result_list.class_section|upper }}</th>
 						{% endif %}
-						<th>NO. OF TIMES PRESENT:{% if behaviour_result.result_remark.present_attendance %} {{ behaviour_result.result_remark.present_attendance }} {% else %} {{ student.attendance.present }} {% endif %}</th>
-						{% if result_list.student_class.result_type != 'text' and result_type != 'midterm' %}
-						<th>CUM. AVERAGE: {{ result.student_average }}</th>
+						<th>GENDER: {{student.gender|title}}</th>
+
+					</tr>
+
+					<tr>
+						{% if result_list.student_class.result_type != 'text' %}
+						<th>CUM. TOTAL: {{ total_score|intcomma }}</th>
+						{% endif %}
+						{% if result_list.student_class.result_type != 'text' %}
+						<th>STUDENT AVERAGE: {{ result.student_average }}</th>
+						<th>CLASS AVERAGE: {{ result.class_average }}</th>
 						{% endif %}
 					</tr>
 
 					<tr>
-						<th>SEX: {{student.gender|title}}</th>
-						<th colspan="3">RESUMPTION DATE: {{ academic_info.next_term_open|date }}</th>
+						<th>NO. OF TIMES <br>SCHOOL OPENED: {% if behaviour_result.result_remark.total_attendance %} {{ behaviour_result.result_remark.total_attendance }} {% else %}{{ student.attendance.total }} {% endif %}</th>
+						<th>NO. OF TIMES PRESENT:{% if behaviour_result.result_remark.present_attendance %} {{ behaviour_result.result_remark.present_attendance }} {% else %} {{ student.attendance.present }} {% endif %}</th>
+						<th>RESUMPTION DATE: {{ academic_info.next_term_open|date }}</th>
 					</tr>
+
+
 				</table>
 				{% endif %}
 			</div>
@@ -517,7 +520,6 @@
 					</tr>
 					<tr>
 						<td style="background-color:#2c5f8d;color:white;border:1px solid black;padding:5px;text-align:left">
-							<b>{% if result_type != 'midterm' %}Comment:{%endif %}</b> {% if result %}{{ result.head_teacher_comment }}{% else %}{{ result_list.head_teacher_comment }}{% endif %}
 						</td>
 					</tr>
 				</table>
