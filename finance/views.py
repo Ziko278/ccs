@@ -337,7 +337,7 @@ class PurchaseAdvanceAccountsListView(LoginRequiredMixin, PermissionRequiredMixi
             queryset = queryset.filter(term_id=term_id)
         if query:
             queryset = queryset.filter(
-                Q(staff__first_name__icontains=query) | Q(staff__last_name__icontains=query) |
+                Q(staff__surname__icontains=query) | Q(staff__last_name__icontains=query) |
                 Q(advance_number__icontains=query)
             ).distinct()
 
@@ -717,7 +717,7 @@ class InvoiceListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
             # Annotate the student's full name to make it searchable
             queryset = queryset.annotate(
                 student_full_name=Concat(
-                    'student__first_name', Value(' '), 'student__last_name'
+                    'student__surname', Value(' '), 'student__last_name'
                 )
             ).filter(
                 Q(student_full_name__icontains=search_query) |
@@ -1119,7 +1119,7 @@ class FeePaymentListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
             # Annotate the student's full name to make it searchable
             queryset = queryset.annotate(
                 student_full_name=Concat(
-                    'invoice__student__first_name', Value(' '), 'invoice__student__last_name'
+                    'invoice__student__surname', Value(' '), 'invoice__student__last_name'
                 )
             ).filter(
                 Q(student_full_name__icontains=search_query) |
@@ -1739,7 +1739,7 @@ class StaffBankDetailListView(LoginRequiredMixin, PermissionRequiredMixin, ListV
 
     def get_queryset(self):
         return StaffBankDetail.objects.select_related('staff__account__user').order_by(
-            'staff__account__user__first_name')
+            'staff__account__user__surname')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1865,7 +1865,7 @@ class SalaryStructureListView(LoginRequiredMixin, PermissionRequiredMixin, ListV
 
     def get_queryset(self):
         return SalaryStructure.objects.select_related('staff__account__user').order_by(
-            'staff__account__user__first_name')
+            'staff__account__user__surname')
 
 
 class SalaryStructureCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
@@ -3520,7 +3520,7 @@ class StudentDiscountIndexView(LoginRequiredMixin, PermissionRequiredMixin, List
         student_name = self.request.GET.get('student_name')
         if student_name:
             queryset = queryset.filter(
-                Q(student__first_name__icontains=student_name) |
+                Q(student__surname__icontains=student_name) |
                 Q(student__last_name__icontains=student_name) |
                 Q(student__registration_number__icontains=student_name)
             )
@@ -3744,7 +3744,7 @@ def staff_confirm_payment_view(request, payment_id):
         staff = UserProfileModel.objects.get(user=request.user).staff
         staff_url = reverse('staff_detail', kwargs={'pk': staff.pk}) if staff else '#'
 
-        messages.success(request, f"Payment of ₦{payment.amount} for {staff.first_name} {staff.last_name} confirmed successfully.")
+        messages.success(request, f"Payment of ₦{payment.amount} for {staff.surname} {staff.last_name} confirmed successfully.")
         return redirect(reverse('staff_deposit_index')) # Replace with your actual URL name
 
     else:
@@ -3780,7 +3780,7 @@ def staff_decline_payment_view(request, payment_id):
             f"%B {localized_created_at.day}{get_day_ordinal_suffix(localized_created_at.day)} %Y %I:%M%p"
         )
 
-        messages.success(request, f"Payment of ₦{payment.amount} for {staff.first_name} {staff.last_name} has been declined.")
+        messages.success(request, f"Payment of ₦{payment.amount} for {staff.surname} {staff.last_name} has been declined.")
         return redirect(reverse('staff_deposit_index'))  # Replace with your actual URL name
     else:
         # For GET requests to this URL, you might want to display a confirmation prompt
@@ -4504,7 +4504,7 @@ def get_invoice_items_json(request, invoice_id):
                 'amount_paid': str(item.amount_paid),
                 'balance': str(item.balance),
                 'paid_by_sibling': bool(item.paid_by_sibling),
-                'sibling_name': item.paid_by_sibling.first_name if item.paid_by_sibling else None
+                'sibling_name': item.paid_by_sibling.surname if item.paid_by_sibling else None
             })
 
         return JsonResponse({

@@ -378,7 +378,7 @@ class InvoiceItemModel(models.Model):
 
     def __str__(self):
         return self.description
-    
+
 
 class FeePaymentModel(models.Model):
     """Records a single payment made by a student, applied against an invoice."""
