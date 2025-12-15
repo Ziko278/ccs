@@ -1,5 +1,6 @@
 import secrets
 import string
+import traceback
 from datetime import date, timedelta
 
 from django.contrib.auth.decorators import login_required, permission_required
@@ -11,6 +12,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -258,3 +260,115 @@ def fix_missing_student_profiles(request):
     )
 
     return redirect('admin_dashboard')
+
+
+@login_required
+@permission_required("student.change_resultmodel", raise_exception=True)
+def result_cleanup_view(request):
+    """
+    Displays the result cleanup page.
+    """
+    # Get current session and term info
+    academic_info = SchoolAcademicInfoModel.objects.first()
+
+    # Get count of results that need cleaning
+    results_count = 0
+    if academic_info and academic_info.session and academic_info.term:
+        results_count = ResultModel.objects.filter(
+            session=academic_info.session,
+            term=academic_info.term,
+            result__isnull=False
+        ).count()
+
+    context = {
+        'academic_info': academic_info,
+        'results_count': results_count,
+    }
+    return render(request, 'admin_dashboard/result_cleanup.html', context)
+
+
+@require_POST
+@login_required
+@permission_required("student.change_resultmodel", raise_exception=True)
+def process_result_cleanup(request):
+    """
+    Removes blank/zero subjects from result JSON and resaves to recalculate totals.
+    Processes all results for the current session and term.
+    """
+    try:
+        # Get current session and term
+        academic_info = SchoolAcademicInfoModel.objects.first()
+
+        if not academic_info or not academic_info.session or not academic_info.term:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No active academic session/term found'
+            }, status=400)
+
+        current_session = academic_info.session
+        current_term = academic_info.term
+
+        # Get all results for current session and term
+        results_to_clean = ResultModel.objects.filter(
+            session=current_session,
+            term=current_term,
+            result__isnull=False
+        ).select_related('student', 'student_class')
+
+        cleaned_count = 0
+        skipped_count = 0
+        total_subjects_removed = 0
+
+        with transaction.atomic():
+            for result_obj in results_to_clean:
+                if not result_obj.result or not isinstance(result_obj.result, dict):
+                    skipped_count += 1
+                    continue
+
+                original_result = result_obj.result.copy()
+                cleaned_result = {}
+                subjects_removed = 0
+
+                # Filter out blank/zero subjects
+                for key, subject_data in original_result.items():
+                    # Check if subject data is valid
+                    if subject_data and isinstance(subject_data, dict):
+                        total = subject_data.get('total', 0)
+
+                        # Keep only subjects with non-zero totals
+                        try:
+                            if float(total) > 0:
+                                cleaned_result[key] = subject_data
+                            else:
+                                subjects_removed += 1
+                        except (ValueError, TypeError):
+                            # If total is not a valid number, remove it
+                            subjects_removed += 1
+                    else:
+                        # Remove empty/invalid entries
+                        subjects_removed += 1
+
+                # Only update if we actually removed something
+                if subjects_removed > 0:
+                    result_obj.result = cleaned_result
+                    result_obj.save()  # This will trigger recalculation in save() method
+                    cleaned_count += 1
+                    total_subjects_removed += subjects_removed
+                else:
+                    skipped_count += 1
+
+        return JsonResponse({
+            'status': 'success',
+            'cleaned': cleaned_count,
+            'skipped': skipped_count,
+            'subjects_removed': total_subjects_removed,
+            'session': str(current_session),
+            'term': str(current_term)
+        })
+
+    except Exception as e:
+        traceback.print_exc()
+        return JsonResponse({
+            'status': 'error',
+            'message': f'An unexpected error occurred: {str(e)}'
+        }, status=500)

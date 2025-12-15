@@ -8,5 +8,9 @@ urlpatterns = [
     path('fix-issue', fix_issue, name='fix_issue'),
     path('fix', fix_missing_student_profiles, name='fix'),
 
+    path('result-cleanup/', result_cleanup_view, name='result_cleanup_view'),
+    path('result-cleanup/process/', process_result_cleanup, name='result_cleanup_process'),
+
+
 ]
 
