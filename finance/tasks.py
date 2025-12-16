@@ -9,7 +9,7 @@ from .models import (
     InvoiceGenerationJob, InvoiceModel, InvoiceItemModel,
     DiscountModel, DiscountApplicationModel, StudentDiscountModel
 )
-from student.models import StudentModel
+from student.models import StudentsModel
 from finance.models import FeeMasterModel
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ def generate_invoices_task(job_id):
         job.save()
 
         # 2. Find all students in the classes selected for this job
-        students_to_invoice = StudentModel.objects.filter(
+        students_to_invoice = StudentsModel.objects.filter(
             student_class__in=job.classes_to_invoice.all(),
             status='active'
         ).select_related('student_class').prefetch_related('utilities')
