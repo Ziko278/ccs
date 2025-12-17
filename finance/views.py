@@ -3398,7 +3398,7 @@ class StudentDiscountAssignView(LoginRequiredMixin, PermissionRequiredMixin, For
         context['student'] = student
 
         # Get current school settings for display purposes
-        school_setting = SchoolSettingModel.objects.first()
+        school_setting = SchoolAcademicInfoModel.objects.first()
         context['current_session'] = school_setting.session if school_setting else None
         context['current_term'] = school_setting.term if school_setting else None
 
