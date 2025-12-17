@@ -400,11 +400,11 @@
 					{% for behaviour in category.student_behaviour.all %}
 						<tr>
 							<td style="text-align:left;font-weight:bold;font-size:12px;padding:0px;padding-left:5px">{{ behaviour|title }}</td>
-							<td>{% for key, value in behaviour_result.result_remark.items %} {% if key|lower == behaviour|lower %} {% if value == '5' %} <i class="bi bi-check text-success"></i> {% endif %} {% endif %} {% endfor %} </td>
-							<td>{% for key, value in behaviour_result.result_remark.items %} {% if key|lower == behaviour|lower %} {% if value == '4' %} <i class="bi bi-check text-success"></i> {% endif %} {% endif %} {% endfor %} </td>
-							<td>{% for key, value in behaviour_result.result_remark.items %} {% if key|lower == behaviour|lower %} {% if value == '3' %} <i class="bi bi-check text-success"></i> {% endif %} {% endif %} {% endfor %} </td>
-							<td>{% for key, value in behaviour_result.result_remark.items %} {% if key|lower == behaviour|lower %} {% if value == '2' %} <i class="bi bi-check text-success"></i> {% endif %}{% endif %} {% endfor %} </td>
 							<td>{% for key, value in behaviour_result.result_remark.items %} {% if key|lower == behaviour|lower %} {% if value == '1' %} <i class="bi bi-check text-success"></i> {% endif %} {% endif %} {% endfor %} </td>
+							<td>{% for key, value in behaviour_result.result_remark.items %} {% if key|lower == behaviour|lower %} {% if value == '2' %} <i class="bi bi-check text-success"></i> {% endif %} {% endif %} {% endfor %} </td>
+							<td>{% for key, value in behaviour_result.result_remark.items %} {% if key|lower == behaviour|lower %} {% if value == '3' %} <i class="bi bi-check text-success"></i> {% endif %} {% endif %} {% endfor %} </td>
+							<td>{% for key, value in behaviour_result.result_remark.items %} {% if key|lower == behaviour|lower %} {% if value == '4' %} <i class="bi bi-check text-success"></i> {% endif %}{% endif %} {% endfor %} </td>
+							<td>{% for key, value in behaviour_result.result_remark.items %} {% if key|lower == behaviour|lower %} {% if value == '5' %} <i class="bi bi-check text-success"></i> {% endif %} {% endif %} {% endfor %} </td>
 						</tr>
 
 					{% endfor %}
