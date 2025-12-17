@@ -10,6 +10,7 @@ urlpatterns = [
 
     path('result-cleanup/', result_cleanup_view, name='result_cleanup_view'),
     path('result-cleanup/process/', process_result_cleanup, name='result_cleanup_process'),
+    path('result-cleanup/save/', process_result_save, name='result_save_process'),
 
 
 ]
