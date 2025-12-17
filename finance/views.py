@@ -3323,7 +3323,7 @@ class DiscountApplicationDeleteView(LoginRequiredMixin, PermissionRequiredMixin,
 
 class DiscountApplicationListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     model = DiscountApplicationModel
-    permission_required = 'finance.view_discountapplicationmodel'
+    permission_required = 'finance.view_feepaymentmodel'
     template_name = 'finance/discount/application_list.html'
     context_object_name = 'applications'
 
