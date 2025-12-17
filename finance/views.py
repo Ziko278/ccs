@@ -3385,7 +3385,7 @@ class StudentDiscountAssignView(LoginRequiredMixin, PermissionRequiredMixin, For
     form_class = StudentDiscountAssignForm
 
     def get_student(self):
-        return get_object_or_404(StudentModel, pk=self.kwargs['student_pk'])
+        return get_object_or_404(StudentsModel, pk=self.kwargs['student_pk'])
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -3506,7 +3506,7 @@ class GetDiscountsAjaxView(LoginRequiredMixin, View):
             return JsonResponse({'error': 'Missing required parameters'}, status=400)
 
         try:
-            student = get_object_or_404(StudentModel, pk=student_pk)
+            student = get_object_or_404(StudentsModel, pk=student_pk)
 
             # Build discount queryset
             queryset = DiscountApplicationModel.objects.filter(
@@ -4525,7 +4525,7 @@ def generate_income_expense_pdf(context):
         return response
 
     except ImportError:
-        messages.error(request, 'PDF generation requires reportlab. Please install it.')
+        messages.error(srequest, 'PDF generation requires reportlab. Please install it.')
         return redirect('income_expense_report')
 
 
