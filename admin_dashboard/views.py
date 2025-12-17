@@ -374,7 +374,6 @@ def process_result_cleanup(request):
         }, status=500)
 
 
-@require_POST
 @login_required
 @permission_required("student.change_resultmodel", raise_exception=True)
 def process_result_save(request):
