@@ -28,7 +28,7 @@ from finance.views import (
     staff_pending_deposit_payment_list_view, staff_confirm_payment_view, staff_decline_payment_view,
     staff_deposit_create_view, StaffUploadDepositView, StaffDepositHistoryView, ExpensePrintVoucherView,
     income_expense_report, payment_review_view, get_invoice_items_json, StudentDiscountDeleteView, InvoiceDeleteView,
-    InvoiceItemDeleteView,
+    InvoiceItemDeleteView, GetDiscountsAjaxView,
 )
 
 urlpatterns = [
