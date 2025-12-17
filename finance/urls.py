@@ -89,6 +89,7 @@ urlpatterns = [
     path('discounts/index/', StudentDiscountIndexView.as_view(), name='finance_discount_index'),
     path('discounts/delete/<int:pk>/', StudentDiscountDeleteView.as_view(), name='finance_discount_delete'),
 
+    path('discount/api/get-discounts/', GetDiscountsAjaxView.as_view(), name='finance_discount_get_ajax'),
 
     # --- Invoicing & Payment ---
     path('invoices/', InvoiceListView.as_view(), name='finance_invoice_list'),
