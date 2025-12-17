@@ -4525,7 +4525,7 @@ def generate_income_expense_pdf(context):
         return response
 
     except ImportError:
-        messages.error(srequest, 'PDF generation requires reportlab. Please install it.')
+        messages.error(request, 'PDF generation requires reportlab. Please install it.')
         return redirect('income_expense_report')
 
 

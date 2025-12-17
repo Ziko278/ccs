@@ -964,9 +964,9 @@ class DiscountApplicationForm(forms.ModelForm):
                 self.fields['session'].initial = settings.session.pk
             if settings.term:
                 self.fields['term'].initial = settings.term.pk
-        except SchoolSettingModel.DoesNotExist:
+        except SchoolAcademicInfoModel.DoesNotExist:
             pass  # No settings found, so no defaults
-        except SchoolSettingModel.MultipleObjectsReturned:
+        except SchoolAcademicInfoModel.MultipleObjectsReturned:
             pass  # Should not happen
 
         # 2. Set 'discount_type' to disabled (it will be autofilled by JS)
@@ -987,7 +987,6 @@ class DiscountApplicationForm(forms.ModelForm):
         # If editing an existing object, lock the discount dropdown
         if self.instance.pk:
             self.fields['discount'].disabled = True
-
 
 
 class StudentDiscountAssignForm(forms.Form):
@@ -1014,7 +1013,7 @@ class StudentDiscountAssignForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         # Get current session and term from school settings
-        school_setting = SchoolSettingModel.objects.first()
+        school_setting = SchoolAcademicInfoModel.objects.first()
 
         # Set default values for session and term
         if school_setting:
