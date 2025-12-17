@@ -3156,8 +3156,6 @@ def my_salary_profile_view(request):
     return render(request, 'finance/staff_profile/salary_profile.html', context)
 
 
-
-
 # ===================================================================
 # Discount Model Views (Blueprint Interface)
 # ===================================================================
@@ -3167,7 +3165,7 @@ import json  # Make sure to import json
 
 class DiscountListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     model = DiscountModel
-    permission_required = 'finance.view_discountmodel'
+    permission_required = 'finance.view_feepaymentmodel'
     template_name = 'finance/discount/index.html'
     context_object_name = 'discounts'
 
@@ -3195,9 +3193,10 @@ class DiscountListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
 
         return context
 
+
 class DiscountCreateView(LoginRequiredMixin, PermissionRequiredMixin, FlashFormErrorsMixin, CreateView):
     model = DiscountModel
-    permission_required = 'finance.add_discountmodel'
+    permission_required = 'finance.add_feepaymentmodel'
     form_class = DiscountForm
 
     def get_success_url(self):
@@ -3214,9 +3213,10 @@ class DiscountCreateView(LoginRequiredMixin, PermissionRequiredMixin, FlashFormE
             return redirect(self.get_success_url())
         return super().dispatch(request, *args, **kwargs)
 
+
 class DiscountUpdateView(LoginRequiredMixin, PermissionRequiredMixin, FlashFormErrorsMixin, UpdateView):
     model = DiscountModel
-    permission_required = 'finance.change_discountmodel'
+    permission_required = 'finance.add_feepaymentmodel'
     form_class = DiscountForm
 
     def get_success_url(self):
@@ -3236,7 +3236,7 @@ class DiscountUpdateView(LoginRequiredMixin, PermissionRequiredMixin, FlashFormE
 
 class DiscountDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = DiscountModel
-    permission_required = 'finance.delete_discountmodel'
+    permission_required = 'finance.add_feepaymentmodel'
     template_name = 'finance/discount/delete.html'
     success_url = reverse_lazy('finance_discount_list')
     context_object_name = 'discount'
@@ -3257,7 +3257,7 @@ class DiscountDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView
 
 class DiscountApplicationCreateView(LoginRequiredMixin, PermissionRequiredMixin, FlashFormErrorsMixin, CreateView):
     model = DiscountApplicationModel
-    permission_required = 'finance.add_discountapplicationmodel'
+    permission_required = 'finance.add_feepaymentmodel'
     form_class = DiscountApplicationForm
 
     def get_success_url(self):
@@ -3278,7 +3278,7 @@ class DiscountApplicationCreateView(LoginRequiredMixin, PermissionRequiredMixin,
 
 class DiscountApplicationUpdateView(LoginRequiredMixin, PermissionRequiredMixin, FlashFormErrorsMixin, UpdateView):
     model = DiscountApplicationModel
-    permission_required = 'finance.change_discountapplicationmodel'
+    permission_required = 'finance.add_feepaymentmodel'
     form_class = DiscountApplicationForm
     pk_url_kwarg = 'application_pk' # Use a distinct keyword argument to prevent clashes
 
@@ -3300,7 +3300,7 @@ class DiscountApplicationUpdateView(LoginRequiredMixin, PermissionRequiredMixin,
 
 class DiscountApplicationDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = DiscountApplicationModel
-    permission_required = 'finance.delete_discountapplicationmodel'
+    permission_required = 'finance.add_feepaymentmodel'
     template_name = 'finance/discount/application_delete.html'
     success_url = reverse_lazy('finance_discount_application_list')
     context_object_name = 'application'
@@ -3352,7 +3352,7 @@ class DiscountApplicationListView(LoginRequiredMixin, PermissionRequiredMixin, L
 
 class DiscountSelectStudentView(LoginRequiredMixin, PermissionRequiredMixin, SuccessMessageMixin, TemplateView):
     template_name = 'finance/discount/select_student.html'
-    permission_required = 'finance.add_feemodel'
+    permission_required = 'finance.add_feepaymentmodel'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -3541,7 +3541,7 @@ class GetDiscountsAjaxView(LoginRequiredMixin, View):
 class StudentDiscountIndexView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     """List all student discounts with filtering by session, term, and student name."""
 
-    permission_required = 'finance.view_studentdiscountmodel'
+    permission_required = 'finance.view_feepaymentmodel'
     template_name = 'finance/discount/discount_index.html'
     context_object_name = 'discounts'
     paginate_by = 50
@@ -3609,7 +3609,7 @@ class StudentDiscountDeleteView(LoginRequiredMixin, PermissionRequiredMixin, Del
     """Delete a student discount with confirmation."""
     model = StudentDiscountModel
     template_name = 'finance/discount/delete_discount.html'
-    permission_required = 'finance.delete_studentdiscountmodel'
+    permission_required = 'finance.delete_invoicemodel'
     context_object_name = 'discount'
 
     def get_success_url(self):
