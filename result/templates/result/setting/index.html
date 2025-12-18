@@ -48,17 +48,30 @@
                     </div>
                 </div>
 
+                <!-- NEW: Fee Restriction Display -->
                 <div class="card info-card customers-card">
                     <div class="card-body">
                         <h5 class="card-title"></h5>
                         <div class="d-flex align-items-center">
                             <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="bi bi-percent"></i>
+                                <i class="bi bi-cash-coin"></i>
                             </div>
 
                             <div class="ps-3">
-                                <h6>{{ result_info.fee_payment }} %</h6>
-                                <span class="text-muted small pt-2 ps-1">Fee Payment % to Access Result</span>
+                                {% if result_info.fee_restriction_type == 'none' %}
+                                    <h6>No Restriction</h6>
+                                    <span class="text-muted small pt-2 ps-1">Fee Restriction Type</span>
+                                {% elif result_info.fee_restriction_type == 'percentage' %}
+                                    <h6>{{ result_info.fee_payment }}% Payment Required</h6>
+                                    <span class="text-muted small pt-2 ps-1">
+                                        For {% if result_info.fee_restriction_scope %}{{ result_info.fee_restriction_scope.name }}{% else %}All Fees{% endif %}
+                                    </span>
+                                {% elif result_info.fee_restriction_type == 'fixed_balance' %}
+                                    <h6>Max Balance: ₦{{ result_info.fee_payment|floatformat:2|intcomma }}</h6>
+                                    <span class="text-muted small pt-2 ps-1">
+                                        For {% if result_info.fee_restriction_scope %}{{ result_info.fee_restriction_scope.name }}{% else %}All Fees{% endif %}
+                                    </span>
+                                {% endif %}
                             </div>
 
                         </div>
@@ -145,7 +158,7 @@
 <form method="POST" {% if is_result_info %} action="{% url 'result_info_update' result_info.id %}" {% else %} action="{% url 'result_info_create' %}" {% endif %} enctype="multipart/form-data">
     {% csrf_token %}
     <div class="modal fade" id="verticalycentered" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Result Setting Info</h5>
@@ -166,13 +179,6 @@
                             <label for="floatingName">Result Upload By </label>
                         </div><br />
 
-                        <div class="form-floating">
-                            {{ form.fee_payment }}
-                            <label for="floatingName">Fee Payment % to Access Result </label>
-                        </div><br />
-                    </div>
-
-                    <div class="col-6">
                         <div class="form-floating">
                             {{ form.result_status }}
                             <label for="floatingName">Current Result Status </label>
@@ -195,6 +201,62 @@
 
                     </div>
 
+                    <div class="col-6">
+                        <!-- NEW: Fee Restriction Section -->
+                        <div class="card border-primary mb-3">
+                            <div class="card-header bg-primary text-white">
+                                <i class="bi bi-shield-lock"></i> Fee-Based Result Access Control
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">{{ form.fee_restriction_type.label }}</label>
+                                    <div class="fee-restriction-options">
+                                        {% for radio in form.fee_restriction_type %}
+                                        <div class="form-check">
+                                            {{ radio.tag }}
+                                            <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                                {{ radio.choice_label }}
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% if form.fee_restriction_type.errors %}
+                                        <div class="text-danger small">{{ form.fee_restriction_type.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3" id="fee-scope-container">
+                                    <label for="{{ form.fee_restriction_scope.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.fee_restriction_scope.label }}
+                                    </label>
+                                    {{ form.fee_restriction_scope }}
+                                    <div class="form-text">Select a specific fee or leave as "All Fees"</div>
+                                    {% if form.fee_restriction_scope.errors %}
+                                        <div class="text-danger small">{{ form.fee_restriction_scope.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3" id="fee-payment-container">
+                                    <label for="{{ form.fee_payment.id_for_label }}" class="form-label fw-bold">
+                                        {{ form.fee_payment.label }}
+                                    </label>
+                                    {{ form.fee_payment }}
+                                    <div class="form-text" id="fee-payment-help">
+                                        Enter the threshold value based on restriction type
+                                    </div>
+                                    {% if form.fee_payment.errors %}
+                                        <div class="text-danger small">{{ form.fee_payment.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="alert alert-info alert-sm" id="fee-restriction-info">
+                                    <i class="bi bi-info-circle"></i>
+                                    <span id="restriction-info-text">Select a restriction type to see details</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
@@ -204,5 +266,62 @@
         </div>
     </div>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const restrictionRadios = document.querySelectorAll('input[name="fee_restriction_type"]');
+    const feePaymentContainer = document.getElementById('fee-payment-container');
+    const feeScopeContainer = document.getElementById('fee-scope-container');
+    const feePaymentHelp = document.getElementById('fee-payment-help');
+    const restrictionInfoText = document.getElementById('restriction-info-text');
+    const feePaymentInput = document.querySelector('input[name="fee_payment"]');
+
+    function updateFeeRestrictionUI() {
+        const selectedType = document.querySelector('input[name="fee_restriction_type"]:checked')?.value;
+
+        if (selectedType === 'none') {
+            feePaymentContainer.style.display = 'none';
+            feeScopeContainer.style.display = 'none';
+            restrictionInfoText.textContent = 'No fee restriction applied. All students can view results.';
+        } else if (selectedType === 'percentage') {
+            feePaymentContainer.style.display = 'block';
+            feeScopeContainer.style.display = 'block';
+            feePaymentInput.placeholder = 'e.g., 50 for 50%';
+            feePaymentHelp.textContent = 'Enter percentage (0-100). Students must pay this % to view results.';
+            restrictionInfoText.textContent = 'Students must pay the specified percentage of fees to access their results.';
+        } else if (selectedType === 'fixed_balance') {
+            feePaymentContainer.style.display = 'block';
+            feeScopeContainer.style.display = 'block';
+            feePaymentInput.placeholder = 'e.g., 100000';
+            feePaymentHelp.textContent = 'Enter maximum balance amount. Students with balance above this cannot view results.';
+            restrictionInfoText.textContent = 'Students with outstanding balance above this amount cannot access their results.';
+        }
+    }
+
+    // Add event listeners to all radio buttons
+    restrictionRadios.forEach(radio => {
+        radio.addEventListener('change', updateFeeRestrictionUI);
+    });
+
+    // Initialize on page load
+    updateFeeRestrictionUI();
+});
+</script>
+
+<style>
+.fee-restriction-options .form-check {
+    padding: 0.5rem 0;
+}
+
+.alert-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+#fee-restriction-info {
+    margin-top: 1rem;
+    margin-bottom: 0;
+}
+</style>
 
 {% endblock %}

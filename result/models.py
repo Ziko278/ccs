@@ -1,4 +1,6 @@
 from django.db import models
+
+from finance.models import FeeModel
 from student.models import StudentsModel
 from academic.models import *
 from school_setting.models import *
@@ -150,11 +152,12 @@ class ResultSettingModel(models.Model):
     )
     allowed_user = models.CharField(max_length=30, choices=ALLOWED_USER, blank=True, null=True)
     text_result_allowed_user = models.CharField(max_length=30, choices=ALLOWED_USER, blank=True, null=True)
+
     STUDENT_VIEW_RESULT = (
         ('when published', 'WHEN PUBLISHED'), ('once uploaded', 'ONCE UPLOADED')
     )
-    fee_payment = models.FloatField(default=0)
     student_view_result = models.CharField(max_length=20, choices=STUDENT_VIEW_RESULT, blank=True, null=True)
+
     RESULT_STATUS = (
         ('published', 'PUBLISHED'), ('not published', 'NOT PUBLISHED')
     )
@@ -164,13 +167,46 @@ class ResultSettingModel(models.Model):
         ('auto', 'AUTO COMMENTS'), ('manual', 'MANUAL COMMENTS')
     )
     default_comment = models.CharField(max_length=10, choices=DEFAULT_COMMENT, blank=True, null=True)
+
+    # ========== NEW: FLEXIBLE FEE RESTRICTION FIELDS ==========
+    FEE_RESTRICTION_TYPE = (
+        ('none', 'No Restriction'),
+        ('percentage', 'Percentage Paid'),
+        ('fixed_balance', 'Maximum Balance Amount'),
+    )
+    fee_restriction_type = models.CharField(
+        max_length=20,
+        choices=FEE_RESTRICTION_TYPE,
+        default='none',
+        help_text="How to restrict result viewing based on fees"
+    )
+
+    # Renamed for clarity - now serves dual purpose
+    fee_payment = models.FloatField(
+        default=0,
+        help_text="Percentage (0-100) if using percentage restriction, or Fixed Amount if using balance restriction"
+    )
+
+    # NEW: Select specific fee or leave blank for all fees
+    fee_restriction_scope = models.ForeignKey(
+        FeeModel,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='result_restrictions',
+        help_text="Leave blank to check ALL fees, or select a specific fee type"
+    )
+    # ========== END NEW FIELDS ==========
+
     TYPE = (
         ('pri', 'PRIMARY'), ('sec', 'SECONDARY'), ('mix', 'GENERAL')
     )
-
     type = models.CharField(max_length=10, choices=TYPE, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
+
+    def __str__(self):
+        return f"Result Setting - {self.get_type_display() if self.type else 'General'}"
 
 
 class TeacherResultCommentModel(models.Model):

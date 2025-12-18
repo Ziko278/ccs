@@ -631,46 +631,77 @@ class HeadTeacherResultCommentEditForm(ModelForm):
 
 
 class ResultSettingCreateForm(ModelForm):
-    """"""
+    """Form for creating new result settings"""
+
     def __init__(self, *args, **kwargs):
         division = False
         if 'type' in kwargs.keys():
             division = kwargs.pop('type')
 
         super().__init__(*args, **kwargs)
-        if division:
-            self.fields['current_result_upload'].queryset = ResultFieldModel.objects.filter(type=division).order_by('name')
 
+        # Filter current_result_upload by division if provided
+        if division:
+            self.fields['current_result_upload'].queryset = ResultFieldModel.objects.filter(type=division).order_by(
+                'name')
+
+        # Apply form-control class to all fields except checkboxes
         for field in self.fields:
             if field != 'current_result_upload':
                 self.fields[field].widget.attrs.update({
                     'class': 'form-control',
                     'autocomplete': 'off'
                 })
+
+        # Add special styling for fee restriction type (radio buttons look better)
+        self.fields['fee_restriction_type'].widget = RadioSelect(attrs={
+            'class': 'form-check-input fee-restriction-radio'
+        })
+
+        # Add help text to fee_payment field
+        self.fields['fee_payment'].widget.attrs.update({
+            'placeholder': 'Enter percentage or amount',
+            'min': '0',
+            'step': '0.01'
+        })
+
+        # Customize fee_restriction_scope field
+        self.fields['fee_restriction_scope'].empty_label = "All Fees (Total Balance)"
+        self.fields['fee_restriction_scope'].widget.attrs.update({
+            'class': 'form-select'
+        })
 
     class Meta:
         model = ResultSettingModel
         fields = '__all__'
 
         widgets = {
-            'current_result_upload': CheckboxSelectMultiple(attrs={
+            'current_result_upload': CheckboxSelectMultiple(),
+        }
 
-            })
-
+        labels = {
+            'fee_restriction_type': 'Fee Restriction Method',
+            'fee_payment': 'Threshold Value',
+            'fee_restriction_scope': 'Apply Restriction To',
         }
 
 
 class ResultSettingEditForm(ModelForm):
-    """"""
+    """Form for editing existing result settings"""
+
     def __init__(self, *args, **kwargs):
         division = False
         if 'type' in kwargs.keys():
             division = kwargs.pop('type')
 
         super().__init__(*args, **kwargs)
-        if division:
-            self.fields['current_result_upload'].queryset = ResultFieldModel.objects.filter(type=division).order_by('name')
 
+        # Filter current_result_upload by division if provided
+        if division:
+            self.fields['current_result_upload'].queryset = ResultFieldModel.objects.filter(type=division).order_by(
+                'name')
+
+        # Apply form-control class to all fields except checkboxes
         for field in self.fields:
             if field != 'current_result_upload':
                 self.fields[field].widget.attrs.update({
@@ -678,12 +709,34 @@ class ResultSettingEditForm(ModelForm):
                     'autocomplete': 'off'
                 })
 
+        # Add special styling for fee restriction type (radio buttons)
+        self.fields['fee_restriction_type'].widget = RadioSelect(attrs={
+            'class': 'form-check-input fee-restriction-radio'
+        })
+
+        # Add help text to fee_payment field
+        self.fields['fee_payment'].widget.attrs.update({
+            'placeholder': 'Enter percentage or amount',
+            'min': '0',
+            'step': '0.01'
+        })
+
+        # Customize fee_restriction_scope field
+        self.fields['fee_restriction_scope'].empty_label = "All Fees (Total Balance)"
+        self.fields['fee_restriction_scope'].widget.attrs.update({
+            'class': 'form-select'
+        })
+
     class Meta:
         model = ResultSettingModel
         exclude = ['type', 'user']
 
         widgets = {
-            'current_result_upload': CheckboxSelectMultiple(attrs={
+            'current_result_upload': CheckboxSelectMultiple(),
+        }
 
-            })
+        labels = {
+            'fee_restriction_type': 'Fee Restriction Method',
+            'fee_payment': 'Threshold Value',
+            'fee_restriction_scope': 'Apply Restriction To',
         }
