@@ -4972,7 +4972,7 @@ class StudentOtherPaymentCreateView(LoginRequiredMixin, PermissionRequiredMixin,
         messages.success(
             self.request,
             f"Other payment/debt of {form.instance.amount:,.2f} "
-            f"created successfully for {student.first_name} {student.last_name}."
+            f"created successfully for {student.surname} {student.last_name}."
         )
 
         return super().form_valid(form)
