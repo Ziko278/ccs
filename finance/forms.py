@@ -14,7 +14,7 @@ from finance.models import FinanceSettingModel, SupplierPaymentModel, PurchaseAd
     FeeGroupModel, FeeMasterModel, InvoiceGenerationJob, FeePaymentModel, ExpenseCategoryModel, ExpenseModel, \
     IncomeCategoryModel, IncomeModel, TermlyFeeAmountModel, StaffBankDetail, SalaryStructure, SalaryAdvance, \
     SalaryRecord, StudentFundingModel, SchoolBankDetail, StaffLoanRepayment, StaffLoan, DiscountModel, \
-    DiscountApplicationModel, StaffFundingModel
+    DiscountApplicationModel, StaffFundingModel, InvoiceModel, OtherPaymentClearanceModel, OtherPaymentModel
 from human_resource.models import StaffModel
 from inventory.models import PurchaseOrderModel
 from student.models import StudentsModel
@@ -257,15 +257,17 @@ class FeePaymentForm(forms.ModelForm):
 
         # --- THIS IS THE FIX ---
         # We REMOVED 'amount' from this list.
-        fields = ['payment_mode', 'date', 'reference', 'notes', 'bank_account']
+        fields = ['payment_mode', 'currency', 'date', 'reference', 'description', 'notes', 'bank_account']
         # --- END OF FIX ---
 
         widgets = {
             # We REMOVED the 'amount' widget
             'bank_account': forms.Select(attrs={'class': 'form-select form-select-sm'}),
             'payment_mode': forms.Select(attrs={'class': 'form-select form-select-sm'}),
+            'currency': forms.Select(attrs={'class': 'form-select form-select-sm'}),
             'date': forms.DateInput(attrs={'class': 'form-control form-control-sm', 'type': 'date'}),
             'reference': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+            'description': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
             'notes': forms.Textarea(attrs={'class': 'form-control form-control-sm', 'rows': 2}),
         }
 
@@ -280,6 +282,15 @@ class BulkPaymentForm(forms.Form):
         choices=FeePaymentModel.PaymentMode.choices,
         widget=forms.Select(attrs={'class': 'form-select'})
     )
+    currency = forms.ChoiceField(
+        choices=FeePaymentModel.Currency.choices,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    bank_account = forms.ModelChoiceField(
+        queryset=SchoolBankDetail.objects.none(),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label="Bank Account"
+    )
     date = forms.DateField(
         widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
     )
@@ -287,6 +298,49 @@ class BulkPaymentForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
+    description = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        # Get student to calculate max amount
+        self.student = kwargs.pop('student', None)
+        super().__init__(*args, **kwargs)
+
+        # Set the queryset dynamically when form is instantiated
+        self.fields['bank_account'].queryset = SchoolBankDetail.objects.all()
+
+        # Set default currency to 'naira' if not bound
+        if not self.is_bound:
+            self.fields['currency'].initial = 'naira'
+
+        # Update amount field help text with max amount
+        if self.student:
+            total_balance = sum(
+                invoice.balance
+                for invoice in self.student.invoices.exclude(status=InvoiceModel.Status.PAID)
+            )
+            self.fields['amount'].help_text = f"Maximum: ₦{total_balance:,.2f}"
+            self.fields['amount'].widget.attrs['max'] = str(total_balance)
+
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+
+        if self.student:
+            # Calculate total outstanding balance
+            total_balance = sum(
+                invoice.balance
+                for invoice in self.student.invoices.exclude(status=InvoiceModel.Status.PAID)
+            )
+
+            if amount > total_balance:
+                raise forms.ValidationError(
+                    f"Payment amount (₦{amount:,.2f}) exceeds total outstanding balance (₦{total_balance:,.2f}). "
+                    f"Please enter a maximum of ₦{total_balance:,.2f}."
+                )
+
+        return amount
 
 
 # -------------------- EXPENSE CATEGORY FORM --------------------
@@ -1064,3 +1118,102 @@ class StudentDiscountAssignForm(forms.Form):
         # Custom label for discount dropdown
         self.fields['discount_application'].label_from_instance = lambda obj: \
             f"{obj.discount.title} - {obj.discount_amount}{'%' if obj.discount_type == 'percentage' else ' (Fixed)'}"
+
+
+class OtherPaymentCreateForm(forms.ModelForm):
+    """Form for creating a new other payment/debt for a student"""
+
+    class Meta:
+        model = OtherPaymentModel
+        fields = ['session', 'term', 'description', 'category', 'amount', 'currency', 'notes']
+
+        widgets = {
+            'session': forms.Select(attrs={'class': 'form-select'}),
+            'term': forms.Select(attrs={'class': 'form-select'}),
+            'description': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'e.g., 2022/Term 1 Outstanding Balance'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
+            'currency': forms.Select(attrs={'class': 'form-select'}),
+            'notes': forms.Textarea(
+                attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Optional additional notes'}),
+        }
+
+        help_texts = {
+            'session': 'Select the session this debt is associated with (optional)',
+            'term': 'Select the term (optional)',
+            'description': 'Brief description of the debt or charge',
+            'amount': 'Total amount owed',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make session and term not required
+        self.fields['session'].required = False
+        self.fields['term'].required = False
+        self.fields['notes'].required = False
+
+        # Set default currency to naira
+        if not self.is_bound:
+            self.fields['currency'].initial = 'naira'
+
+
+class OtherPaymentClearanceForm(forms.ModelForm):
+    """Form for making a payment against an other payment debt"""
+
+    class Meta:
+        model = OtherPaymentClearanceModel
+        fields = ['amount', 'payment_mode', 'currency', 'bank_account', 'date', 'reference', 'description', 'notes']
+
+        widgets = {
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0.01'}),
+            'payment_mode': forms.Select(attrs={'class': 'form-select'}),
+            'currency': forms.Select(attrs={'class': 'form-select'}),
+            'bank_account': forms.Select(attrs={'class': 'form-select'}),
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'reference': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Payment reference/receipt number'}),
+            'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Optional description'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Optional notes'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.other_payment = kwargs.pop('other_payment', None)
+        super().__init__(*args, **kwargs)
+
+        # Set dynamic queryset for bank_account
+        self.fields['bank_account'].queryset = SchoolBankDetail.objects.all()
+
+        # Make optional fields not required
+        self.fields['reference'].required = False
+        self.fields['description'].required = False
+        self.fields['notes'].required = False
+
+        # Set default currency to match the other payment
+        if not self.is_bound and self.other_payment:
+            self.fields['currency'].initial = self.other_payment.currency
+
+            # Set max amount to the remaining balance
+            self.fields['amount'].widget.attrs['max'] = str(self.other_payment.balance)
+            self.fields[
+                'amount'].help_text = f"Maximum: {self.other_payment.balance:,.2f}"
+
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+
+        if self.other_payment and amount > self.other_payment.balance:
+            raise forms.ValidationError(
+                f"Payment amount ({self.other_payment.currency_symbol}{amount:,.2f}) exceeds the remaining balance "
+                f"({self.other_payment.currency_symbol}{self.other_payment.balance:,.2f})."
+            )
+
+        if amount <= 0:
+            raise forms.ValidationError("Payment amount must be greater than zero.")
+
+        return amount
+
+    @property
+    def currency_symbol(self):
+        if self.other_payment:
+            return '₦' if self.other_payment.currency == 'naira' else '$'
+        return '₦'

@@ -28,7 +28,9 @@ from finance.views import (
     staff_pending_deposit_payment_list_view, staff_confirm_payment_view, staff_decline_payment_view,
     staff_deposit_create_view, StaffUploadDepositView, StaffDepositHistoryView, ExpensePrintVoucherView,
     income_expense_report, payment_review_view, get_invoice_items_json, StudentDiscountDeleteView, InvoiceDeleteView,
-    InvoiceItemDeleteView, GetDiscountsAjaxView,
+    InvoiceItemDeleteView, GetDiscountsAjaxView, StudentOtherPaymentIndexView, StudentOtherPaymentCreateView,
+    StudentOtherPaymentDeleteView, StudentOtherPaymentUpdateView, OtherPaymentClearanceCreateView,
+    OtherPaymentClearanceRevertView,
 )
 
 urlpatterns = [
@@ -223,5 +225,24 @@ urlpatterns = [
 
     path('reports/income-expense/', income_expense_report, name='income_expense_report'),
 
+    # ============================================================================
+    # STUDENT-SPECIFIC OTHER PAYMENT URLS
+    # ============================================================================
+    path('student/<int:student_pk>/other-payments/', StudentOtherPaymentIndexView.as_view(),
+         name='finance_student_other_payment_index'),
+    path('student/<int:student_pk>/other-payments/create/', StudentOtherPaymentCreateView.as_view(),
+         name='finance_student_other_payment_create'),
+    path('other-payments/<int:pk>/update/', StudentOtherPaymentUpdateView.as_view(),
+         name='finance_other_payment_update'),
+    path('other-payments/<int:pk>/delete/', StudentOtherPaymentDeleteView.as_view(),
+         name='finance_other_payment_delete'),
+
+    # ============================================================================
+    # PAYMENT CLEARANCE URLS
+    # ============================================================================
+    path('other-payments/<int:other_payment_pk>/pay/', OtherPaymentClearanceCreateView.as_view(),
+         name='finance_other_payment_pay'),
+    path('other-payment-clearance/<int:pk>/revert/', OtherPaymentClearanceRevertView.as_view(),
+         name='finance_other_payment_clearance_revert'),
 
 ]
