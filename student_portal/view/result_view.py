@@ -82,10 +82,12 @@ def check_student_fee_restriction(student, academic_setting, result_setting):
         required_percentage = result_setting.fee_payment
 
         if percentage_paid < required_percentage:
-            message = (
-                f'You must pay at least {required_percentage:.0f}% of your {fee_name} '
-                f'to access results. Currently paid: {percentage_paid:.1f}%'
-            )
+            # message = (
+            #     f'You must pay at least {required_percentage:.0f}% of your {fee_name} '
+            #     f'to access results. Currently paid: {percentage_paid:.1f}%'
+            # )
+            message = ('Dear Parent, Sorry you are unable to view the report due to outstanding fees. Kindly contact '
+                       'the Accounts unit of the school')
             return False, message
 
     elif result_setting.fee_restriction_type == 'fixed_balance':
@@ -93,11 +95,13 @@ def check_student_fee_restriction(student, academic_setting, result_setting):
         max_balance = Decimal(str(result_setting.fee_payment))
 
         if balance > max_balance:
-            message = (
-                f'Your {fee_name} balance (₦{balance:,.2f}) exceeds the maximum allowed '
-                f'balance of ₦{max_balance:,.2f} to access results. '
-                f'Please make a payment to view your results.'
-            )
+            # message = (
+            #     f'Your {fee_name} balance (₦{balance:,.2f}) exceeds the maximum allowed '
+            #     f'balance of ₦{max_balance:,.2f} to access results. '
+            #     f'Please make a payment to view your results.'
+            # )
+            message = ('Dear Parent, Sorry you are unable to view the report due to outstanding fees. Kindly contact '
+                       'the Accounts unit of the school')
             return False, message
 
     # If we reach here, student meets the requirements
