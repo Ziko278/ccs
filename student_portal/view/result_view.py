@@ -268,7 +268,7 @@ def student_result_archive_sheet_view(request, pk):
 
     if not session_pk or not term_pk:
         messages.error(request, "Session and Term must be selected to view archived results.")
-        return redirect('result_select')
+        return redirect('student_result_select')
 
     session = get_object_or_404(SessionModel, pk=session_pk)
     term = get_object_or_404(TermModel, pk=term_pk)
@@ -296,13 +296,13 @@ def student_result_archive_sheet_view(request, pk):
         allowed, restriction_message = check_student_fee_restriction(student, temp_academic_setting, result_setting)
         if not allowed:
             messages.warning(request, f"Archive Access Restricted: {restriction_message}")
-            return redirect('result_select')
+            return redirect('student_result_select')
 
     result = ResultModel.objects.filter(term=term, session=session, student=student).first()
 
     if not result:
         messages.warning(request, f"No result found for {student} in {term.name}, {session} session.")
-        return redirect('result_select')
+        return redirect('student_result_select')
 
     student_class = result.student_class
     class_section = result.class_section
