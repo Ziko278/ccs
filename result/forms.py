@@ -1,4 +1,4 @@
-from django.forms import ModelForm, Select, TextInput, DateInput, CheckboxSelectMultiple
+from django.forms import ModelForm, Select, TextInput, DateInput, CheckboxSelectMultiple, RadioSelect
 from result.models import *
 from django.db.models import Q
 
