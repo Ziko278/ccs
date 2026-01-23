@@ -16,7 +16,6 @@ from django.contrib.auth import logout
 from academic.forms import *
 from django.http import HttpResponse
 
-from finance.templatetags.fee_custom_filters import get_fee_balance, get_amount_paid, get_fee_penalty, get_fee_discount
 from student.models import StudentsModel, StudentAcademicRecordModel
 from school_setting.models import SchoolGeneralInfoModel, TermModel, SchoolAcademicInfoModel, SessionModel
 
