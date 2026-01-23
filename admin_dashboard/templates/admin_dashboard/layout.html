@@ -711,8 +711,48 @@
 
                     {% if 'finance.add_salaryrecord' in perms %}
                     <li>
-                        <a href="{% url 'finance_process_payroll' %}">
-                            <i class="bi bi-circle"></i><span>Process Salary</span>
+                        <a href="{% url 'finance_payroll_dashboard' %}">
+                            <i class="bi bi-circle"></i><span>Salary Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_payroll' %}">
+                            <i class="bi bi-circle"></i><span>Salary Payslips</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_bulk_payroll' %}">
+                            <i class="bi bi-circle"></i><span>Salary Bulk Payslips</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_annual_payroll_list' %}">
+                            <i class="bi bi-circle"></i><span>Annual Payslips</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_bonus_list' %}">
+                            <i class="bi bi-circle"></i><span>Special Bonuses</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_salary_structure_list' %}">
+                            <i class="bi bi-circle"></i><span>Salary Structure</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_bank_payment_export' %}">
+                            <i class="bi bi-circle"></i><span>Salary Excel Export</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_salary_management_report' %}">
+                            <i class="bi bi-circle"></i><span>Salary Report</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'finance_salary_setting_list' %}">
+                            <i class="bi bi-circle"></i><span>Salary Settings</span>
                         </a>
                     </li>
                     {% endif %}
@@ -733,31 +773,27 @@
                             <i class="bi bi-circle"></i><span>Staff Loan Debtors</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="{% url 'finance_payroll_dashboard' %}">
-                            <i class="bi bi-circle"></i><span>Salary Dashboard</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'finance_salary_structure_list' %}">
-                            <i class="bi bi-circle"></i><span>Salary Structure</span>
-                        </a>
-                    </li>
+
+
                     <li>
                         <a href="{% url 'finance_staff_bank_detail_list' %}">
                             <i class="bi bi-circle"></i><span>Bank Accounts</span>
                         </a>
                     </li>
+
                     {% endif %}
 
-                    <li>
-                        <a href="{% url 'staff_salary_profile' %}">
-                            <i class="bi bi-circle"></i><span>My Salary Profile</span>
-                        </a>
-                    </li>
+<!--                    {% if request.user.staff_profile.staff %}-->
+<!--                    <li>-->
+<!--                        <a href="{ url 'staff_salary_profile' %}">-->
+<!--                            <i class="bi bi-circle"></i><span>My Salary Profile</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                    {% endif %}-->
 
                 </ul>
             </li>
+
 
 
 

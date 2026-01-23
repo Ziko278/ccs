@@ -37,13 +37,6 @@ urlpatterns = [
     path('fee-groups/<int:pk>/update/', FeeGroupUpdateView.as_view(), name='finance_fee_group_update'),
     path('fee-groups/<int:pk>/delete/', FeeGroupDeleteView.as_view(), name='finance_fee_group_delete'),
 
-    path('fee-structures/', FeeMasterListView.as_view(), name='finance_fee_master_list'),
-    path('fee-structures/create/', FeeMasterCreateView.as_view(), name='finance_fee_master_create'),
-    # This single URL handles both viewing the details and updating the termly prices
-    path('fee-structures/<int:pk>/', FeeMasterDetailView.as_view(), name='finance_fee_master_detail'),
-    path('fee-structures/<int:pk>/update/', FeeMasterUpdateView.as_view(), name='finance_fee_master_update'),
-    path('fee-structures/<int:pk>/delete/', FeeMasterDeleteView.as_view(), name='finance_fee_master_delete'),
-
     path('discounts/', DiscountListView.as_view(), name='finance_discount_list'),
     path('discounts/create/', DiscountCreateView.as_view(), name='finance_discount_create'),
     path('discounts/<int:pk>/update/', DiscountUpdateView.as_view(), name='finance_discount_update'),
@@ -61,6 +54,13 @@ urlpatterns = [
 
     path('discount/api/get-discounts/', GetDiscountsAjaxView.as_view(), name='finance_discount_get_ajax'),
 
+    path('fee-structures/', FeeMasterListView.as_view(), name='finance_fee_master_list'),
+    path('fee-structures/create/', FeeMasterCreateView.as_view(), name='finance_fee_master_create'),
+    # This single URL handles both viewing the details and updating the termly prices
+    path('fee-structures/<int:pk>/', FeeMasterDetailView.as_view(), name='finance_fee_master_detail'),
+    path('fee-structures/<int:pk>/update/', FeeMasterUpdateView.as_view(), name='finance_fee_master_update'),
+    path('fee-structures/<int:pk>/delete/', FeeMasterDeleteView.as_view(), name='finance_fee_master_delete'),
+
     # --- Invoicing & Payment ---
     path('invoices/', InvoiceListView.as_view(), name='finance_invoice_list'),
     path('invoices/generate/', InvoiceGenerationView.as_view(), name='finance_invoice_generate'),
@@ -71,11 +71,11 @@ urlpatterns = [
     path('invoices/<int:pk>/delete/', InvoiceDeleteView.as_view(), name='finance_invoice_delete'),
     path('invoices/items/<int:pk>/delete/', InvoiceItemDeleteView.as_view(), name='finance_invoice_item_delete'),
 
-
     path('student-payments/search/', StudentFeeSearchView.as_view(), name='finance_student_payment_search'),
     path('student-payments/ajax/get-by-class/', get_students_by_class_ajax, name='finance_ajax_get_students_by_class'),
     path('student-payments/ajax/get-by-reg-no/', get_students_by_reg_no_ajax, name='finance_ajax_get_students_by_reg_no'),
     path('payments/', FeePaymentListView.as_view(), name='finance_payment_index'),
+    path('payments/pending/', FeePendingPaymentListView.as_view(), name='finance_pending_payment_index'),
 
     path('student/<int:pk>/dashboard/', StudentFinancialDashboardView.as_view(), name='finance_student_dashboard'),
     path('invoice/<int:pk>/receipt/', InvoiceReceiptView.as_view(), name='finance_invoice_receipt'),
@@ -84,13 +84,12 @@ urlpatterns = [
     path('finance/student/<int:pk>/bulk-payment/', BulkFeePaymentView.as_view(), name='finance_bulk_payment_create'),
 
     # Action URLs for individual payments
-    path('get-invoice-items/<int:invoice_id>/', get_invoice_items_json, name='get_invoice_items_json'),
-    path('payment/review/<int:payment_id>/', payment_review_view, name='review_fee_payment'),
-
     path('finance/student-payments/<int:pk>/revert/', FeePaymentRevertView.as_view(), name='finance_fee_payment_revert'),
     path('finance/student-payments/<int:pk>/receipt/', FeePaymentReceiptView.as_view(), name='finance_fee_payment_receipt'),
-    path('finance/student-payments/<int:pk>/receipt/', FeePaymentReceiptView.as_view(), name='finance_fee_payment_receipt'),
+    path('fee-payments/<int:payment_id>/confirm/', confirm_fee_payment_view, name='confirm_fee_payment'),
 
+    path('get-invoice-items/<int:invoice_id>/', get_invoice_items_json, name='get_invoice_items_json'),
+    path('payment/review/<int:payment_id>/', payment_review_view, name='review_fee_payment'),
 
     path("expense-categories/", ExpenseCategoryListView.as_view(), name="expense_category_index"),
     path("expense-categories/create/", ExpenseCategoryCreateView.as_view(), name="expense_category_create"),
@@ -129,23 +128,13 @@ urlpatterns = [
     path('finance/school-bank/<int:pk>/update/', SchoolBankDetailUpdateView.as_view(), name='finance_school_bank_detail_update'),
     path('finance/school-bank/<int:pk>/delete/', SchoolBankDetailDeleteView.as_view(), name='finance_school_bank_detail_delete'),
 
-    # --- Salary Structure URLs (Multi-page Interface) ---
-    path('finance/salary-structures/', SalaryStructureListView.as_view(), name='finance_salary_structure_list'),
-    path('finance/salary-structures/create/', SalaryStructureCreateView.as_view(),
-         name='finance_salary_structure_create'),
-    path('finance/salary-structures/<int:pk>/', SalaryStructureDetailView.as_view(),
-         name='finance_salary_structure_detail'),
-    path('finance/salary-structures/<int:pk>/update/', SalaryStructureUpdateView.as_view(),
-         name='finance_salary_structure_update'),
-    path('finance/salary-structures/<int:pk>/delete/', SalaryStructureDeleteView.as_view(),
-         name='finance_salary_structure_delete'),
-
     # --- Salary Advance URLs (Multi-page Interface) ---
     path('finance/salary-advances/', SalaryAdvanceListView.as_view(), name='finance_salary_advance_list'),
     path('finance/salary-advances/create/', SalaryAdvanceCreateView.as_view(), name='finance_salary_advance_create'),
     path('finance/salary-advances/<int:pk>/', SalaryAdvanceDetailView.as_view(), name='finance_salary_advance_detail'),
     path('finance/salary-advances/<int:pk>/action/', SalaryAdvanceActionView.as_view(),
          name='finance_salary_advance_action'),
+
 
     # --- Staff Loan URLs ---
     path('finance/staff-loans/', StaffLoanListView.as_view(), name='finance_staff_loan_list'),
@@ -156,9 +145,7 @@ urlpatterns = [
     path('staff-loans/staff/<int:staff_pk>/', StaffLoanDebtDetailView.as_view(), name='finance_staff_loan_debt_detail'),
     path('staff-loans/staff/<int:staff_pk>/repay/', record_staff_loan_repayment, name='finance_record_loan_repayment'),
 
-    # --- Salary Record (Paysheet) URLs ---
 
-    path('my-profile/salary/', my_salary_profile_view, name='staff_salary_profile'),
 
     path('deposit/select-student', DepositPaymentSelectStudentView.as_view(), name='deposit_select_student'),
     path('deposit/get-class-student', deposit_get_class_students, name='deposit_get_class_students'),
@@ -166,10 +153,13 @@ urlpatterns = [
          name='deposit_get_class_students_by_reg_number'),
     path('deposit/payment/index', deposit_payment_list_view, name='deposit_index'),
     path('deposit/<int:pk>/detail', deposit_detail_view, name='deposit_detail'),
-    path('deposit/payment/pending/index', pending_deposit_payment_list_view, name='pending_deposit_index'),
     path('deposit/<int:student_pk>/create', deposit_create_view, name='deposit_create'),
+    path('deposit/<int:pk>/revert/', deposit_revert_view, name='deposit_revert'),
+
+    path('deposit/payment/pending/index', pending_deposit_payment_list_view, name='pending_deposit_index'),
     path('deposit/<int:payment_id>/confirm/', confirm_payment_view, name='confirm_payment'),
     path('deposit/<int:payment_id>/cancel/', decline_payment_view, name='decline_payment'),
+
 
     path('staff-deposit/select-staff', DepositPaymentSelectStaffView.as_view(), name='deposit_select_staff'),
     path('staff-deposit/payment/index', staff_deposit_payment_list_view, name='staff_deposit_index'),
@@ -179,38 +169,39 @@ urlpatterns = [
     path('staff-deposit/payment/pending/index', staff_pending_deposit_payment_list_view, name='staff_pending_deposit_index'),
     path('staff-deposit/<int:payment_id>/confirm/', staff_confirm_payment_view, name='staff_confirm_payment'),
     path('staff-deposit/<int:payment_id>/cancel/', staff_decline_payment_view, name='staff_decline_payment'),
+    path('staff-deposit/<int:pk>/revert/', staff_deposit_revert_view, name='staff_deposit_revert'),
 
     path('my-funding/upload/', StaffUploadDepositView.as_view(), name='staff_upload_deposit'),
+
     # 2. STAFF: Page for staff to see their own deposit history
     path('my-funding/history/', StaffDepositHistoryView.as_view(), name='staff_deposit_history'),
-
 
     path('fee/dashboard/', fee_dashboard, name='fee_dashboard'),
     path('dashboard/', finance_dashboard, name='finance_dashboard'),
 
     path('reports/income-expense/', income_expense_report, name='income_expense_report'),
 
+    path('payment-cleanup/', payment_cleanup_view, name='payment_cleanup_view'),
+    path('payment-cleanup/process-class/', process_payment_cleanup_for_class, name='payment_cleanup_process_class'),
+
     # ============================================================================
-    # STUDENT-SPECIFIC OTHER PAYMENT URLS
+    # GENERAL OTHER PAYMENT URLS (All students)
     # ============================================================================
     path('other-payments/', OtherPaymentListView.as_view(), name='finance_other_payment_list'),
 
-    path('student/<int:student_pk>/other-payments/', StudentOtherPaymentIndexView.as_view(),
-         name='finance_student_other_payment_index'),
-    path('student/<int:student_pk>/other-payments/create/', StudentOtherPaymentCreateView.as_view(),
-         name='finance_student_other_payment_create'),
-    path('other-payments/<int:pk>/update/', StudentOtherPaymentUpdateView.as_view(),
-         name='finance_other_payment_update'),
-    path('other-payments/<int:pk>/delete/', StudentOtherPaymentDeleteView.as_view(),
-         name='finance_other_payment_delete'),
+    # ============================================================================
+    # STUDENT-SPECIFIC OTHER PAYMENT URLS
+    # ============================================================================
+    path('student/<int:student_pk>/other-payments/', StudentOtherPaymentIndexView.as_view(), name='finance_student_other_payment_index'),
+    path('student/<int:student_pk>/other-payments/create/', StudentOtherPaymentCreateView.as_view(), name='finance_student_other_payment_create'),
+    path('other-payments/<int:pk>/update/', StudentOtherPaymentUpdateView.as_view(), name='finance_other_payment_update'),
+    path('other-payments/<int:pk>/delete/', StudentOtherPaymentDeleteView.as_view(), name='finance_other_payment_delete'),
 
     # ============================================================================
     # PAYMENT CLEARANCE URLS
     # ============================================================================
-    path('other-payments/<int:other_payment_pk>/pay/', OtherPaymentClearanceCreateView.as_view(),
-         name='finance_other_payment_pay'),
-    path('other-payment-clearance/<int:pk>/revert/', OtherPaymentClearanceRevertView.as_view(),
-         name='finance_other_payment_clearance_revert'),
+    path('other-payments/<int:other_payment_pk>/pay/', OtherPaymentClearanceCreateView.as_view(), name='finance_other_payment_pay'),
+    path('other-payment-clearance/<int:pk>/revert/', OtherPaymentClearanceRevertView.as_view(), name='finance_other_payment_clearance_revert'),
 
     path('finance/salary-settings/', salary_setting_list_view, name='finance_salary_setting_list'),
     path('finance/salary-settings/create/', salary_setting_create_view, name='finance_salary_setting_create'),
