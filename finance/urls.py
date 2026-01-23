@@ -129,16 +129,6 @@ urlpatterns = [
     path('finance/school-bank/<int:pk>/update/', SchoolBankDetailUpdateView.as_view(), name='finance_school_bank_detail_update'),
     path('finance/school-bank/<int:pk>/delete/', SchoolBankDetailDeleteView.as_view(), name='finance_school_bank_detail_delete'),
 
-    # --- Salary Structure URLs (Multi-page Interface) ---
-    path('finance/salary-structures/', SalaryStructureListView.as_view(), name='finance_salary_structure_list'),
-    path('finance/salary-structures/create/', SalaryStructureCreateView.as_view(),
-         name='finance_salary_structure_create'),
-    path('finance/salary-structures/<int:pk>/', SalaryStructureDetailView.as_view(),
-         name='finance_salary_structure_detail'),
-    path('finance/salary-structures/<int:pk>/update/', SalaryStructureUpdateView.as_view(),
-         name='finance_salary_structure_update'),
-    path('finance/salary-structures/<int:pk>/delete/', SalaryStructureDeleteView.as_view(),
-         name='finance_salary_structure_delete'),
 
     # --- Salary Advance URLs (Multi-page Interface) ---
     path('finance/salary-advances/', SalaryAdvanceListView.as_view(), name='finance_salary_advance_list'),
