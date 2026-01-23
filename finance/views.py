@@ -5054,7 +5054,7 @@ def salary_setting_update_view(request, pk):
 def salary_structure_list_view(request):
     """List all salary structures"""
     structures = SalaryStructure.objects.select_related(
-        'staff__staff_profile__user', 'salary_setting'
+        'staff__user', 'salary_setting'
     ).filter(is_active=True).order_by('staff__staff_id')
 
     # Search filter
@@ -5062,8 +5062,8 @@ def salary_structure_list_view(request):
     if search:
         structures = structures.filter(
             Q(staff__staff_id__icontains=search) |
-            Q(staff__staff_profile__user__first_name__icontains=search) |
-            Q(staff__staff_profile__user__last_name__icontains=search)
+            Q(staff__user__first_name__icontains=search) |
+            Q(staff__user__last_name__icontains=search)
         )
 
     context = {
@@ -5166,7 +5166,7 @@ def salary_structure_detail_view(request, pk):
     """View salary structure details with complete breakdown"""
     structure = get_object_or_404(
         SalaryStructure.objects.select_related(
-            'staff__staff_profile__user',
+            'staff__user',
             'salary_setting'
         ).prefetch_related(
             'staff__salary_structures__salary_setting'
@@ -5441,7 +5441,7 @@ def payroll_view(request):
 
     # Get all active salary structures
     structures = SalaryStructure.objects.filter(is_active=True).select_related(
-        'staff__staff_profile__user', 'salary_setting', 'staff__department'
+        'staff__user', 'salary_setting', 'staff__department'
     )
 
     # Apply search filter if provided
@@ -5507,7 +5507,7 @@ def process_payroll_view(request, structure_id):
     # Get salary structure
     structure = get_object_or_404(
         SalaryStructure.objects.select_related(
-            'staff__staff_profile__user', 'salary_setting'
+            'staff__user', 'salary_setting'
         ),
         pk=structure_id
     )
@@ -5678,7 +5678,7 @@ def salary_record_detail_view(request, pk):
     # Get the salary record
     record = get_object_or_404(
         SalaryRecord.objects.select_related(
-            'staff__staff_profile__user',
+            'staff__user',
             'salary_structure',
             'salary_setting'
         ),
@@ -5827,7 +5827,7 @@ def download_payslip_pdf(request, pk):
     # Get the salary record
     record = get_object_or_404(
         SalaryRecord.objects.select_related(
-            'staff__staff_profile__user',
+            'staff__user',
             'salary_structure',
             'salary_setting'
         ),
@@ -7117,7 +7117,7 @@ def annual_payroll_list_view(request):
     records = SalaryRecord.objects.filter(
         year=selected_year
     ).select_related(
-        'staff__staff_profile__user',
+        'staff__user',
         'salary_structure',
         'staff__department'
     ).order_by('staff__first_name', 'staff__last_name')
@@ -7188,7 +7188,7 @@ def annual_payroll_detail_view(request, structure_id):
     # Get salary structure
     structure = get_object_or_404(
         SalaryStructure.objects.select_related(
-            'staff__staff_profile__user',
+            'staff__user',
             'salary_setting',
             'staff__department'
         ),
@@ -7334,7 +7334,7 @@ def download_annual_payslip_pdf(request, structure_id):
     # Get salary structure
     structure = get_object_or_404(
         SalaryStructure.objects.select_related(
-            'staff__staff_profile__user',
+            'staff__user',
             'salary_setting',
             'staff__department'
         ),
