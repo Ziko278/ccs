@@ -901,7 +901,7 @@ class StudentFeeSearchView(LoginRequiredMixin, PermissionRequiredMixin, Template
             student_data.append({
                 'pk': student.id,
                 'fields': {
-                    'first_name': student.surname,
+                    'surname': student.surname,
                     'last_name': student.last_name,
                     'registration_number': student.registration_number,
                     'gender': student.gender,
@@ -5062,7 +5062,7 @@ def salary_structure_list_view(request):
     if search:
         structures = structures.filter(
             Q(staff__staff_id__icontains=search) |
-            Q(staff__user__first_name__icontains=search) |
+            Q(staff__user__surname__icontains=search) |
             Q(staff__user__last_name__icontains=search)
         )
 
@@ -5447,12 +5447,12 @@ def payroll_view(request):
     # Apply search filter if provided
     if search_query:
         structures = structures.filter(
-            Q(staff__first_name__icontains=search_query) |
+            Q(staff__surname__icontains=search_query) |
             Q(staff__last_name__icontains=search_query)
         )
 
     # Order by department name, then by staff name
-    structures = structures.order_by('staff__department__name', 'staff__first_name', 'staff__last_name')
+    structures = structures.order_by('staff__department__name', 'staff__surname', 'staff__last_name')
 
     # Check which structures have been processed for the selected month
     processed_ids = SalaryRecord.objects.filter(
@@ -6328,7 +6328,7 @@ def bulk_payroll_view(request):
         'salary_setting'
     ).order_by(
         'staff__department',  # Sort by department first
-        'staff__first_name',  # Then by first name
+        'staff__surname',  # Then by first name
         'staff__last_name'  # Then by last name
     )
 
@@ -6680,7 +6680,7 @@ class BonusListView(LoginRequiredMixin, ListView):
         if search_query:
             queryset = queryset.filter(
                 Q(volunteer_name__icontains=search_query) |
-                Q(staff__first_name__icontains=search_query) |
+                Q(staff__surname__icontains=search_query) |
                 Q(staff__last_name__icontains=search_query) |
                 Q(staff__staff_id__icontains=search_query) |
                 Q(notes__icontains=search_query)
@@ -6823,16 +6823,16 @@ def staff_search_view(request):
         return JsonResponse({'results': []})
 
     staff_list = StaffModel.objects.filter(
-        Q(first_name__icontains=query) |
+        Q(surname__icontains=query) |
         Q(last_name__icontains=query) |
         Q(staff_id__icontains=query)
-    ).values('id', 'first_name', 'last_name', 'staff_id')
+    ).values('id', 'surname', 'last_name', 'staff_id')
 
     results = []
     for staff in staff_list:
         results.append({
             'id': staff['id'],
-            'text': f"{staff['first_name']} {staff['last_name']} ({staff['staff_id']})"
+            'text': f"{staff['surname']} {staff['last_name']} ({staff['staff_id']})"
         })
 
     return JsonResponse({'results': results})
@@ -6867,7 +6867,7 @@ def bonus_report_view(request):
     if search_query:
         queryset = queryset.filter(
             Q(volunteer_name__icontains=search_query) |
-            Q(staff__first_name__icontains=search_query) |
+            Q(staff__surname__icontains=search_query) |
             Q(staff__last_name__icontains=search_query) |
             Q(staff__staff_id__icontains=search_query)
         )
@@ -6947,7 +6947,7 @@ def bonus_report_pdf_view(request):
     if search_query:
         queryset = queryset.filter(
             Q(volunteer_name__icontains=search_query) |
-            Q(staff__first_name__icontains=search_query) |
+            Q(staff__surname__icontains=search_query) |
             Q(staff__last_name__icontains=search_query) |
             Q(staff__staff_id__icontains=search_query)
         )
@@ -7120,7 +7120,7 @@ def annual_payroll_list_view(request):
         'staff__user',
         'salary_structure',
         'staff__department'
-    ).order_by('staff__first_name', 'staff__last_name')
+    ).order_by('staff__surname', 'staff__last_name')
 
     # Group records by staff
     from collections import defaultdict
@@ -7158,7 +7158,7 @@ def annual_payroll_list_view(request):
     if search_query:
         staff_list = [
             s for s in staff_list
-            if search_query.lower() in s['staff'].first_name.lower()
+            if search_query.lower() in s['staff'].surname.lower()
                or search_query.lower() in s['staff'].last_name.lower()
                or search_query.lower() in str(s['staff'].staff_id).lower()
         ]
@@ -7842,7 +7842,7 @@ def salary_management_report_view(request):
     # Apply search filter
     if search_query:
         records_query = records_query.filter(
-            Q(staff__first_name__icontains=search_query) |
+            Q(staff__surname__icontains=search_query) |
             Q(staff__last_name__icontains=search_query) |
             Q(staff__staff_id__icontains=search_query)
         )
@@ -7961,7 +7961,7 @@ def salary_management_report_view(request):
 
     if search_query:
         bonuses = bonuses.filter(
-            Q(staff__first_name__icontains=search_query) |
+            Q(staff__surname__icontains=search_query) |
             Q(staff__last_name__icontains=search_query) |
             Q(staff__staff_id__icontains=search_query) |
             Q(volunteer_name__icontains=search_query)
@@ -8072,7 +8072,7 @@ def download_salary_report_pdf(request):
 
     if search_query:
         records_query = records_query.filter(
-            Q(staff__first_name__icontains=search_query) |
+            Q(staff__surname__icontains=search_query) |
             Q(staff__last_name__icontains=search_query) |
             Q(staff__staff_id__icontains=search_query)
         )
@@ -8180,7 +8180,7 @@ def download_salary_report_pdf(request):
 
     if search_query:
         bonuses = bonuses.filter(
-            Q(staff__first_name__icontains=search_query) |
+            Q(staff__surname__icontains=search_query) |
             Q(staff__last_name__icontains=search_query) |
             Q(staff__staff_id__icontains=search_query) |
             Q(volunteer_name__icontains=search_query)
@@ -8392,7 +8392,7 @@ def bank_payment_export_view(request):
     # Apply search filter
     if search_query:
         records = records.filter(
-            Q(staff__first_name__icontains=search_query) |
+            Q(staff__surname__icontains=search_query) |
             Q(staff__last_name__icontains=search_query) |
             Q(staff__staff_id__icontains=search_query)
         )
@@ -8494,7 +8494,7 @@ def download_bank_payment_excel(request):
 
     if search_query:
         records = records.filter(
-            Q(staff__first_name__icontains=search_query) |
+            Q(staff__surname__icontains=search_query) |
             Q(staff__last_name__icontains=search_query) |
             Q(staff__staff_id__icontains=search_query)
         )
