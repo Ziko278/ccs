@@ -940,6 +940,20 @@
 
   <!-- Template Main JS File -->
   <script src="{% static 'admin_dashboard/scripts/main.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Initialize Select2 globally for staff fields -->
+<script>
+$(document).ready(function() {
+    // Initialize Select2 for all staff select fields
+    $('.select2-staff').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Search and select staff',
+        allowClear: true,
+        width: '100%'
+    });
+});
+</script>
 
 </body>
 
