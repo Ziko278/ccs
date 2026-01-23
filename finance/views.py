@@ -1990,8 +1990,8 @@ class SalaryStructureListView(LoginRequiredMixin, PermissionRequiredMixin, ListV
     context_object_name = "salary_structure_list"
 
     def get_queryset(self):
-        return SalaryStructure.objects.select_related('staff__account__user').order_by(
-            'staff__account__user__surname')
+        return SalaryStructure.objects.select_related('staff__user').order_by(
+            'staff__surname')
 
 
 class SalaryStructureCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
