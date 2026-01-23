@@ -5062,8 +5062,8 @@ def salary_structure_list_view(request):
     if search:
         structures = structures.filter(
             Q(staff__staff_id__icontains=search) |
-            Q(staff__user__surname__icontains=search) |
-            Q(staff__user__last_name__icontains=search)
+            Q(staff__surname__icontains=search) |
+            Q(staff__last_name__icontains=search)
         )
 
     context = {
@@ -5072,7 +5072,6 @@ def salary_structure_list_view(request):
         'page_title': 'Staff Salary Structures'
     }
     return render(request, 'finance/salary_structure/list.html', context)
-
 
 @login_required
 @permission_required('finance.add_salarystructure', raise_exception=True)
