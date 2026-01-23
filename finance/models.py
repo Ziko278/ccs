@@ -1676,7 +1676,7 @@ class SalaryRecord(models.Model):
     def save(self, *args, **kwargs):
         # Auto-populate session and term if not set
         if self.session is None or self.term is None:
-            setting = SchoolSettingModel.objects.first()
+            setting = SchoolAcademicInfoModel.objects.first()
             if setting:
                 if self.session is None:
                     self.session = setting.session
