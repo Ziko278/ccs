@@ -5073,6 +5073,7 @@ def salary_structure_list_view(request):
     }
     return render(request, 'finance/salary_structure/list.html', context)
 
+
 @login_required
 @permission_required('finance.add_salarystructure', raise_exception=True)
 def salary_structure_create_view(request):
