@@ -3,12 +3,22 @@ import traceback
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 import calendar
-import openpyxl
-
+from reportlab.lib.pagesizes import landscape, A4
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+import json
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl import Workbook
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import transaction
 from django.db.models import Q, Sum, Avg, F, DecimalField, Value, Count
@@ -692,31 +702,34 @@ class InvoiceListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     permission_required = 'finance.view_feemodel'
     template_name = 'finance/invoice/index.html'
     context_object_name = 'invoices'
-    paginate_by = 20
+    paginate_by = 30
 
     def get_queryset(self):
-        """
-        This method builds the list of invoices based on the filters
-        and search query from the URL.
-        """
-        # Start with the base queryset and pre-fetch related models for performance
         queryset = super().get_queryset().select_related(
             'student', 'student__student_class', 'student__class_section', 'session', 'term'
         )
 
-        # Get filter values from the request's GET parameters
         search_query = self.request.GET.get('q', '').strip()
         session_id = self.request.GET.get('session')
         term_id = self.request.GET.get('term')
         status = self.request.GET.get('status', '')
 
-        # Apply session filter
+        # Get school setting for defaults
+        school_setting = SchoolSettingModel.objects.first()
+
+        # Apply session filter - use current if not specified
         if session_id:
             queryset = queryset.filter(session_id=session_id)
+        elif school_setting and school_setting.session:
+            # THIS IS KEY: Actually filter, don't just set context
+            queryset = queryset.filter(session=school_setting.session)
 
-        # Apply term filter
+        # Apply term filter - use current if not specified
         if term_id:
             queryset = queryset.filter(term_id=term_id)
+        elif school_setting and school_setting.term:
+            # THIS IS KEY: Actually filter, don't just set context
+            queryset = queryset.filter(term=school_setting.term)
 
         # Apply status filter
         if status:
@@ -724,7 +737,6 @@ class InvoiceListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
 
         # Apply search query
         if search_query:
-            # Annotate the student's full name to make it searchable
             queryset = queryset.annotate(
                 student_full_name=Concat(
                     'student__surname', Value(' '), 'student__last_name'
@@ -735,7 +747,15 @@ class InvoiceListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
                 Q(invoice_number__icontains=search_query)
             )
 
-        return queryset.order_by('-issue_date')
+        # Order by parent, then student
+        return queryset.order_by(
+            'student__parent__last_name',
+            'student__parent__surname',
+            'student__parent__id',
+            'student__last_name',
+            'student__surname',
+            '-issue_date'
+        )
 
     def get_context_data(self, **kwargs):
         """
@@ -743,7 +763,7 @@ class InvoiceListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         to remember the user's current selections.
         """
         context = super().get_context_data(**kwargs)
-        school_setting = SchoolAcademicInfoModel.objects.first()
+        school_setting = SchoolSettingModel.objects.first()
 
         # Data for the filter dropdowns
         context['sessions'] = SessionModel.objects.all().order_by('-start_year')
@@ -767,6 +787,7 @@ class InvoiceListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
 
         context['selected_status'] = self.request.GET.get('status', '')
         context['search_query'] = self.request.GET.get('q', '')
+        context['group_by_parent'] = True
 
         return context
 
@@ -872,6 +893,7 @@ class InvoiceDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
 
         messages.success(request, f"Invoice '{invoice.invoice_number}' has been deleted successfully.")
         return super().delete(request, *args, **kwargs)
+
 
 class StudentFeeSearchView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
     permission_required = 'finance.add_feemodel'
@@ -1009,6 +1031,16 @@ class StudentFinancialDashboardView(LoginRequiredMixin, PermissionRequiredMixin,
             return redirect('finance_student_dashboard', pk=student.pk)
 
         if payment_form.is_valid():
+            payment_mode = payment_form.cleaned_data['payment_mode']
+
+            # Validate wallet if payment mode is wallet
+            if payment_mode == 'wallet':
+                wallet = getattr(student, 'student_wallet', None)
+                if not wallet or wallet.fee_balance < total_paid_in_transaction:
+                    messages.error(request,
+                                   f"Insufficient fee wallet balance. Available: ₦{wallet.fee_balance if wallet else 0:,.2f}")
+                    return redirect('finance_student_dashboard', pk=student.pk)
+
             try:
                 with transaction.atomic():
                     # First, apply the payments to the individual items
@@ -1058,6 +1090,11 @@ class StudentFinancialDashboardView(LoginRequiredMixin, PermissionRequiredMixin,
                         confirmed_by=request.user,
                         item_breakdown=item_breakdown  # NEW: Save the breakdown
                     )
+
+                    if payment_mode == 'wallet':
+                        wallet = StudentWalletModel.objects.select_for_update().get(student=student)
+                        wallet.fee_balance -= total_paid_in_transaction
+                        wallet.save(update_fields=['fee_balance'])
 
                     # Finally, update the parent invoice's status
                     invoice.refresh_from_db()
@@ -1127,7 +1164,7 @@ class FeePaymentListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
             # Annotate the student's full name to make it searchable
             queryset = queryset.annotate(
                 student_full_name=Concat(
-                    'invoice__student__surname', Value(' '), 'invoice__student__last_name'
+                    'invoice__student__first_name', Value(' '), 'invoice__student__last_name'
                 )
             ).filter(
                 Q(student_full_name__icontains=search_query) |
@@ -1182,12 +1219,29 @@ class BulkFeePaymentView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
     def form_valid(self, form):
         student = get_object_or_404(StudentsModel, pk=self.kwargs['pk'])
         total_amount_paid = form.cleaned_data['amount']
+        payment_mode = form.cleaned_data['payment_mode']
         amount_to_allocate = total_amount_paid
 
-        # Get all unpaid or partially paid invoices, oldest first, to pay them off in order.
+        # Get all unpaid or partially paid invoices, oldest first
         outstanding_invoices = student.invoices.exclude(status=InvoiceModel.Status.PAID).order_by('issue_date')
+        total_outstanding = sum(invoice.balance for invoice in outstanding_invoices)
 
         with transaction.atomic():
+            # Handle wallet payment - validate and lock wallet
+            if payment_mode == 'wallet':
+                wallet = StudentWalletModel.objects.select_for_update().get(student=student)
+                if wallet.fee_balance < total_amount_paid:
+                    messages.error(
+                        self.request,
+                        f"Insufficient fee wallet balance. Available: ₦{wallet.fee_balance:,.2f}, Required: ₦{total_amount_paid:,.2f}"
+                    )
+                    return redirect('finance_student_dashboard', pk=student.pk)
+
+            # Track amounts for messaging
+            total_applied_to_fees = Decimal('0.00')
+            invoices_paid_count = 0
+
+            # Allocate to invoices
             for invoice in outstanding_invoices:
                 if amount_to_allocate <= 0:
                     break
@@ -1200,7 +1254,6 @@ class BulkFeePaymentView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
                     remaining_for_invoice = payment_for_this_invoice
 
                     items_with_balance = [item for item in invoice.items.order_by('id') if item.balance > 0]
-
 
                     # Distribute payment across items in this invoice
                     for item in items_with_balance:
@@ -1239,29 +1292,51 @@ class BulkFeePaymentView(LoginRequiredMixin, PermissionRequiredMixin, FormView):
                     FeePaymentModel.objects.create(
                         invoice=invoice,
                         amount=payment_for_this_invoice,
-                        payment_mode=form.cleaned_data['payment_mode'],
+                        payment_mode=payment_mode,
                         date=form.cleaned_data['date'],
                         description=form.cleaned_data.get('description', ''),
                         currency=form.cleaned_data['currency'],
-                        bank_account=form.cleaned_data['bank_account'],
+                        bank_account=form.cleaned_data.get('bank_account'),
                         reference=form.cleaned_data.get('reference') or f"bulk-pmt-{invoice.invoice_number}",
                         status=FeePaymentModel.PaymentStatus.CONFIRMED,
                         confirmed_by=self.request.user,
                         item_breakdown=item_breakdown
                     )
 
-                    # Refresh invoice from DB before checking balance again
+                    # Refresh invoice from DB before checking balance
                     invoice.refresh_from_db()
                     if invoice.balance <= Decimal('0.01'):
                         invoice.status = InvoiceModel.Status.PAID
+                        invoices_paid_count += 1
                     else:
                         invoice.status = InvoiceModel.Status.PARTIALLY_PAID
                     invoice.save()
 
+                    total_applied_to_fees += payment_for_this_invoice
                     amount_to_allocate -= payment_for_this_invoice
 
-        messages.success(self.request,
-                         f"Bulk payment of ₦{total_amount_paid:,.2f} allocated successfully across outstanding invoices.")
+            # Deduct from wallet if payment mode is wallet
+            if payment_mode == 'wallet':
+                wallet.fee_balance -= total_amount_paid
+                wallet.save(update_fields=['fee_balance'])
+
+            # Handle excess payment - fund fee wallet
+            if amount_to_allocate > 0:
+                wallet_to_fund, _ = StudentWalletModel.objects.get_or_create(student=student)
+                wallet_to_fund.fee_balance += amount_to_allocate  # Fund fee wallet, not canteen
+                wallet_to_fund.save(update_fields=['fee_balance'])
+
+                messages.success(
+                    self.request,
+                    f"Payment processed successfully! ₦{total_applied_to_fees:,.2f} applied to {invoices_paid_count} invoice(s). "
+                    f"Excess amount of ₦{amount_to_allocate:,.2f} has been credited to the student's fee wallet for future use."
+                )
+            else:
+                messages.success(
+                    self.request,
+                    f"Bulk payment of ₦{total_amount_paid:,.2f} allocated successfully across invoice(s)."
+                )
+
         return redirect('finance_student_dashboard', pk=student.pk)
 
 
@@ -2289,23 +2364,274 @@ def deposit_get_class_students_by_reg_number(request):
 @permission_required("finance.view_studentfundingmodel", raise_exception=True)
 def deposit_payment_list_view(request):
     session_id = request.GET.get('session', None)
-    school_setting = SchoolAcademicInfoModel.objects.first()
+    term_id = request.GET.get('term', None)
+    wallet_type_filter = request.GET.get('wallet_type', '').strip()
+    search_query = request.GET.get('search', '').strip()
+    date_from = request.GET.get('date_from', '').strip()
+    date_to = request.GET.get('date_to', '').strip()
+    page = request.GET.get('page', 1)
+
+    school_setting = SchoolSettingModel.objects.first()
     if not session_id:
         session = school_setting.session
     else:
         session = SessionModel.objects.get(id=session_id)
-    session_list = SessionModel.objects.all()
-    term = request.GET.get('term', None)
-    if not term:
+    if not term_id:
         term = school_setting.term
-    fee_payment_list = StudentFundingModel.objects.filter(session=session, term=term).exclude(status='pending').order_by('-id')
+    else:
+        term = TermModel.objects.get(id=term_id)
+    session_list = SessionModel.objects.all()
+    term_list = TermModel.objects.all()
+
+    queryset = StudentFundingModel.objects.filter(session=session, term=term).exclude(status='pending').order_by('-id')
+
+    if wallet_type_filter:
+        queryset = queryset.filter(wallet_type=wallet_type_filter)
+
+    if search_query:
+        queryset = queryset.filter(
+            Q(student__first_name__icontains=search_query) |
+            Q(student__last_name__icontains=search_query)
+        )
+
+    if date_from:
+        queryset = queryset.filter(created_at__date__gte=date_from)
+    if date_to:
+        queryset = queryset.filter(created_at__date__lte=date_to)
+
+    # Handle downloads
+    if 'download' in request.GET:
+        download_format = request.GET.get('download')
+        if download_format == 'excel':
+            return download_funding_excel(queryset, session, term)
+        elif download_format == 'pdf':
+            return download_funding_pdf(queryset, session, term)
+
+    paginator = Paginator(queryset, 50)
+    try:
+        fee_payment_list = paginator.page(page)
+    except PageNotAnInteger:
+        fee_payment_list = paginator.page(1)
+    except EmptyPage:
+        fee_payment_list = paginator.page(paginator.num_pages)
+
     context = {
         'fee_payment_list': fee_payment_list,
-        'session': session,
-        'term': term,
-        'session_list': session_list
+        'current_session': session,
+        'current_term': term,
+        'session_list': session_list,
+        'term_list': term_list,
+        'search_query': search_query,
+        'date_from': date_from,
+        'date_to': date_to,
+        'wallet_type_filter': wallet_type_filter,
     }
     return render(request, 'finance/funding/index.html', context)
+
+
+def download_funding_excel(queryset, session, term):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Student Funding"
+
+    header_font = Font(bold=True, color="FFFFFF", size=12)
+    header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+    header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+    border_side = Side(style='thin', color='000000')
+    border = Border(left=border_side, right=border_side, top=border_side, bottom=border_side)
+
+    center_align = Alignment(horizontal="center", vertical="center")
+    right_align = Alignment(horizontal="right", vertical="center")
+
+    headers = ['Student', 'Class', 'Amount Paid (₦)', 'Date', 'Method', 'Status']
+
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_alignment
+        cell.border = border
+
+    ws.column_dimensions['A'].width = 25
+    ws.column_dimensions['B'].width = 15
+    ws.column_dimensions['C'].width = 18
+    ws.column_dimensions['D'].width = 15
+    ws.column_dimensions['E'].width = 20
+    ws.column_dimensions['F'].width = 12
+
+    for row_num, payment in enumerate(queryset, 2):
+        cell = ws.cell(row=row_num, column=1, value=f"{payment.student.first_name} {payment.student.last_name}")
+        cell.border = border
+
+        student_class = ""
+        if payment.student.student_class:
+            student_class = f"{payment.student.student_class} {payment.student.class_section or ''}"
+        cell = ws.cell(row=row_num, column=2, value=student_class)
+        cell.border = border
+        cell.alignment = center_align
+
+        cell = ws.cell(row=row_num, column=3, value=float(payment.amount))
+        cell.number_format = '#,##0.00'
+        cell.border = border
+        cell.alignment = right_align
+
+        date_str = payment.created_at.strftime("%b %d, %Y") if payment.created_at else ""
+        cell = ws.cell(row=row_num, column=4, value=date_str)
+        cell.border = border
+        cell.alignment = center_align
+
+        method = payment.mode
+        if payment.method:
+            method += f" ({payment.method})"
+        cell = ws.cell(row=row_num, column=5, value=method)
+        cell.border = border
+
+        cell = ws.cell(row=row_num, column=6, value=payment.status.title())
+        cell.border = border
+        cell.alignment = center_align
+
+    ws.freeze_panes = 'A2'
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"student_funding_{session.__str__()}_{term.name}_{timestamp}.xlsx"
+
+    response = HttpResponse(
+        output.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    return response
+
+
+def download_funding_pdf(queryset, session, term):
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        rightMargin=30,
+        leftMargin=30,
+        topMargin=30,
+        bottomMargin=30
+    )
+
+    elements = []
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=18,
+        textColor=colors.HexColor('#366092'),
+        spaceAfter=30,
+        alignment=TA_CENTER
+    )
+
+    title = Paragraph(f"Student Wallet Funding - {session.__str__()} - {term.name}", title_style)
+    elements.append(title)
+
+    info_style = ParagraphStyle(
+        'Info',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.grey,
+        alignment=TA_CENTER
+    )
+
+    generation_date = datetime.now().strftime("%B %d, %Y at %H:%M")
+    info = Paragraph(f"Generated on {generation_date}", info_style)
+    elements.append(info)
+    elements.append(Spacer(1, 20))
+
+    headers = ['Student', 'Class', 'Amount (₦)', 'Date', 'Method', 'Status']
+    col_widths = [2 * inch, 1.2 * inch, 1.2 * inch, 1.2 * inch, 1.5 * inch, 1 * inch]
+
+    data = [headers]
+
+    for payment in queryset:
+        student_name = f"{payment.student.first_name} {payment.student.last_name}"
+
+        student_class = ""
+        if payment.student.student_class:
+            student_class = f"{payment.student.student_class} {payment.student.class_section or ''}"
+
+        date_str = payment.created_at.strftime("%b %d, %Y") if payment.created_at else ""
+
+        method = payment.mode
+        if payment.method:
+            method += f"\n({payment.method})"
+
+        row = [
+            student_name,
+            student_class,
+            f"₦{payment.amount:,.2f}",
+            date_str,
+            method,
+            payment.status.title(),
+        ]
+
+        data.append(row)
+
+    table = Table(data, colWidths=col_widths, repeatRows=1)
+
+    table_style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#366092')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('TOPPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('ALIGN', (2, 1), (2, -1), 'RIGHT'),
+        ('ALIGN', (1, 1), (1, -1), 'CENTER'),
+        ('ALIGN', (3, 1), (3, -1), 'CENTER'),
+        ('ALIGN', (5, 1), (5, -1), 'CENTER'),
+        ('VALIGN', (0, 1), (-1, -1), 'TOP'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f5f5f5')]),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 1), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+    ])
+
+    table.setStyle(table_style)
+    elements.append(table)
+
+    elements.append(Spacer(1, 20))
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=8,
+        textColor=colors.grey,
+        alignment=TA_CENTER
+    )
+
+    total_amount = sum(p.amount for p in queryset)
+    footer_text = f"Total Records: {queryset.count()} | Total Amount: ₦{total_amount:,.2f}"
+    footer = Paragraph(footer_text, footer_style)
+    elements.append(footer)
+
+    doc.build(elements)
+    buffer.seek(0)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"student_funding_{session.__str__()}_{term.name}_{timestamp}.pdf"
+
+    response = HttpResponse(buffer.read(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    return response
 
 
 @login_required
@@ -2339,6 +2665,7 @@ def deposit_create_view(request, student_pk):
         if form.is_valid():
             deposit = form.save(commit=False)  # Don't save yet, we need to set the student
             deposit.student = student  # Associate the funding with the student
+            wallet_type = deposit.wallet_type
 
             try:
                 profile = UserProfileModel.objects.get(user=request.user)
@@ -2355,17 +2682,20 @@ def deposit_create_view(request, student_pk):
             messages.success(request, f'Deposit of ₦{amount} successful!')
 
             # Update student wallet
-            student_wallet, created = StudentWalletModel.objects.get_or_create(student=student)  # Get or create wallet
+            student_wallet, created = StudentWalletModel.objects.get_or_create(student=student)
 
-            student_wallet.balance += amount
+            if wallet_type == StudentFundingModel.WalletType.CANTEEN:
+                student_wallet.balance += amount
 
-            if student_wallet.debt > 0:
-                if student_wallet.balance > student_wallet.debt:
-                    student_wallet.balance -= student_wallet.debt
-                    student_wallet.debt = 0
-                else:
-                    student_wallet.debt -= student_wallet.balance
-                    student_wallet.balance = 0
+                if student_wallet.debt > 0:
+                    if student_wallet.balance > student_wallet.debt:
+                        student_wallet.balance -= student_wallet.debt
+                        student_wallet.debt = 0
+                    else:
+                        student_wallet.debt -= student_wallet.balance
+                        student_wallet.balance = 0
+            else:  # FEE wallet
+                student_wallet.fee_balance += amount
 
             student_wallet.save()
 
@@ -2390,6 +2720,70 @@ def deposit_create_view(request, student_pk):
         'setting': setting
     }
     return render(request, 'finance/funding/create.html', context)
+
+
+@login_required
+@permission_required("finance.change_studentfundingmodel", raise_exception=True)
+def deposit_revert_view(request, pk):
+    """
+    Revert a funding (refund). POST only. Expects 'reason' in POST.
+    Conditions:
+      - funding must be CONFIRMED (or you can adapt to other statuses),
+      - student wallet balance must be >= funding.amount
+    On success: deduct from wallet, mark funding as REVERTED, record who and why.
+    """
+    funding = get_object_or_404(StudentFundingModel, pk=pk)
+    student = funding.student
+
+    # Only allow revert for confirmed (customize if you allow other statuses)
+    if funding.status != StudentFundingModel.PaymentStatus.CONFIRMED:
+        messages.error(request, "Only confirmed funding records can be reverted.")
+        return redirect('deposit_detail', pk=funding.pk)
+
+    if request.method != 'POST':
+        messages.error(request, "Invalid request method.")
+        return redirect('deposit_detail', pk=funding.pk)
+
+    reason = request.POST.get('reason', '').strip()
+    if not reason:
+        messages.error(request, "Please provide a reason for the revert.")
+        return redirect('deposit_detail', pk=funding.pk)
+
+    try:
+        profile = StaffProfileModel.objects.get(user=request.user)
+        staff = profile.staff
+    except Exception:
+        staff = None
+
+    # Perform atomic wallet and funding update
+    with transaction.atomic():
+        student_wallet, created = StudentWalletModel.objects.select_for_update().get_or_create(student=student)
+
+        refund_amount = funding.amount
+        wallet_type = funding.wallet_type
+
+        # Deduct from wallet
+        if wallet_type == StudentFundingModel.WalletType.CANTEEN:
+            if student_wallet.balance < refund_amount:
+                messages.error(request, "Student canteen wallet balance is insufficient to perform this revert.")
+                return redirect('deposit_detail', pk=funding.pk)
+            student_wallet.balance -= refund_amount
+        else:  # FEE wallet
+            if student_wallet.fee_balance < refund_amount:
+                messages.error(request, "Student fee wallet balance is insufficient to perform this revert.")
+                return redirect('deposit_detail', pk=funding.pk)
+            student_wallet.fee_balance -= refund_amount
+
+        student_wallet.save()
+
+        # Mark funding reverted and store reason/who/when
+        funding.mark_reverted(reason=reason, staff=staff)
+
+        funding.save()
+
+    messages.success(request, f"Funding of ₦{refund_amount} has been reverted successfully.")
+    # Redirect to deposit detail page (you can change to index if you prefer)
+    return redirect('deposit_detail', pk=funding.pk)
 
 
 @login_required
@@ -2420,20 +2814,22 @@ def confirm_payment_view(request, payment_id):
         # Get or create student wallet
         student_wallet, created = StudentWalletModel.objects.get_or_create(student=student)
 
-        # Apply the payment amount to the wallet balance
-        # Keeping calculations as float as per original deposit_create_view
-        student_wallet.balance += payment.amount
+        wallet_type = payment.wallet_type
 
-        # Apply debt reduction logic
-        if student_wallet.debt > 0:
-            if student_wallet.balance > student_wallet.debt:
-                student_wallet.balance -= student_wallet.debt
-                student_wallet.debt = 0.0 # Use 0.0 for float consistency
-            else:
-                student_wallet.debt -= student_wallet.balance
-                student_wallet.balance = 0.0 # Use 0.0 for float consistency
+        if wallet_type == StudentFundingModel.WalletType.CANTEEN:
+            student_wallet.balance += payment.amount
 
-        student_wallet.save() # Save the updated wallet
+            if student_wallet.debt > 0:
+                if student_wallet.balance > student_wallet.debt:
+                    student_wallet.balance -= student_wallet.debt
+                    student_wallet.debt = 0.0
+                else:
+                    student_wallet.debt -= student_wallet.balance
+                    student_wallet.balance = 0.0
+        else:  # FEE wallet
+            student_wallet.fee_balance += payment.amount
+
+        student_wallet.save()
 
         # Update the payment status and its internal balance field
         payment.status = 'confirmed'

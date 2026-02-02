@@ -1,4 +1,4 @@
-{% extends 'admin_dashboard/layout.html' %}
+{% extends 'admin_site/layout.html' %}
 {% load static %}
 {% load humanize %}
 {% block 'main' %}
@@ -8,30 +8,58 @@
 <div class="col-lg-12 grid-margin stretch-card">
     <div class="card">
         <div class="card-body">
-            <h4 class="card-title">Select Fee Record</h4>
-            <form>
+            <h4 class="card-title">Filter and Search</h4>
+            <form id="filterForm">
                 <div class="row">
-                    <div class="col-4">
-                        <select name="session" required class="form-control">
+                    <div class="col-2">
+                        <label for="session">Session</label>
+                        <select id="session" name="session" required class="form-control">
                             <option value="">-------------------</option>
                             {% for session in session_list %}
-                            <option value="{{session.id}}">{{ session }}</option>
+                            <option {% if current_session.id == session.id %} selected {% endif %} value="{{session.id}}">{{ session }}</option>
                             {% endfor %}
                         </select>
                     </div>
 
-                    <div class="col-4">
-                        <select name="term" required class="form-control">
+                    <div class="col-2">
+                        <label for="term">Term</label>
+                        <select id="term" name="term" required class="form-control">
                             <option value="">-------------------</option>
-                            <option value="1st term">1st Term</option>
-                            <option value="2nd term">2nd Term</option>
-                            <option value="3rd term">3rd Term</option>
-
+                            {% for term in term_list %}
+                            <option {% if current_term.id == term.id %} selected {% endif %} value="{{term.id}}">{{ term|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <!-- After the term select -->
+                    <div class="col-2">
+                        <label for="wallet_type">Wallet Type</label>
+                        <select id="wallet_type" name="wallet_type" class="form-control">
+                            <option value="">All Wallets</option>
+                            <option value="canteen" {% if wallet_type_filter == 'canteen' %}selected{% endif %}>Canteen</option>
+                            <option value="fee" {% if wallet_type_filter == 'fee' %}selected{% endif %}>Fee</option>
                         </select>
                     </div>
 
-                    <div class="col-4">
-                        <input style="width:50%;margin-left:25%" type="submit" value="Proceed" class="btn btn-success">
+                    <div class="col-2">
+                        <label for="search">Search Student</label>
+                        <input type="text" id="search" name="search" class="form-control" value="{{ search_query }}" placeholder="Search by name">
+                    </div>
+
+                    <div class="col-2">
+                        <label for="date_from">Date From</label>
+                        <input type="date" id="date_from" name="date_from" class="form-control" value="{{ date_from }}">
+                    </div>
+
+                    <div class="col-2">
+                        <label for="date_to">Date To</label>
+                        <input type="date" id="date_to" name="date_to" class="form-control" value="{{ date_to }}">
+                    </div>
+
+                    <div class="col-1">
+                        <label>&nbsp;</label>
+                        <div>
+                            <input type="submit" value="Filter" class="btn btn-success w-100">
+                        </div>
                     </div>
                 </div>
             </form>
@@ -43,12 +71,41 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-body pt-3" style="overflow-x:auto">
-                <h5 class="card-title">Fee Payments for {{ session }} Session - {{ term }}</h5>
-                <table class="table table-bordered datatable" style="font-size:14px">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Student Wallet Funding for {{ current_session }} Session - {{ current_term }}
+                        {% if search_query %} (Search: "{{ search_query }}"){% endif %}
+                    </h5>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-download"></i> Download
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <button class="dropdown-item" onclick="downloadReport('excel')">
+                                <i class="bi bi-file-excel"></i> Download as Excel
+                            </button>
+                            <button class="dropdown-item" onclick="downloadReport('pdf')">
+                                <i class="bi bi-file-pdf"></i> Download as PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {% if date_from or date_to %}
+                <div class="mb-2">
+                    <small class="text-muted">
+                        Filtered by date:
+                        {% if date_from %}From {{ date_from }}{% endif %}
+                        {% if date_to %}To {{ date_to }}{% endif %}
+                    </small>
+                </div>
+                {% endif %}
+
+                <table class="table table-bordered" style="font-size:14px">
                     <thead>
                         <tr>
                             <th scope="col" style="min-width:150px">Student</th>
                             <th scope="col" style="min-width:100px">Class</th>
+                            <th scope="col">Wallet Type</th>
                             <th scope="col">Amount Paid</th>
                             <th scope="col" style="">Date</th>
                             <th scope="col" style="">Method</th>
@@ -61,21 +118,175 @@
                             <tr>
                                 <td scope="row">{{ payment.student|title }}</td>
                                 <td scope="row">{% if payment.student.student_class %} {{ payment.student.student_class|upper }} {{ payment.student.class_section|upper }} {% endif %}</td>
+                                <td scope="row">{{ payment.get_wallet_type_display }}</td>
                                 <td scope="row">{{ payment.amount|intcomma }}</td>
                                 <td scope="row">{{ payment.created_at|date }}</td>
-                                 <td scope="row">{{ payment.mode|title }} {% if payment.method %} ({{ payment.method|title }}) {% endif %}</td>
-                                <td scope="row" {% if payment.status == 'pending' %} class='text-warning' {% elif payment.status == 'declined'  %} class='text-danger' {% else %} class='text-success' {% endif %}>{{ payment.status|title }}</td>
+                                <td scope="row">{{ payment.mode|title }} {% if payment.method %} ({{ payment.method|title }}) {% endif %}</td>
+                                <td scope="row" {% if payment.status == 'pending' %} class='text-warning' {% elif payment.status == 'declined'  %} class='text-danger' {% elif payment.status == 'reverted'  %} class='text-danger' {% else %} class='text-success' {% endif %}>{{ payment.status|title }}</td>
                                 <td scope="row" class="text-center">
                                     <a title="View Fee Payment Detail" style="font-size:12px" class="btn btn-primary" href="{% url 'deposit_detail' payment.id %}"><i class="bi bi-eye"></i> </a>
+                                    {% if payment.status == 'confirmed' %}
+                                    <button
+                                        type="button"
+                                        class="btn btn-warning btn-revert"
+                                        data-toggle="modal"
+                                        data-target="#revertModal"
+                                        data-funding-id="{{ payment.id }}"
+                                        data-funding-amount="{{ payment.amount }}"
+                                        data-student-name="{{ payment.student|escapejs }}"
+                                        title="Revert Funding"
+                                        style="font-size:12px">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                {% endif %}
                                 </td>
                             </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">No records found matching your criteria.</td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+
+                {% if fee_payment_list.has_other_pages %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if fee_payment_list.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1&session={{ current_session.id }}&term={{ current_term.id }}&search={{ search_query|urlencode }}&date_from={{ date_from }}&date_to={{ date_to }}">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ fee_payment_list.previous_page_number }}&session={{ current_session.id }}&term={{ current_term.id }}&search={{ search_query|urlencode }}&date_from={{ date_from }}&date_to={{ date_to }}">Previous</a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link">Page {{ fee_payment_list.number }} of {{ fee_payment_list.paginator.num_pages }}</span>
+                        </li>
+
+                        {% if fee_payment_list.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ fee_payment_list.next_page_number }}&session={{ current_session.id }}&term={{ current_term.id }}&search={{ search_query|urlencode }}&date_from={{ date_from }}&date_to={{ date_to }}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ fee_payment_list.paginator.num_pages }}&session={{ current_session.id }}&term={{ current_term.id }}&search={{ search_query|urlencode }}&date_from={{ date_from }}&date_to={{ date_to }}">Last</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
 
             </div>
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="revertModal" tabindex="-1" role="dialog" aria-labelledby="revertModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form id="revertForm" method="post">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="revertModalLabel">Confirm Revert</h5>
+                </div>
+        <div class="modal-body">
+          <p id="revertModalBody">You are about to revert <strong id="revertAmount"></strong> from <strong id="revertStudent"></strong>'s wallet.</p>
+
+          <div class="form-group">
+            <label for="reasonInput">Reason for Revert <span class="text-danger">*</span></label>
+            <textarea id="reasonInput" name="reason" class="form-control" required rows="3" placeholder="Provide reason for revert"></textarea>
+          </div>
+
+          <input type="hidden" id="fundingIdInput" name="funding_id" value="">
+        </div>
+        <div class="modal-footer">
+          <button type="submit" id="confirmRevertBtn" class="btn btn-danger">Proceed with Revert</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function downloadReport(format) {
+    const form = document.getElementById('filterForm');
+    const formData = new FormData(form);
+
+    let url = window.location.pathname + '?download=' + format;
+
+    for (let [key, value] of formData.entries()) {
+        if (value) {
+            url += '&' + key + '=' + encodeURIComponent(value);
+        }
+    }
+
+    window.location.href = url;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const revertButtons = document.querySelectorAll('.btn-revert');
+    const modalEl = document.getElementById('revertModal');
+    const reasonInput = document.getElementById('reasonInput');
+    const fundingIdInput = document.getElementById('fundingIdInput');
+    const revertAmountElem = document.getElementById('revertAmount');
+    const revertStudentElem = document.getElementById('revertStudent');
+    const revertForm = document.getElementById('revertForm');
+
+    if (!modalEl) {
+        console.warn('revertModal element not found - modal will not open');
+        return;
+    }
+
+    function showModal() {
+        if (window.jQuery && typeof window.jQuery(modalEl).modal === 'function') {
+            window.jQuery(modalEl).modal('show');
+            return;
+        }
+
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const inst = bootstrap.Modal.getOrCreateInstance(modalEl);
+            inst.show();
+            return;
+        }
+
+        modalEl.style.display = 'block';
+        modalEl.classList.add('show');
+    }
+
+    revertButtons.forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            const fundingId = this.getAttribute('data-funding-id');
+            const fundingAmount = this.getAttribute('data-funding-amount');
+            const studentName = this.getAttribute('data-student-name');
+
+            if (fundingIdInput) fundingIdInput.value = fundingId || '';
+            if (revertAmountElem) revertAmountElem.textContent = fundingAmount ? ('₦' + Number(fundingAmount).toLocaleString()) : '';
+            if (revertStudentElem) revertStudentElem.textContent = studentName || '';
+
+            if (revertForm) {
+                try {
+                    revertForm.action = "{% url 'deposit_revert' 0 %}".replace('/0/', '/' + fundingId + '/');
+                } catch (err) {
+                    console.warn('Could not set form.action automatically:', err);
+                }
+            }
+
+            if (reasonInput) reasonInput.value = '';
+
+            showModal();
+        });
+    });
+
+    if (revertForm) {
+        revertForm.addEventListener('submit', function (e) {
+            if (reasonInput && reasonInput.value.trim() === '') {
+                e.preventDefault();
+                alert('Please provide a reason for the revert.');
+            }
+        });
+    }
+});
+</script>
 
 {%endblock %}

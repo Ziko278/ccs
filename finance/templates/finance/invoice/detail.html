@@ -26,7 +26,10 @@
                         <strong>Class:</strong> <span>{{ invoice.student.student_class.name }}</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between">
-                        <strong>Session/Term:</strong> <span>{{ invoice.session }} / {{ invoice.term.name|title }}</span>
+                        <strong>Fee Wallet Balance:</strong> <span class="text-success">₦{{ invoice.student.student_wallet.fee_balance|floatformat|intcomma }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>Session/Quarter:</strong> <span>{{ invoice.session }} / {{ invoice.term.name|title }}</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between">
                         <strong>Invoice Total:</strong> <span>₦{{ invoice.total_amount|floatformat:2|intcomma }}</span>

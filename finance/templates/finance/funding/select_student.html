@@ -140,7 +140,7 @@ $(document).ready(function(){
     student_list = JSON.parse(student_list)
     student_name_list = {}
     for(const key in student_list){
-        student_name_list[student_list[key]['pk']] = student_list[key]['fields']['first_name']  + " " + student_list[key]['fields']['last_name']
+        student_name_list[student_list[key]['pk']] = student_list[key]['fields']['surname']  + " " + student_list[key]['fields']['last_name']
         student_name_list[student_list[key]['pk']] = student_name_list[student_list[key]['pk']].toLowerCase()
 
     }

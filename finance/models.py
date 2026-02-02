@@ -45,8 +45,16 @@ class StudentFundingModel(models.Model):
         PENDING = 'pending', 'Pending'
         CONFIRMED = 'confirmed', 'Confirmed'
         FAILED = 'failed', 'Failed'
+        REVERTED = 'reverted', 'Reverted'
+
+    class WalletType(models.TextChoices):
+        CANTEEN = 'canteen', 'Canteen Wallet'
+        FEE = 'fee', 'Fee Wallet'
 
     student = models.ForeignKey(StudentsModel, on_delete=models.CASCADE, related_name='funding_list')
+    wallet_type = models.CharField(max_length=20, choices=WalletType.choices,
+        default=WalletType.CANTEEN, help_text="Which wallet this funding is for"
+    )
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     proof_of_payment = models.FileField(blank=True, null=True, upload_to='images/funding')
     method = models.CharField(max_length=100, choices=PaymentMethod.choices, default=PaymentMethod.CASH)
@@ -62,6 +70,11 @@ class StudentFundingModel(models.Model):
     decline_reason = models.CharField(max_length=250, null=True, blank=True)
     reference = models.CharField(max_length=250, null=True, blank=True, help_text="Unique reference for this transaction.")
 
+    refund_reason = models.CharField(max_length=500, null=True, blank=True, help_text="Reason for revert/refund.")
+    reverted_by = models.ForeignKey(StaffModel, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='reverted_fundings')
+    reverted_at = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         verbose_name = "Student Funding Record"
         verbose_name_plural = "Student Funding Records"
@@ -74,7 +87,7 @@ class StudentFundingModel(models.Model):
         # ✔️ ROBUSTNESS: Improved logic to safely auto-populate session and term.
         if self.session is None or self.term is None:
             try:
-                setting = SchoolAcademicInfoModel.objects.first()
+                setting = SchoolSettingModel.objects.first()
                 if setting:
                     if self.session is None: self.session = setting.session
                     if self.term is None: self.term = setting.term
@@ -85,6 +98,17 @@ class StudentFundingModel(models.Model):
 
         is_new = self.pk is None
         super().save(*args, **kwargs)
+
+    def mark_reverted(self, reason: str = None, staff: StaffModel = None):
+        """
+        Helper to mark this funding as reverted.
+        Does NOT change the wallet — that must be done by the view in a transaction.
+        """
+        self.status = self.PaymentStatus.REVERTED
+        self.refund_reason = reason
+        self.reverted_by = staff
+        self.reverted_at = timezone.now()
+        self.save(update_fields=['status', 'refund_reason', 'reverted_by', 'reverted_at'])
 
 
 class StaffFundingModel(models.Model):
@@ -103,6 +127,7 @@ class StaffFundingModel(models.Model):
         PENDING = 'pending', 'Pending'
         CONFIRMED = 'confirmed', 'Confirmed'
         FAILED = 'failed', 'Failed'
+        REVERTED = 'reverted', 'Reverted'
 
     staff = models.ForeignKey(StaffModel, on_delete=models.CASCADE, related_name='staff_funding_list')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -119,6 +144,10 @@ class StaffFundingModel(models.Model):
     teller_number = models.CharField(max_length=50, null=True, blank=True)
     decline_reason = models.CharField(max_length=250, null=True, blank=True)
     reference = models.CharField(max_length=250, null=True, blank=True, help_text="Unique reference for this transaction.")
+    refund_reason = models.CharField(max_length=500, null=True, blank=True, help_text="Reason for revert/refund.")
+    reverted_by = models.ForeignKey(StaffModel, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='reverted_staff_fundings')
+    reverted_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Student Funding Record"
@@ -132,7 +161,7 @@ class StaffFundingModel(models.Model):
         # ✔️ ROBUSTNESS: Improved logic to safely auto-populate session and term.
         if self.session is None or self.term is None:
             try:
-                setting = SchoolAcademicInfoModel.objects.first()
+                setting = SchoolSettingModel.objects.first()
                 if setting:
                     if self.session is None: self.session = setting.session
                     if self.term is None: self.term = setting.term
@@ -144,6 +173,16 @@ class StaffFundingModel(models.Model):
         is_new = self.pk is None
         super().save(*args, **kwargs)
 
+    def mark_reverted(self, reason: str = None, staff: StaffModel = None):
+        """
+        Mark this funding as reverted and save metadata.
+        Does NOT change the wallet — the view should perform wallet updates in an atomic block.
+        """
+        self.status = self.PaymentStatus.REVERTED
+        self.refund_reason = reason
+        self.reverted_by = staff
+        self.reverted_at = timezone.now()
+        self.save(update_fields=['status', 'refund_reason', 'reverted_by', 'reverted_at'])
 
 
 # ===================================================================
@@ -386,7 +425,10 @@ class FeePaymentModel(models.Model):
     class PaymentMode(models.TextChoices):
         CASH = 'cash', 'Cash'
         BANK_TRANSFER = 'bank_transfer', 'Bank Transfer'
-        # ... other choices ...
+        BANK_TELLER = 'bank_teller', 'Bank Teller'
+        POS = 'pos', 'POS'
+        WALLET = 'wallet', 'Fee Wallet'
+        OTHERS = 'others', 'OTHERS'
 
     class PaymentStatus(models.TextChoices):
         PENDING = 'pending', 'Pending'

@@ -49,6 +49,12 @@ def create_student_record(sender, instance, created, **kwargs):
                                                                    entry_term=academic_info.term)
         student_record.save()
 
+        try:
+            wallet, created = StudentWalletModel.objects.get_or_create(student=student)
+
+        except Exception as e:
+            pass
+
 
 @receiver(post_save, sender=StudentsModel)
 def create_registration_notification(sender, instance, created, **kwargs):
