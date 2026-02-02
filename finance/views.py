@@ -715,7 +715,7 @@ class InvoiceListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         status = self.request.GET.get('status', '')
 
         # Get school setting for defaults
-        school_setting = SchoolSettingModel.objects.first()
+        school_setting = SchoolAcademicInfoModel.objects.first()
 
         # Apply session filter - use current if not specified
         if session_id:
@@ -763,7 +763,7 @@ class InvoiceListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         to remember the user's current selections.
         """
         context = super().get_context_data(**kwargs)
-        school_setting = SchoolSettingModel.objects.first()
+        school_setting = SchoolAcademicInfoModel.objects.first()
 
         # Data for the filter dropdowns
         context['sessions'] = SessionModel.objects.all().order_by('-start_year')
@@ -2371,7 +2371,7 @@ def deposit_payment_list_view(request):
     date_to = request.GET.get('date_to', '').strip()
     page = request.GET.get('page', 1)
 
-    school_setting = SchoolSettingModel.objects.first()
+    school_setting = SchoolAcademicInfoModel.objects.first()
     if not session_id:
         session = school_setting.session
     else:
@@ -4937,7 +4937,7 @@ def process_payment_cleanup_for_class(request):
     class_id = request.POST.get('class_id')
 
     try:
-        school_setting = SchoolSettingModel.objects.first()
+        school_setting = SchoolAcademicInfoModel.objects.first()
         if not school_setting or not school_setting.session or not school_setting.term:
             return JsonResponse({'status': 'error', 'message': 'No active session/term'}, status=400)
 
