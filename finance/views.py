@@ -1164,7 +1164,7 @@ class FeePaymentListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
             # Annotate the student's full name to make it searchable
             queryset = queryset.annotate(
                 student_full_name=Concat(
-                    'invoice__student__first_name', Value(' '), 'invoice__student__last_name'
+                    'invoice__student__surname', Value(' '), 'invoice__student__last_name'
                 )
             ).filter(
                 Q(student_full_name__icontains=search_query) |
@@ -2390,7 +2390,7 @@ def deposit_payment_list_view(request):
 
     if search_query:
         queryset = queryset.filter(
-            Q(student__first_name__icontains=search_query) |
+            Q(student__surname__icontains=search_query) |
             Q(student__last_name__icontains=search_query)
         )
 
@@ -2461,7 +2461,7 @@ def download_funding_excel(queryset, session, term):
     ws.column_dimensions['F'].width = 12
 
     for row_num, payment in enumerate(queryset, 2):
-        cell = ws.cell(row=row_num, column=1, value=f"{payment.student.first_name} {payment.student.last_name}")
+        cell = ws.cell(row=row_num, column=1, value=f"{payment.student.surname} {payment.student.last_name}")
         cell.border = border
 
         student_class = ""
@@ -2555,7 +2555,7 @@ def download_funding_pdf(queryset, session, term):
     data = [headers]
 
     for payment in queryset:
-        student_name = f"{payment.student.first_name} {payment.student.last_name}"
+        student_name = f"{payment.student.surname} {payment.student.last_name}"
 
         student_class = ""
         if payment.student.student_class:
