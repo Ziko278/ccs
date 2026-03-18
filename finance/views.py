@@ -5087,6 +5087,18 @@ class OtherPaymentListView(LoginRequiredMixin, PermissionRequiredMixin, ListView
         return context
 
 
+class OtherPaymentClearanceReceiptView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
+    model = OtherPaymentClearanceModel
+    permission_required = 'finance.view_feemodel'
+    template_name = 'finance/other_payment/clearance_receipt.html'
+    context_object_name = 'clearance'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['school_info'] = SchoolInfoModel.objects.first()
+        return context
+
+
 # ============================================================================
 # STUDENT-SPECIFIC OTHER PAYMENT VIEWS
 # ============================================================================

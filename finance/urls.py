@@ -185,7 +185,7 @@ urlpatterns = [
     # STUDENT-SPECIFIC OTHER PAYMENT URLS
     # ============================================================================
     path('other-payments/', OtherPaymentListView.as_view(), name='finance_other_payment_list'),
-
+    path('other-payment/clearance/<int:pk>/receipt/', OtherPaymentClearanceReceiptView.as_view(), name='finance_other_payment_clearance_receipt'),
     path('student/<int:student_pk>/other-payments/', StudentOtherPaymentIndexView.as_view(),
          name='finance_student_other_payment_index'),
     path('student/<int:student_pk>/other-payments/create/', StudentOtherPaymentCreateView.as_view(),
