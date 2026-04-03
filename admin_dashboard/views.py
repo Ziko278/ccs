@@ -31,6 +31,8 @@ from school_setting.models import SchoolGeneralInfoModel, SchoolAcademicInfoMode
 from academic.models import ClassSectionInfoModel, ClassesModel, ClassSectionModel, SubjectGroupModel
 from user_management.models import UserProfileModel
 
+from result.models import ResultFieldModel
+
 
 def setup_test():
     info = SchoolGeneralInfoModel.objects.first()
