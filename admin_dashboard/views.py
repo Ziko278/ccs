@@ -293,10 +293,12 @@ def result_cleanup_view(request):
 def process_result_cleanup(request):
     """
     Removes blank/zero subjects from result JSON and resaves to recalculate totals.
+    A subject is removed if:
+      - Its total is zero/blank, OR
+      - Any of its exam-type fields is empty/zero
     Processes all results for the current session and term.
     """
     try:
-        # Get current session and term
         academic_info = SchoolAcademicInfoModel.objects.first()
 
         if not academic_info or not academic_info.session or not academic_info.term:
@@ -308,7 +310,13 @@ def process_result_cleanup(request):
         current_session = academic_info.session
         current_term = academic_info.term
 
-        # Get all results for current session and term
+        # Fetch all exam field names once (uppercased to match JSON keys)
+        exam_field_names = set(
+            ResultFieldModel.objects.filter(field_type='exam')
+            .values_list('name', flat=True)
+        )
+        exam_field_names_upper = {name.upper() for name in exam_field_names}
+
         results_to_clean = ResultModel.objects.filter(
             session=current_session,
             term=current_term,
@@ -329,29 +337,39 @@ def process_result_cleanup(request):
                 cleaned_result = {}
                 subjects_removed = 0
 
-                # Filter out blank/zero subjects
                 for key, subject_data in original_result.items():
-                    # Check if subject data is valid
                     if subject_data and isinstance(subject_data, dict):
                         total = subject_data.get('total', 0)
 
-                        # Keep only subjects with non-zero totals
+                        # Check 1: total must be non-zero
                         try:
-                            if float(total) > 0:
-                                cleaned_result[key] = subject_data
-                            else:
-                                subjects_removed += 1
+                            total_valid = float(total) > 0
                         except (ValueError, TypeError):
-                            # If total is not a valid number, remove it
+                            total_valid = False
+
+                        # Check 2: no exam field should be empty/zero
+                        exam_fields_valid = True
+                        if total_valid and exam_field_names_upper:
+                            for field_key, field_value in subject_data.items():
+                                if field_key.upper() in exam_field_names_upper:
+                                    try:
+                                        if not field_value or float(field_value) == 0:
+                                            exam_fields_valid = False
+                                            break
+                                    except (ValueError, TypeError):
+                                        exam_fields_valid = False
+                                        break
+
+                        if total_valid and exam_fields_valid:
+                            cleaned_result[key] = subject_data
+                        else:
                             subjects_removed += 1
                     else:
-                        # Remove empty/invalid entries
                         subjects_removed += 1
 
-                # Only update if we actually removed something
                 if subjects_removed > 0:
                     result_obj.result = cleaned_result
-                    result_obj.save()  # This will trigger recalculation in save() method
+                    result_obj.save()
                     cleaned_count += 1
                     total_subjects_removed += subjects_removed
                 else:
@@ -372,7 +390,6 @@ def process_result_cleanup(request):
             'status': 'error',
             'message': f'An unexpected error occurred: {str(e)}'
         }, status=500)
-
 
 @login_required
 @permission_required("student.change_resultmodel", raise_exception=True)

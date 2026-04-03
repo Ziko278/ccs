@@ -34,9 +34,6 @@ def create_parent_account(sender, instance, created, **kwargs):
         user_profile.save()
 
 
-# 
-
-
 @receiver(post_save, sender=StudentsModel)
 def create_student_record(sender, instance, created, **kwargs):
     if created:
