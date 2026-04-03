@@ -197,28 +197,32 @@ def fix_issue(request):
 @permission_required('student.add_studentsmodel', raise_exception=True)
 def fix_missing_student_profiles(request):
     """
-    Select all students without user profiles and create them.
-    If a user already exists, delete it and recreate properly.
+    Creates user profiles for students that don't have one.
+    Students who already have a linked user and profile are left untouched.
     """
     created_count = 0
     skipped_count = 0
 
-    alphabet = string.ascii_letters + string.digits  # A–Z, a–z, 0–9
+    alphabet = string.ascii_letters + string.digits
 
-    students_without_profile = StudentsModel.objects.all()
+    students = StudentsModel.objects.all()
 
-    for student in students_without_profile:
+    for student in students:
         try:
             if not student.registration_number:
                 skipped_count += 1
                 continue
 
+            # Skip if student already has a linked user with a valid profile
+            if student.user and UserProfileModel.objects.filter(user=student.user).exists():
+                skipped_count += 1
+                continue
+
             username = student.registration_number.lower()
 
-            # If a user already exists, delete it (and linked profile)
+            # Clean up any orphaned user with the same username (no linked profile)
             existing_user = User.objects.filter(username=username).first()
             if existing_user:
-                # Delete linked profile if exists
                 UserProfileModel.objects.filter(user=existing_user).delete()
                 existing_user.delete()
 
@@ -236,7 +240,7 @@ def fix_missing_student_profiles(request):
 
             # Link student to new user
             student.user = user
-            student.password = password  # (optional for admin reference)
+            student.password = password
             student.save()
 
             # Create corresponding user profile
@@ -257,12 +261,11 @@ def fix_missing_student_profiles(request):
 
     messages.success(
         request,
-        f"✅ {created_count} student users recreated successfully. "
-        f"⏭️ {skipped_count} skipped (missing reg no or error)."
+        f"✅ {created_count} student users created successfully. "
+        f"⏭️ {skipped_count} skipped (already exists, missing reg no, or error)."
     )
 
     return redirect('admin_dashboard')
-
 
 @login_required
 @permission_required("student.change_resultmodel", raise_exception=True)
