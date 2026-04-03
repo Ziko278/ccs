@@ -197,30 +197,28 @@ def fix_issue(request):
 @permission_required('student.add_studentsmodel', raise_exception=True)
 def fix_missing_student_profiles(request):
     """
-    Creates user profiles for students that don't have one.
-    Students who already have a linked user and profile are left untouched.
+    Creates login credentials for students that don't already have a user profile.
+    Students with an existing profile are left completely untouched.
     """
     created_count = 0
     skipped_count = 0
 
     alphabet = string.ascii_letters + string.digits
 
-    students = StudentsModel.objects.all()
+    # Only get students without a linked profile
+    students_without_profile = StudentsModel.objects.filter(
+        student_account__isnull=True
+    )
 
-    for student in students:
+    for student in students_without_profile:
         try:
             if not student.registration_number:
                 skipped_count += 1
                 continue
 
-            # Skip if student already has a linked user with a valid profile
-            if student.user and UserProfileModel.objects.filter(user=student.user).exists():
-                skipped_count += 1
-                continue
-
             username = student.registration_number.lower()
 
-            # Clean up any orphaned user with the same username (no linked profile)
+            # Clean up any orphaned user with the same username
             existing_user = User.objects.filter(username=username).first()
             if existing_user:
                 UserProfileModel.objects.filter(user=existing_user).delete()
@@ -232,16 +230,11 @@ def fix_missing_student_profiles(request):
             # Create new user
             user = User.objects.create(
                 username=username,
-                email=student.email or "",
+                email="",
                 password=make_password(password),
-                first_name=student.surname,
+                first_name=student.first_name,
                 last_name=student.last_name,
             )
-
-            # Link student to new user
-            student.user = user
-            student.password = password
-            student.save()
 
             # Create corresponding user profile
             UserProfileModel.objects.create(
@@ -250,7 +243,7 @@ def fix_missing_student_profiles(request):
                 reference='student',
                 reference_id=student.id,
                 default_password=password,
-                type=student.type,
+                type=student.type if hasattr(student, 'type') else None,
             )
 
             created_count += 1
@@ -261,11 +254,12 @@ def fix_missing_student_profiles(request):
 
     messages.success(
         request,
-        f"✅ {created_count} student users created successfully. "
-        f"⏭️ {skipped_count} skipped (already exists, missing reg no, or error)."
+        f"✅ {created_count} student login accounts created successfully. "
+        f"⏭️ {skipped_count} skipped (missing reg no or error)."
     )
 
     return redirect('admin_dashboard')
+
 
 @login_required
 @permission_required("student.change_resultmodel", raise_exception=True)
