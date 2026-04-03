@@ -210,10 +210,15 @@ def fix_missing_student_profiles(request):
         student_account__isnull=True
     )
 
+    print(f"Students without profile: {students_without_profile.count()}")
+
     for student in students_without_profile:
         try:
+            print(f"PROCESSING: {student} | reg: {student.registration_number}")
+
             if not student.registration_number:
                 skipped_count += 1
+                print(f"SKIPPED (no reg no): {student}")
                 continue
 
             username = student.registration_number.lower()
@@ -221,6 +226,7 @@ def fix_missing_student_profiles(request):
             # Clean up any orphaned user with the same username
             existing_user = User.objects.filter(username=username).first()
             if existing_user:
+                print(f"Found orphaned user for {username}, cleaning up...")
                 UserProfileModel.objects.filter(user=existing_user).delete()
                 existing_user.delete()
 
@@ -235,6 +241,7 @@ def fix_missing_student_profiles(request):
                 first_name=student.first_name,
                 last_name=student.last_name,
             )
+            print(f"Created user: {username}")
 
             # Create corresponding user profile
             UserProfileModel.objects.create(
@@ -245,12 +252,16 @@ def fix_missing_student_profiles(request):
                 default_password=password,
                 type=student.type if hasattr(student, 'type') else None,
             )
+            print(f"Created profile for: {username}")
 
             created_count += 1
 
         except Exception as e:
             skipped_count += 1
-            print(f"⚠️ Error processing {student}: {e}")
+            print(f"⚠️ ERROR processing {student} | reg: {student.registration_number} | error: {e}")
+            traceback.print_exc()
+
+    print(f"DONE — created: {created_count}, skipped: {skipped_count}")
 
     messages.success(
         request,
@@ -259,7 +270,6 @@ def fix_missing_student_profiles(request):
     )
 
     return redirect('admin_dashboard')
-
 
 @login_required
 @permission_required("student.change_resultmodel", raise_exception=True)
